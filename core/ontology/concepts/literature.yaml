@@ -1,0 +1,27 @@
+concept: literature
+intent: "A processed reference: an external source the user has read and synthesized."
+folder: references
+fields:
+  - name: title
+    type: string
+    required: true
+    intent: "The title of the referenced work."
+  - name: source-url
+    type: url
+    required: true
+    intent: "The canonical URL where the source can be found."
+  - name: author
+    type: list
+    required: false
+    intent: "One or more authors of the referenced work."
+  - name: tags
+    type: list
+    required: false
+    intent: "Topical tags for retrieval and clustering."
+    normalize: kebab
+lenses:
+  - name: synthesis
+    intent: "Surface the minimal fields needed when synthesizing across references."
+    fields:
+      - title
+      - source-url

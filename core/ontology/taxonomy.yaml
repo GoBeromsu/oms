@@ -1,0 +1,11 @@
+version: 1
+folders:
+  references:
+    intent: "Processed external sources the user has read and synthesized."
+    concept: literature
+  notes:
+    intent: "Unprocessed or loosely structured notes awaiting triage or development."
+    concept: inbox
+  inbox:
+    intent: "Raw unprocessed captures awaiting triage; nothing required yet."
+    concept: inbox

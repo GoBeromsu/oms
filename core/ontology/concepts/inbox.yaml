@@ -1,0 +1,4 @@
+concept: inbox
+intent: "Unprocessed capture awaiting triage; no required structure yet."
+folder: inbox
+fields: []
