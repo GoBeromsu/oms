@@ -1,0 +1,107 @@
+# AGENTS.md — Lexa Contributor Rules
+
+> This file contains **contributor / developer rules** for the Lexa repository.
+> It is NOT the vault-convention SSOT for end users — that lives in `core/AGENTS.md`
+> (owned by a separate lane; do not create or modify it here).
+
+---
+
+## What is Lexa?
+
+Lexa is a host-agnostic, user-owned convention layer for Obsidian markdown vaults. It ships a
+TypeScript runtime and a set of markdown conventions that keep vault notes consistently structured,
+linked, and reusable. Lexa is invoked from inside AI coding environments (Claude Code, Codex,
+Hermes) and enforces — or warns about — frontmatter, naming, and linking rules that the user
+defines in their own vault configuration (`vault/.lexa/`).
+
+---
+
+## Repo Layout
+
+```
+lexa/
+├── core/                        # Ontology defaults, skills, agents
+│   ├── AGENTS.md                # Vault-convention SSOT for end users (NOT this file)
+│   └── ontology/                # Default schemas and rule definitions
+├── adapters/
+│   ├── claude-code/             # Claude Code adapter
+│   ├── codex/                   # OpenAI Codex adapter
+│   └── hermes/                  # Hermes adapter
+├── src/                         # TypeScript source
+│   ├── cli/lexa.ts              # CLI entry point
+│   ├── ontology/
+│   │   ├── loader.ts            # Load vault/.lexa/ config + core defaults
+│   │   └── resolver.ts          # Merge and resolve final ontology
+│   ├── conventions/
+│   │   ├── frontmatter.ts       # Frontmatter rule definitions
+│   │   └── validate.ts          # Validation engine
+│   ├── adapt/                   # Host adapter interfaces
+│   └── mcp/                     # MCP server integration
+├── docs/                        # User-facing documentation
+└── test/                        # Vitest test suite
+```
+
+---
+
+## Build and Test Commands
+
+```bash
+npm run build   # tsc — compiles src/ to dist/ (NodeNext module resolution)
+npm run lint    # tsc --noEmit — type-check only, no output
+npm test        # vitest — runs the test suite
+```
+
+CI pipeline order: **build first, then test**. A broken build blocks the test run.
+
+---
+
+## CRITICAL: NodeNext Import Extensions
+
+**tsconfig uses `moduleResolution: NodeNext`.**
+
+Every relative import inside `src/**/*.ts` MUST include a `.js` extension:
+
+```ts
+// correct
+import { loadOntology } from './ontology/loader.js';
+
+// WRONG — build will fail
+import { loadOntology } from './ontology/loader';
+```
+
+Vitest resolves imports differently and will NOT catch missing extensions.
+Only `npm run build` (tsc) will surface this error. Always run `npm run lint`
+after editing imports.
+
+---
+
+## Convention-as-Data
+
+- The active convention is **user-owned**: resolved from `vault/.lexa/` at runtime.
+- Lexa ships read-only **defaults** in `core/ontology/`.
+- Enforcement policy: `onViolation: warn` — violations are non-blocking by default.
+- Schema policy: `additionalProperties: preserve` — unknown fields are kept, not rejected.
+- Never change these defaults to blocking/error without an explicit product decision.
+
+---
+
+## Contribution Rules
+
+- **Keep diffs small.** One concern per PR. Prefer targeted edits over broad refactors.
+- **No new dependencies without approval.** Current runtime dependency: `yaml` only.
+  Adding any dependency requires explicit sign-off in the PR description.
+- **No `any` without justification.** Add a comment explaining why if you must use it.
+- **Test new logic paths.** Any new branch in `src/` should have a corresponding vitest case.
+- **Backward-compatible config changes only.** If a config shape changes, provide a migration path.
+- Run `npm run lint && npm run build && npm test` before opening a PR and confirm all pass.
+
+---
+
+## core/AGENTS.md vs. AGENTS.md
+
+| File | Purpose | Owner |
+|------|---------|-------|
+| `/AGENTS.md` (this file) | Contributor rules for the Lexa repo | Dev lane |
+| `/core/AGENTS.md` | Vault-convention SSOT for end users | Separate lane |
+
+Do not conflate them. Do not create or modify `core/AGENTS.md` from this lane.
