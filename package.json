@@ -1,0 +1,32 @@
+{
+  "name": "lexa",
+  "version": "0.0.0",
+  "description": "A host-agnostic, user-owned convention layer for Obsidian (plain-markdown) knowledge bases. Invoked from inside Claude Code, Codex, and Hermes to make knowledge capture and retrieval happen under a declared semantic convention.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "lexa": "dist/cli/lexa.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "core"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "yaml": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

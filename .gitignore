@@ -1,0 +1,15 @@
+# Dependencies & build output
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+
+# Local agent-orchestration tooling state (oh-my-claudecode / oh-my-codex)
+.omc/
+.omx/
+
+# Logs & OS / editor noise
+*.log
+.DS_Store
+.vscode/
+.idea/
