@@ -1,0 +1,6 @@
+{
+  "name": "lexa",
+  "version": "0.0.0",
+  "description": "Lexa convention layer for Obsidian vaults — Codex adapter stub.",
+  "_note": "v0 stub only. Codex adapter is not yet installable. See adapters/README.md for the adapter contract."
+}
