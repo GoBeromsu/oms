@@ -162,7 +162,7 @@ Docs must not describe MCP write/capture runtime as present tense until the serv
 The Phase 1 command surface is intentionally dry-run for Claude runtime registration:
 
 ```bash
-npx lexa setup --vault /path/to/vault --yes --install-claude
+npx @goberomsu/lexa setup --vault /path/to/vault --yes --install-claude
 ```
 
 This initializes `.lexa/` and prints a Claude Code plugin install command plus a `claude mcp add ...` command. It does not mutate Claude config. Capture/write tools are only available through the gated safe-write path.

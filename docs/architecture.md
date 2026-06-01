@@ -47,7 +47,7 @@ All knowledge logic (validation, ontology loading, folder resolution) is written
 │                                                                  │
 │  thin ADAPTER                                                    │
 │  ├─ plugin.json / plugin stub / SOUL.md fragment                 │
-│  └─ shells out to: npx lexa setup | lexa doctor | lexa define    │
+│  └─ shells out to: npx @goberomsu/lexa setup | lexa doctor | lexa define    │
 └───────────────────────────┬──────────────────────────────────────┘
                             │ invokes
                             ▼

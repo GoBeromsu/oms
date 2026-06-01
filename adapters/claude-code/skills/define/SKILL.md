@@ -1,6 +1,6 @@
 ---
 name: lexa-define
-description: Grow the vault convention by adding a metadata field to a concept. Entry point is npx lexa define (roadmap).
+description: Grow the vault convention by adding a metadata field to a concept. Entry point is npx @goberomsu/lexa define (roadmap).
 ---
 
 # Skill: lexa-define (Claude Code)
@@ -19,7 +19,7 @@ Each frontmatter key is a unit of convention with a declared `intent`, type, and
 Intended to shell out to:
 
 ```bash
-npx lexa define
+npx @goberomsu/lexa define
 ```
 
 **Roadmap note:** The `lexa define` interactive runtime is not yet implemented in v0.
@@ -34,7 +34,7 @@ Today this skill guides you through the same steps manually (agent-guided).
 5. Choose **required**: yes / no.
 6. Optionally set **normalize** (e.g. `lowercase`) or **immutable** (lock after creation).
 7. Append the entry to `vault/.lexa/concepts/<concept>.yaml`.
-8. Run `npx lexa doctor` to validate existing notes against the updated schema.
+8. Run `npx @goberomsu/lexa doctor` to validate existing notes against the updated schema.
 
 ## YAML snippet to append
 
@@ -48,4 +48,4 @@ fields:
 
 ## When the runtime ships
 
-`npx lexa define` will run the same Q&A interactively and write the YAML for you.
+`npx @goberomsu/lexa define` will run the same Q&A interactively and write the YAML for you.

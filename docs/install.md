@@ -13,7 +13,7 @@ Lexa v0 is distributed as one npm package that contains the CLI/runtime, the def
 ```bash
 npm ci
 npm run build
-npx lexa setup --vault /path/to/vault --yes --install-claude
+npx @goberomsu/lexa setup --vault /path/to/vault --yes --install-claude
 ```
 
 The `--install-claude` flag is a dry-run. It prints the exact commands to install the Claude Code plugin adapter and register the MCP server; it does not mutate Claude configuration by itself.
@@ -22,7 +22,7 @@ Typical printed commands look like:
 
 ```bash
 claude plugin install /path/to/lexa/adapters/claude-code
-claude mcp add lexa -- npx lexa mcp --vault /path/to/vault
+claude mcp add lexa -- npx @goberomsu/lexa mcp --vault /path/to/vault
 ```
 
 After running those commands, restart Claude Code and use the Lexa skills:
@@ -45,9 +45,9 @@ After Lexa is published, the npm package is the install root for all runtime ass
 Use either `npx` or a global install:
 
 ```bash
-npx lexa setup --vault /path/to/vault --yes --install-claude
+npx @goberomsu/lexa setup --vault /path/to/vault --yes --install-claude
 # or
-npm install -g lexa
+npm install -g @goberomsu/lexa
 lexa setup --vault /path/to/vault --yes --install-claude
 ```
 
@@ -56,7 +56,7 @@ Then run the printed Claude plugin and MCP registration commands.
 ## Verify the install
 
 ```bash
-npx lexa doctor --vault /path/to/vault
+npx @goberomsu/lexa doctor --vault /path/to/vault
 claude plugin validate adapters/claude-code
 ```
 

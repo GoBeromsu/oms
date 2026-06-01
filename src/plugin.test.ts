@@ -50,10 +50,10 @@ describe("claude-code plugin DoD", () => {
     }
   });
 
-  it("the setup skill SKILL.md mentions 'npx lexa'", async () => {
+  it("the setup skill SKILL.md mentions 'npx @goberomsu/lexa'", async () => {
     // The setup skill entry is "./skills/setup/" relative to the plugin root.
     const setupSkillPath = path.resolve(pluginRoot, "./skills/setup/SKILL.md");
     const content = await readFile(setupSkillPath, "utf-8");
-    expect(content).toContain("npx lexa");
+    expect(content).toContain("npx @goberomsu/lexa");
   });
 });

@@ -7,7 +7,7 @@
 This vault is governed by Lexa conventions stored in `.lexa/`.
 
 **Before working with vault notes:**
-- Run `npx lexa doctor` to validate notes against the convention (exits 0, non-blocking).
+- Run `npx @goberomsu/lexa doctor` to validate notes against the convention (exits 0, non-blocking).
 - Read `.lexa/taxonomy.yaml` and `.lexa/concepts/*.yaml` for folder and field declarations.
 
 **Capture:** Use `$lexa-capture` skill or follow the librarian persona.

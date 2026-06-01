@@ -43,7 +43,7 @@ adapters/<host>/
 
 ### claude-code (REAL installable v0)
 
-Release contract: the npm tarball must include `adapters/claude-code/` because `npx lexa setup --install-claude` prints a packaged adapter path for `claude plugin install`.
+Release contract: the npm tarball must include `adapters/claude-code/` because `npx @goberomsu/lexa setup --install-claude` prints a packaged adapter path for `claude plugin install`.
 
 - **Manifest**: `.claude-plugin/plugin.json`
   - Schema: `{ name, version, description, author, license, keywords, skills: string[] }`
@@ -84,7 +84,7 @@ The MCP server currently exposes status/read/cache/capture tools:
 `lexa_graph_status`, `lexa_graph_build`, `lexa_list_concepts`,
 `lexa_retrieve_by_axis`, `lexa_lazy_load_note`, `lexa_validate_contract`,
 `lexa_capture_prepare`, and `lexa_capture_commit`.
-Capture commit is gated by path-safety, vault-confinement, and contract validation. The CLI (`npx lexa setup`, `npx lexa doctor`) remains the real surface for lifecycle commands.
+Capture commit is gated by path-safety, vault-confinement, and contract validation. The CLI (`npx @goberomsu/lexa setup`, `npx @goberomsu/lexa doctor`) remains the real surface for lifecycle commands.
 
 ---
 
@@ -93,6 +93,6 @@ Capture commit is gated by path-safety, vault-confinement, and contract validati
 1. Create `adapters/<host>/`.
 2. Write the host-specific manifest in the correct subdirectory and schema.
 3. Write the convention-file shim (`CLAUDE.md` / `AGENTS.md` / `SOUL.md` / whatever the host uses).
-4. Write skill wrappers that shell out to `npx lexa <verb>` (for lifecycle) or call the MCP server (for capture/retrieve).
+4. Write skill wrappers that shell out to `npx @goberomsu/lexa <verb>` (for lifecycle) or call the MCP server (for capture/retrieve).
 5. Document the host's structural differences in this table.
 6. Do **not** modify `core/` or add host-specific logic to shared code.

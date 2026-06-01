@@ -1,6 +1,6 @@
 ---
 name: lexa-doctor
-description: Validate vault notes against the Lexa convention by running npx lexa doctor.
+description: Validate vault notes against the Lexa convention by running npx @goberomsu/lexa doctor.
 ---
 
 # Skill: lexa-doctor (Claude Code)
@@ -19,7 +19,7 @@ This skill is **REAL in v0** — it shells out to the fully-implemented CLI.
 Shells out to:
 
 ```bash
-npx lexa doctor [--vault <path>]
+npx @goberomsu/lexa doctor [--vault <path>]
 ```
 
 The CLI will:
@@ -39,7 +39,7 @@ The CLI will:
 ## Example
 
 ```bash
-npx lexa doctor --vault ~/Documents/MyVault
+npx @goberomsu/lexa doctor --vault ~/Documents/MyVault
 ```
 
 ## Sample output

@@ -79,7 +79,7 @@ The v0 release workflow is **manual dispatch only** so the operator must provide
 
 Before the first public release:
 
-1. Verify that the `lexa` npm package name is available to the publisher, or switch to a scoped package name.
+1. Verify that the scoped `@goberomsu/lexa` npm package name is available to the publisher.
 2. Bump `package.json` to a real semver release.
 3. Keep `adapters/claude-code/.claude-plugin/plugin.json` version in sync with `package.json` unless a future ADR deliberately splits package/plugin versioning.
 4. Confirm release notes say Claude Code is real v0 support and Codex/Hermes are stubs.

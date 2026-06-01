@@ -1,6 +1,6 @@
 ---
 name: lexa-setup
-description: Adopt an existing Obsidian vault into the Lexa convention by running npx lexa setup.
+description: Adopt an existing Obsidian vault into the Lexa convention by running npx @goberomsu/lexa setup.
 ---
 
 # Skill: lexa-setup (Claude Code)
@@ -19,7 +19,7 @@ This skill is **REAL in v0** — it shells out to the fully-implemented CLI.
 Shells out to:
 
 ```bash
-npx lexa setup [--vault <path>] [--yes] [--install-claude]
+npx @goberomsu/lexa setup [--vault <path>] [--yes] [--install-claude]
 ```
 
 The CLI will:
@@ -39,13 +39,13 @@ The CLI will:
 
 ```bash
 # Interactive (recommended first run):
-npx lexa setup --vault ~/Documents/MyVault
+npx @goberomsu/lexa setup --vault ~/Documents/MyVault
 
 # Non-interactive (CI / scripted):
-npx lexa setup --vault ~/Documents/MyVault --yes
+npx @goberomsu/lexa setup --vault ~/Documents/MyVault --yes
 
 # Also print Claude Code harness install commands (dry-run):
-npx lexa setup --vault ~/Documents/MyVault --yes --install-claude
+npx @goberomsu/lexa setup --vault ~/Documents/MyVault --yes --install-claude
 ```
 
 ## After setup

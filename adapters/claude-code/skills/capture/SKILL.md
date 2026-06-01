@@ -27,7 +27,7 @@ after prepare returns `ready` or the user has supplied missing fields.
 5. If required fields are missing, ask for them; do not write.
 6. If placement is ambiguous, route to inbox.
 7. Commit only through `lexa_capture_commit` (`create` or `append`).
-8. Shell out: `npx lexa doctor` (non-blocking, exits 0) to confirm the note is clean.
+8. Shell out: `npx @goberomsu/lexa doctor` (non-blocking, exits 0) to confirm the note is clean.
 
 ## Example
 

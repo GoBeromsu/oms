@@ -1,5 +1,5 @@
 {
-  "name": "lexa",
+  "name": "@goberomsu/lexa",
   "version": "0.1.0",
   "description": "A host-agnostic, user-owned convention layer for Obsidian (plain-markdown) knowledge bases. Invoked from inside Claude Code, Codex, and Hermes to make knowledge capture and retrieval happen under a declared semantic convention.",
   "type": "module",
