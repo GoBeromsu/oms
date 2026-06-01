@@ -1,6 +1,8 @@
 {
   "name": "lexa",
-  "version": "0.0.0",
-  "description": "Lexa convention layer for Obsidian vaults — Codex adapter stub.",
-  "_note": "v0 stub only. Codex adapter is not yet installable. See adapters/README.md for the adapter contract."
+  "version": "0.1.1",
+  "description": "Lexa convention layer for Obsidian vaults — Codex native rules, skills, and MCP adapter.",
+  "_note": "lexa install writes Codex MCP config, installs ~/.codex/rules/lexa.md, and installs ~/.codex/skills/lexa-*.",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
 }

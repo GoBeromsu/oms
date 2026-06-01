@@ -87,6 +87,18 @@ function setupSmoke(packageRoot, vault) {
   console.log("[release:artifact-smoke] ok: setup dry-run works from unpacked package.");
 }
 
+function hostInstallSmoke(packageRoot, vault) {
+  const cli = path.join(packageRoot, "dist/cli/lexa.js");
+  const result = run(process.execPath, [cli, "install", "--runtime", "all", "--vault", vault, "--dry-run"], {
+    cwd: packageRoot,
+  });
+  const output = `${result.stdout}\n${result.stderr}`;
+  for (const expected of ["claude install", "codex install", "hermes install", "rules/lexa.md", "skills/knowledge-management/lexa"]) {
+    if (!output.includes(expected)) fail(`host install dry-run did not include ${expected}`);
+  }
+  console.log("[release:artifact-smoke] ok: host install dry-run works from unpacked package.");
+}
+
 async function mcpSmoke(packageRoot, vault) {
   const cli = path.join(packageRoot, "dist/cli/lexa.js");
   const transport = new StdioClientTransport({
@@ -125,11 +137,19 @@ try {
   assertPath(path.join(packageRoot, "dist"), "dist directory");
   assertPath(path.join(packageRoot, "core"), "core directory");
   assertPath(path.join(packageRoot, "adapters/claude-code/.claude-plugin/plugin.json"), "Claude plugin manifest");
+  assertPath(path.join(packageRoot, "adapters/codex/rules/lexa.md"), "Codex Lexa rule");
+  assertPath(path.join(packageRoot, "adapters/codex/skills/lexa-capture/SKILL.md"), "Codex Lexa capture skill");
+  assertPath(path.join(packageRoot, "adapters/hermes/skills/capture/SKILL.md"), "Hermes Lexa capture skill");
   assertPath(path.join(packageRoot, "docs/install.md"), "install docs");
   assertPath(path.join(packageRoot, "docs/release.md"), "release docs");
+  assertPath(path.join(packageRoot, "scripts/install.sh"), "install shell script");
+  assertPath(path.join(packageRoot, "scripts/uninstall.sh"), "uninstall shell script");
   installRuntimeDependencies(packageRoot);
   const vault = makeVault(tempRoot);
-  if (runSetup) setupSmoke(packageRoot, vault);
+  if (runSetup) {
+    setupSmoke(packageRoot, vault);
+    hostInstallSmoke(packageRoot, vault);
+  }
   if (runMcp) await mcpSmoke(packageRoot, vault);
 } finally {
   if (tarball && existsSync(tarball)) rmSync(tarball, { force: true });

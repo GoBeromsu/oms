@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "lexa": {
+      "command": "npx",
+      "args": ["@goberomsu/lexa", "mcp", "--vault", "."]
+    }
+  }
+}

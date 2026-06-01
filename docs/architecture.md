@@ -25,9 +25,9 @@ Lexa's product posture is an **axis graph harness**:
 
 The full terminology lock is in the harness architecture doc. In short: Lexa helps the user operate their own knowledge system so notes can be retrieved and reused later; it does not fill the body content for them.
 
-## The 3-Host Handshake: Shared CORE + Thin ADAPTERS
+## The 3-Host Handshake: Shared CORE + Host ADAPTERS
 
-All knowledge logic (validation, ontology loading, folder resolution) is written **once** inside the shared CORE and exposed via the `lexa` CLI and — in a future version — via a shared MCP server. Host differences (manifest schema, hook format, invocation sigil, convention-file name) are absorbed by thin per-host ADAPTERS. Adding a fourth host means writing one more adapter, not touching the core.
+All knowledge logic (validation, ontology loading, folder resolution, graph/cache retrieval, and gated capture) is written **once** inside the shared CORE and exposed via the `lexa` CLI plus the shared MCP server. Host differences (manifest schema, skill layout, invocation sigil, convention-file name) are absorbed by per-host ADAPTERS. Adding a fourth host means writing one more adapter, not touching the core.
 
 | | Claude Code | Codex | Hermes |
 |---|---|---|---|
@@ -36,7 +36,7 @@ All knowledge logic (validation, ontology loading, folder resolution) is written
 | Convention file | `CLAUDE.md` / `AGENTS.md` | `AGENTS.md` | `SOUL.md` + context files |
 | Local vault access | yes | yes | yes |
 
-`adapters/claude-code/` is the only real installable adapter in v0. `adapters/codex/` and `adapters/hermes/` are manifest + convention-file stubs that document the contract without wiring up live installs.
+`adapters/claude-code/`, `adapters/codex/`, and `adapters/hermes/` all ship installable v0 host surfaces. `lexa install` copies host assets, installs Codex/Hermes skills or rules where the host expects them, and writes host MCP registration.
 
 ## Flow Diagram
 
@@ -45,8 +45,8 @@ All knowledge logic (validation, ontology loading, folder resolution) is written
 │  Host agent                                                      │
 │  (Claude Code | Codex | Hermes)                                  │
 │                                                                  │
-│  thin ADAPTER                                                    │
-│  ├─ plugin.json / plugin stub / SOUL.md fragment                 │
+│  host ADAPTER                                                    │
+│  ├─ plugin.json / rule+skill bundle / SOUL.md fragment              │
 │  └─ shells out to: npx @goberomsu/lexa setup | lexa doctor | lexa define    │
 └───────────────────────────┬──────────────────────────────────────┘
                             │ invokes

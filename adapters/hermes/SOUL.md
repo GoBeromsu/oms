@@ -16,5 +16,4 @@ construct required frontmatter, write note, then run `npx @goberomsu/lexa doctor
 
 **Retrieve:** Follow the retriever persona — identify purpose, match lens, project lens fields only.
 
-> **v0 stub:** The Hermes adapter manifest is a stub. Lexa skills are not yet registered on agentskills.io.
-> Use the Lexa MCP server (roadmap) or agent-guided workflows until the Hermes adapter ships.
+> **v0 native install:** `lexa install --runtime hermes` installs a Hermes skill bundle and registers Lexa MCP in `~/.hermes/config.yaml`. Use Lexa MCP tools for capture/retrieve and CLI commands for lifecycle.

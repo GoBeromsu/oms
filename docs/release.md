@@ -14,8 +14,10 @@ The npm package root is the runtime asset root. A releasable tarball must includ
 - every Claude adapter `skills/*/SKILL.md`
 - `docs/install.md`
 - `docs/release.md`
+- `scripts/install.sh`
+- `scripts/uninstall.sh`
 
-Codex and Hermes adapter files may be packaged as stubs, but release notes must not claim they are installable v0 adapters.
+Codex and Hermes adapter files are packaged as host-native skill/rule bundles plus MCP registrations; release notes must describe the exact installed paths and avoid claiming behavior beyond the shipped skills and MCP tools.
 
 ## Local release gate
 
@@ -35,7 +37,7 @@ npm run release:check
 6. `npm run release:artifact-smoke`
 7. `npm run release:plugin`
 
-`release:pack` inspects `npm pack --dry-run --json` and fails if required runtime assets are missing. `release:artifact-smoke` creates a real tarball, unpacks it into a temp directory, installs production dependencies there, and runs setup plus MCP smoke from the extracted package root.
+`release:pack` inspects `npm pack --dry-run --json` and fails if required runtime assets are missing. `release:artifact-smoke` creates a real tarball, unpacks it into a temp directory, installs production dependencies there, and runs setup, host install dry-run, and MCP smoke from the extracted package root.
 
 ## Claude plugin validation
 
@@ -82,7 +84,7 @@ Before the first public release:
 1. Verify that the scoped `@goberomsu/lexa` npm package name is available to the publisher.
 2. Bump `package.json` to a real semver release.
 3. Keep `adapters/claude-code/.claude-plugin/plugin.json` version in sync with `package.json` unless a future ADR deliberately splits package/plugin versioning.
-4. Confirm release notes say Claude Code is real v0 support and Codex/Hermes are stubs.
+4. Confirm release notes list Codex rules/skills and Hermes skill-bundle install paths, plus the MCP registration files that make capture/retrieve tools available.
 
 ## Rollback posture
 

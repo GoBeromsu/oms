@@ -47,10 +47,21 @@ const required = [
   "adapters/claude-code/skills/define/SKILL.md",
   "adapters/claude-code/skills/capture/SKILL.md",
   "adapters/claude-code/skills/retrieve/SKILL.md",
+  "adapters/claude-code/skills/uninstall/SKILL.md",
   "adapters/codex/.codex-plugin/plugin.json",
+  "adapters/codex/.mcp.json",
+  "adapters/codex/rules/lexa.md",
+  "adapters/codex/skills/lexa-setup/SKILL.md",
+  "adapters/codex/skills/lexa-capture/SKILL.md",
+  "adapters/codex/skills/lexa-retrieve/SKILL.md",
   "adapters/hermes/manifest.json",
+  "adapters/hermes/skills/setup/SKILL.md",
+  "adapters/hermes/skills/capture/SKILL.md",
+  "adapters/hermes/skills/retrieve/SKILL.md",
   "docs/install.md",
   "docs/release.md",
+  "scripts/install.sh",
+  "scripts/uninstall.sh",
 ];
 
 const missing = required.filter((requiredPath) => !hasPath(files, requiredPath));
@@ -62,6 +73,14 @@ const packageJson = JSON.parse(readFileSync("package.json", "utf-8"));
 const pluginJson = JSON.parse(readFileSync("adapters/claude-code/.claude-plugin/plugin.json", "utf-8"));
 if (packageJson.version !== pluginJson.version) {
   fail(`version mismatch: package.json=${packageJson.version}, Claude plugin=${pluginJson.version}`);
+}
+const codexPluginJson = JSON.parse(readFileSync("adapters/codex/.codex-plugin/plugin.json", "utf-8"));
+if (packageJson.version !== codexPluginJson.version) {
+  fail(`version mismatch: package.json=${packageJson.version}, Codex plugin=${codexPluginJson.version}`);
+}
+const hermesManifestJson = JSON.parse(readFileSync("adapters/hermes/manifest.json", "utf-8"));
+if (packageJson.version !== hermesManifestJson.version) {
+  fail(`version mismatch: package.json=${packageJson.version}, Hermes manifest=${hermesManifestJson.version}`);
 }
 
 console.log(`[release:pack] ok: ${pack.filename} includes ${files.length} files and required release assets.`);
