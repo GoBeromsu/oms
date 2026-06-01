@@ -20,6 +20,7 @@ Shells out to:
 
 ```bash
 npx @goberomsu/lexa setup [--vault <path>] [--yes] [--install-claude]
+npx @goberomsu/lexa install [--runtime <auto|all|claude|codex|hermes>] [--vault <path>] [--dry-run] [--execute] [--yes]
 ```
 
 The CLI will:
@@ -33,7 +34,10 @@ The CLI will:
 |------|-------------|
 | `--vault <path>` | Path to your Obsidian vault root (default: current directory) |
 | `--yes` | Non-interactive: accept all defaults, no prompts |
-| `--install-claude` | Print Claude Code plugin install and MCP registration commands. This is a dry-run; it does not mutate Claude config. Release smoke tests assert the printed plugin path exists inside the npm tarball. |
+| `--install-claude` | Legacy setup-only dry-run that prints Claude Code plugin install and MCP registration commands. |
+| `install --runtime <name>` | Install host adapter/MCP registration for `auto`, `all`, `claude`, `codex`, or `hermes`. |
+| `install --dry-run` | Preview host writes without mutating config. |
+| `install --execute` | Allow external host CLIs such as `claude plugin install` to run when available. |
 
 ## Example
 
@@ -44,8 +48,14 @@ npx @goberomsu/lexa setup --vault ~/Documents/MyVault
 # Non-interactive (CI / scripted):
 npx @goberomsu/lexa setup --vault ~/Documents/MyVault --yes
 
-# Also print Claude Code harness install commands (dry-run):
-npx @goberomsu/lexa setup --vault ~/Documents/MyVault --yes --install-claude
+# Preview all host adapter installs:
+npx @goberomsu/lexa install --runtime all --vault ~/Documents/MyVault --dry-run
+
+# Install all host adapter/MCP registrations:
+npx @goberomsu/lexa install --runtime all --vault ~/Documents/MyVault --yes
+
+# Also run external host CLIs where available:
+npx @goberomsu/lexa install --runtime claude --vault ~/Documents/MyVault --yes --execute
 ```
 
 ## After setup
@@ -54,7 +64,7 @@ Run `/lexa-doctor` to validate your existing notes against the convention.
 
 ## Roadmap
 
-Setup and the Claude Code dry-run install plan are real and release-gated by unpacked npm tarball smoke tests. The MCP command starts
+Setup plus `lexa install`/`lexa uninstall` host lifecycle commands are real and release-gated by unpacked npm tarball smoke tests. The MCP command starts
 the status/read/cache/capture runtime (`lexa_graph_status`, `lexa_graph_build`,
 `lexa_list_concepts`, `lexa_retrieve_by_axis`, `lexa_lazy_load_note`,
 `lexa_validate_contract`, `lexa_capture_prepare`, `lexa_capture_commit`).

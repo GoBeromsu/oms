@@ -18,8 +18,8 @@ not a shared abstraction layer.
 | Host | Manifest | Convention file | Sigil | Status |
 |------|----------|----------------|-------|--------|
 | **claude-code** | `.claude-plugin/plugin.json` | `CLAUDE.md` | `/` | REAL installable v0 |
-| **codex** | `.codex-plugin/plugin.json` | `AGENTS.md` | `$` | Stub (v0) |
-| **hermes** | `manifest.json` | `SOUL.md` + context files | (built-in tools) | Stub (v0) |
+| **codex** | `.codex-plugin/plugin.json` | `AGENTS.md` | `$` | Native skills + MCP install (v0) |
+| **hermes** | `manifest.json` | `SOUL.md` + context files | (built-in tools) | Native skills + MCP install (v0) |
 
 ---
 
@@ -31,7 +31,7 @@ Each adapter lives at `adapters/<host>/` and contains:
 adapters/<host>/
   <manifest-dir>/
     plugin.json       # Host-specific manifest (schema varies per host — see below)
-  skills/             # Host-specific skill wrappers (claude-code only in v0)
+  skills/             # Host-specific skill wrappers/bundles
     <verb>/
       SKILL.md
   CLAUDE.md           # OR AGENTS.md OR SOUL.md — convention-file shim for this host
@@ -54,21 +54,21 @@ Release contract: the npm tarball must include `adapters/claude-code/` because `
 - **Hooks**: none in v0 (hook format is `hooks/hooks.json` multi-script array — roadmap).
 - **Install**: `claude plugin install path/to/adapters/claude-code` or point Claude Code at the adapter directory.
 
-### codex (stub)
+### codex (native skills + MCP install v0)
 
 - **Manifest**: `.codex-plugin/plugin.json`
   - Schema differs from claude-code: codex uses a unified `codex-native-hook.mjs` instead of `hooks.json`.
   - Skills are invoked with `$` sigil instead of `/`.
 - **Convention file**: `AGENTS.md` — append `adapters/codex/AGENTS.md` to your project's `AGENTS.md`.
-- **Status**: v0 stub. Skills not yet wired. MCP backbone (roadmap) will provide shared tool surface.
+- **Status**: v0 native install. `lexa install --runtime codex` installs `~/.codex/rules/lexa.md`, namespaced `~/.codex/skills/lexa-*`, a managed `[mcp_servers.lexa]` block in `~/.codex/config.toml`, and a copy of the adapter under `~/.codex/plugins/lexa`.
 
-### hermes (stub)
+### hermes (native skills + MCP install v0)
 
 - **Manifest**: `manifest.json` (Hermes/Nous Research format — schema TBD).
   - Hermes skills register on agentskills.io; no local manifest equivalent exists yet.
 - **Convention file**: `SOUL.md` + context files — append `adapters/hermes/SOUL.md` to your Hermes session context.
 - **Sigil**: N/A (Hermes uses built-in tools + MCP, not a `/`/`$` sigil system).
-- **Status**: v0 stub. MCP backbone (roadmap) will provide shared tool surface.
+- **Status**: v0 native install. `lexa install --runtime hermes` installs the skill bundle under `~/.hermes/skills/knowledge-management/lexa/`, registers `mcp_servers.lexa` in `~/.hermes/config.yaml`, and keeps an adapter copy under `~/.hermes/adapters/lexa`.
 
 ---
 
@@ -84,7 +84,7 @@ The MCP server currently exposes status/read/cache/capture tools:
 `lexa_graph_status`, `lexa_graph_build`, `lexa_list_concepts`,
 `lexa_retrieve_by_axis`, `lexa_lazy_load_note`, `lexa_validate_contract`,
 `lexa_capture_prepare`, and `lexa_capture_commit`.
-Capture commit is gated by path-safety, vault-confinement, and contract validation. The CLI (`npx @goberomsu/lexa setup`, `npx @goberomsu/lexa doctor`) remains the real surface for lifecycle commands.
+Capture commit is gated by path-safety, vault-confinement, and contract validation. The CLI (`npx @goberomsu/lexa setup`, `npx @goberomsu/lexa install`, `npx @goberomsu/lexa uninstall`, `npx @goberomsu/lexa doctor`) remains the real surface for lifecycle commands.
 
 ---
 

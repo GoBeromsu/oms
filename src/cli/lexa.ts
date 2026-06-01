@@ -10,6 +10,11 @@ import { resolveConcept } from "../ontology/resolver.js";
 import { parseNote } from "../conventions/frontmatter.js";
 import { validateFrontmatter } from "../conventions/validate.js";
 import { runMcpServer } from "../mcp/server.js";
+import {
+  formatHostOperationResults,
+  runHostOperation,
+  type RuntimeSelection,
+} from "../install/hosts.js";
 import type { Taxonomy, FolderBinding } from "../ontology/types.js";
 
 // ---------------------------------------------------------------------------
@@ -35,6 +40,16 @@ function bundledClaudeAdapterDir(): string {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
   return path.resolve(__dirname, "../../adapters/claude-code");
+}
+
+/**
+ * Resolve the bundled `adapters` root so host installers can copy the
+ * runtime-specific adapter assets from either source or dist execution.
+ */
+function bundledAdapterRoot(): string {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  return path.resolve(__dirname, "../../adapters");
 }
 
 // ---------------------------------------------------------------------------
@@ -322,11 +337,15 @@ lexa — convention layer for Obsidian vaults
 
 Usage:
   lexa setup [--vault <path>] [--yes] [--install-claude]
+  lexa install [--vault <path>] [--runtime <auto|all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
+  lexa uninstall [--runtime <all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
   lexa doctor [--vault <path>]
   lexa mcp [--vault <path>]
 
 Commands:
   setup    Adopt an existing vault into the Lexa convention.
+  install  Install Lexa host adapters and MCP registration.
+  uninstall Remove Lexa host adapters and MCP registration.
   doctor   Validate vault notes against the active ontology.
   mcp      Start the read/status MCP stdio server.
 
@@ -334,6 +353,9 @@ Options:
   --vault <path>   Path to the vault root (default: current directory).
   --yes            Non-interactive: accept all defaults (setup only).
   --install-claude Print Claude Code plugin install and MCP registration commands (dry-run).
+  --runtime <name> Select host runtime (default: auto for install, all for uninstall).
+  --dry-run        Preview host config changes without writing files.
+  --execute        Allow external host CLIs such as \`claude\` to run when available.
 `);
 }
 
@@ -341,10 +363,13 @@ async function main(): Promise<void> {
   const argv = process.argv.slice(2);
   const command = argv[0];
 
-  // Parse --vault and --yes flags.
+  // Parse shared flags.
   let vault = process.cwd();
   let yes = false;
   let installClaude = false;
+  let runtime: RuntimeSelection | undefined;
+  let dryRun = false;
+  let executeExternal = false;
 
   for (let i = 1; i < argv.length; i++) {
     if (argv[i] === "--vault" && argv[i + 1]) {
@@ -354,11 +379,48 @@ async function main(): Promise<void> {
       yes = true;
     } else if (argv[i] === "--install-claude") {
       installClaude = true;
+    } else if (argv[i] === "--runtime" && argv[i + 1]) {
+      const rawRuntime = argv[i + 1]!;
+      if (
+        rawRuntime === "auto" ||
+        rawRuntime === "all" ||
+        rawRuntime === "claude" ||
+        rawRuntime === "codex" ||
+        rawRuntime === "hermes"
+      ) {
+        runtime = rawRuntime;
+      } else {
+        console.error(`[lexa] Unsupported runtime: ${rawRuntime}`);
+        process.exitCode = 1;
+        return;
+      }
+      i++;
+    } else if (argv[i] === "--dry-run") {
+      dryRun = true;
+    } else if (argv[i] === "--execute") {
+      executeExternal = true;
     }
   }
 
   if (command === "setup") {
     await runSetup({ vault, yes, installClaude });
+  } else if (command === "install" || command === "uninstall") {
+    const selectedRuntime = runtime ?? (command === "install" ? "auto" : "all");
+    if (command === "uninstall" && !yes && !dryRun && process.env["LEXA_NON_INTERACTIVE"] !== "1") {
+      console.error("[lexa] Refusing uninstall without --yes or --dry-run.");
+      process.exitCode = 1;
+      return;
+    }
+    const results = await runHostOperation({
+      action: command,
+      runtime: selectedRuntime,
+      vault,
+      dryRun,
+      executeExternal,
+      yes,
+      adapterRoot: bundledAdapterRoot(),
+    });
+    console.log(formatHostOperationResults(results, dryRun));
   } else if (command === "doctor") {
     process.exitCode = await runDoctor({ vault });
   } else if (command === "mcp") {

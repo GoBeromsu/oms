@@ -57,3 +57,31 @@ describe("claude-code plugin DoD", () => {
     expect(content).toContain("npx @goberomsu/lexa");
   });
 });
+
+describe("codex and hermes adapter DoD", () => {
+  it("Codex adapter ships native rule, MCP descriptor, and namespaced skills", async () => {
+    const codexRoot = path.join(repoRoot, "adapters", "codex");
+    const raw = await readFile(path.join(codexRoot, ".codex-plugin", "plugin.json"), "utf-8");
+    const plugin = JSON.parse(raw) as Record<string, unknown>;
+
+    expect(plugin["skills"]).toBe("./skills/");
+    expect(plugin["mcpServers"]).toBe("./.mcp.json");
+    await expect(access(path.join(codexRoot, ".mcp.json"))).resolves.toBeUndefined();
+    await expect(access(path.join(codexRoot, "rules", "lexa.md"))).resolves.toBeUndefined();
+
+    for (const name of ["lexa-setup", "lexa-install", "lexa-uninstall", "lexa-doctor", "lexa-capture", "lexa-retrieve"]) {
+      await expect(access(path.join(codexRoot, "skills", name, "SKILL.md"))).resolves.toBeUndefined();
+    }
+  });
+
+  it("Hermes adapter ships a local skill bundle for install", async () => {
+    const hermesRoot = path.join(repoRoot, "adapters", "hermes");
+    const raw = await readFile(path.join(hermesRoot, "manifest.json"), "utf-8");
+    const manifest = JSON.parse(raw) as Record<string, unknown>;
+
+    expect(manifest["skills"]).toBe("./skills/");
+    for (const name of ["setup", "install", "uninstall", "doctor", "capture", "retrieve"]) {
+      await expect(access(path.join(hermesRoot, "skills", name, "SKILL.md"))).resolves.toBeUndefined();
+    }
+  });
+});

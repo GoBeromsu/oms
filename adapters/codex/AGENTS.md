@@ -13,5 +13,4 @@ This vault is governed by Lexa conventions stored in `.lexa/`.
 **Capture:** Use `$lexa-capture` skill or follow the librarian persona.
 **Retrieve:** Use `$lexa-retrieve` skill or follow the retriever persona with declared lenses.
 
-> **v0 stub:** The Codex adapter plugin manifest is a stub. Skills are not yet wired into Codex.
-> Use the Lexa MCP server (roadmap) or agent-guided workflows until the Codex adapter ships.
+> **v0 native install:** `lexa install --runtime codex` installs Codex rules, `$lexa-*` skills, and a managed Codex MCP config. Use Lexa MCP tools for capture/retrieve and CLI commands for lifecycle.

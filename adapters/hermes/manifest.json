@@ -1,6 +1,7 @@
 {
   "name": "lexa",
-  "version": "0.0.0",
-  "description": "Lexa convention layer for Obsidian vaults — Hermes adapter stub.",
-  "_note": "v0 stub only. Hermes adapter is not yet installable. See adapters/README.md for the adapter contract."
+  "version": "0.1.1",
+  "description": "Lexa convention layer for Obsidian vaults — Hermes skill bundle and MCP adapter.",
+  "_note": "lexa install writes ~/.hermes/config.yaml mcp_servers.lexa and installs skills under ~/.hermes/skills/knowledge-management/lexa/.",
+  "skills": "./skills/"
 }
