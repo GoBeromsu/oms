@@ -19,7 +19,7 @@ This skill is **REAL in v0** — it shells out to the fully-implemented CLI.
 Shells out to:
 
 ```bash
-npx lexa setup [--vault <path>] [--yes]
+npx lexa setup [--vault <path>] [--yes] [--install-claude]
 ```
 
 The CLI will:
@@ -33,6 +33,7 @@ The CLI will:
 |------|-------------|
 | `--vault <path>` | Path to your Obsidian vault root (default: current directory) |
 | `--yes` | Non-interactive: accept all defaults, no prompts |
+| `--install-claude` | Print Claude Code plugin install and MCP registration commands. This is a dry-run; it does not mutate Claude config. Release smoke tests assert the printed plugin path exists inside the npm tarball. |
 
 ## Example
 
@@ -42,6 +43,9 @@ npx lexa setup --vault ~/Documents/MyVault
 
 # Non-interactive (CI / scripted):
 npx lexa setup --vault ~/Documents/MyVault --yes
+
+# Also print Claude Code harness install commands (dry-run):
+npx lexa setup --vault ~/Documents/MyVault --yes --install-claude
 ```
 
 ## After setup
@@ -50,5 +54,8 @@ Run `/lexa-doctor` to validate your existing notes against the convention.
 
 ## Roadmap
 
-Setup is fully real in v0. The `capture` and `retrieve` runtime automation
-are agent-guided only until the MCP backbone ships.
+Setup and the Claude Code dry-run install plan are real and release-gated by unpacked npm tarball smoke tests. The MCP command starts
+the status/read/cache/capture runtime (`lexa_graph_status`, `lexa_graph_build`,
+`lexa_list_concepts`, `lexa_retrieve_by_axis`, `lexa_lazy_load_note`,
+`lexa_validate_contract`, `lexa_capture_prepare`, `lexa_capture_commit`).
+Capture commit is gated by path-safety and contract validation.

@@ -1,12 +1,18 @@
 {
   "name": "lexa",
-  "version": "0.0.0",
-  "description": "Host-agnostic convention layer for Obsidian vaults — capture, retrieve, and validate knowledge under a declared semantic convention.",
+  "version": "0.1.0",
+  "description": "Host-agnostic convention layer for Obsidian vaults \u2014 capture, retrieve, and validate knowledge under a declared semantic convention.",
   "author": {
     "name": "gobeumsu"
   },
   "license": "MIT",
-  "keywords": ["obsidian", "knowledge-base", "convention", "frontmatter", "vault"],
+  "keywords": [
+    "obsidian",
+    "knowledge-base",
+    "convention",
+    "frontmatter",
+    "vault"
+  ],
   "skills": [
     "./skills/setup/",
     "./skills/doctor/",

@@ -7,9 +7,11 @@ A Lexa convention is **declarative data you own**. It lives in your vault under 
 The convention is a semantic ontology with four interlocking pieces:
 
 - **Concept** — a note-type with an explicit `intent` (what this knowledge is FOR).
-- **Field** — one frontmatter key; each field is a single unit of convention, grown incrementally.
-- **Lens** — a named retrieval view that selects which fields matter for a specific retrieval purpose.
+- **Field / property axis** — one frontmatter key; each field is a single unit of convention and a retrieval dimension grown incrementally.
+- **Retrieval view** — a named output shape that selects which fields matter for a specific retrieval purpose. In YAML this is still stored under the backward-compatible `lenses` key.
 - **Taxonomy** — binds folders to concepts and declares a per-folder `intent` ("the folder itself is information").
+
+Lexa's heavier harness architecture treats folders, frontmatter fields, frontmatter values, and wikilinks as the intentional graph surface for retrieval. The note body remains user payload: Lexa can lazy-load it after retrieval narrowing, but it does not judge or generate the body content.
 
 ## Worked Example: the `literature` Concept
 
@@ -49,7 +51,7 @@ fields:
     intent: Reading status (e.g. reading, done, abandoned).
     normalize: lower
 
-lenses:
+lenses: # backward-compatible YAML key; user-facing term: retrieval views
   - name: synthesis
     intent: >
       Surface the fields needed when writing a synthesis note from this source.
@@ -109,16 +111,28 @@ A field may declare a `normalize` hint that documents the intended shape of the 
 
 Normalization in v0 is documented intent, not an automatic transform. `validateFrontmatter` checks the declared type but does not rewrite values.
 
-## How to Add a Field
+## How to Add a Field / Property Axis
 
-Each frontmatter key is an independent unit of convention. To add one:
+Each frontmatter key is an independent unit of convention and a retrieval axis. To add one:
 
 1. Open the concept file in `vault/.lexa/concepts/<concept>.yaml`.
 2. Append a new entry under `fields:`.
 3. Provide at minimum `name`, `type`, and `intent`. Set `required: true` only for keys that every note in that folder must have.
 4. Run `lexa doctor` — it will report any existing notes that are now missing the new required field (as warnings, never blocking).
 
-You never need to add all fields upfront. Start with the two or three that matter for your current retrieval use case and grow the convention over time.
+You never need to add all fields upfront. Start with the two or three that matter for your current retrieval use case and grow the convention over time. Good capture is measured by future retrieval quality: if a field helps you find and reuse notes later, it is a strong candidate axis.
+
+## Retrieval Views (`lenses`)
+
+Concept files keep the `lenses` key for compatibility. In prose, Lexa calls these **retrieval views**.
+
+A retrieval view is not the graph itself and does not replace frontmatter axes. It shapes the result after retrieval:
+
+1. Lexa narrows candidate notes through folder/concept/property/wikilink axes.
+2. Lexa may optionally rank candidates with lexical/vector/hybrid search once that derived search layer exists.
+3. The retrieval view selects which fields or excerpts should be shown for the current purpose.
+
+Example: a `synthesis` retrieval view can show citation fields needed for writing, while an `audit` retrieval view can show status/completeness fields. Both views reuse the same underlying frontmatter axes.
 
 ## taxonomy.yaml
 

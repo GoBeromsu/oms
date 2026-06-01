@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { mkdtemp, rm, cp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { parse as yamlParse } from "yaml";
-import { runSetup, runDoctor } from "./cli/lexa.js";
+import { buildClaudeInstallPlan, runSetup, runDoctor } from "./cli/lexa.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -52,5 +52,16 @@ describe("runSetup --yes E2E", () => {
     // .lexa/concepts/) must be exactly what doctor's loadOntology consumes.
     const code = await runDoctor({ vault: tmpVault });
     expect(code).toBe(0);
+  });
+
+  it("builds a Claude Code install plan that only claims the read/status MCP runtime", () => {
+    const plan = buildClaudeInstallPlan({ vault: "/tmp/My Vault" });
+
+    expect(plan.pluginPath).toContain("adapters/claude-code");
+    expect(plan.pluginInstallCommand).toContain("claude plugin install");
+    expect(plan.mcpRegistrationCommand).toBe(
+      "claude mcp add lexa -- npx lexa mcp --vault '/tmp/My Vault'",
+    );
+    expect(plan.mcpRuntimeStatus).toBe("read-status-runtime");
   });
 });

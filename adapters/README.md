@@ -2,7 +2,7 @@
 
 ## Principle
 
-Lexa's **core** (skills, agents, ontology, MCP server) is written once.
+Lexa's **core** (ontology loading, convention validation, graph/search runtime targets, and MCP server once implemented) is written once.
 Each **adapter** absorbs exactly one host's structural differences — manifest schema,
 hook format, invocation sigil, and convention-file name — so adding a new host
 means adding one new adapter directory, not touching core.
@@ -43,6 +43,8 @@ adapters/<host>/
 
 ### claude-code (REAL installable v0)
 
+Release contract: the npm tarball must include `adapters/claude-code/` because `npx lexa setup --install-claude` prints a packaged adapter path for `claude plugin install`.
+
 - **Manifest**: `.claude-plugin/plugin.json`
   - Schema: `{ name, version, description, author, license, keywords, skills: string[] }`
   - `skills` is an **array of directory-path strings** relative to the plugin root (e.g. `"./skills/setup/"`).
@@ -70,16 +72,19 @@ adapters/<host>/
 
 ---
 
-## MCP Backbone (Roadmap)
+## MCP Backbone
 
-The intended cross-host mechanism is an **MCP server** (`src/mcp/server.ts`) that exposes
-`capture`, `retrieve`, and `validate_frontmatter` tools.
+The cross-host mechanism is an **MCP server** (`src/mcp/server.ts`) that exposes
+contract validation, retrieve, graph/status, and gated capture tools.
 
 All three hosts natively support MCP (`.mcp.json` for claude-code and codex; "any MCP server" for Hermes).
-In v0, `src/mcp/server.ts` is an honest no-op stub — it exports a tool registry but executes nothing.
+In the current repository, `src/mcp/server.ts` starts a real stdio MCP server via `lexa mcp`.
 
-When the MCP server is real, each adapter's skills will call it instead of shelling out to the CLI.
-The CLI (`npx lexa setup`, `npx lexa doctor`) remains the real surface for lifecycle commands.
+The MCP server currently exposes status/read/cache/capture tools:
+`lexa_graph_status`, `lexa_graph_build`, `lexa_list_concepts`,
+`lexa_retrieve_by_axis`, `lexa_lazy_load_note`, `lexa_validate_contract`,
+`lexa_capture_prepare`, and `lexa_capture_commit`.
+Capture commit is gated by path-safety, vault-confinement, and contract validation. The CLI (`npx lexa setup`, `npx lexa doctor`) remains the real surface for lifecycle commands.
 
 ---
 

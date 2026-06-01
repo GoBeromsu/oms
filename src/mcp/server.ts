@@ -1,39 +1,521 @@
-/**
- * Lexa MCP server stub.
- *
- * The full MCP backbone (wiring @modelcontextprotocol/sdk, transport negotiation,
- * tool dispatch) is roadmap work, not implemented in v0. This module is a safe
- * import-time no-op: it exports the tool registry and a factory that returns a
- * plain object. Nothing here throws on import.
- */
+import { readFile, readdir, stat } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+  type CallToolResult,
+  type Tool,
+} from "@modelcontextprotocol/sdk/types.js";
+import { parseNote } from "../conventions/frontmatter.js";
+import { validateFrontmatter } from "../conventions/validate.js";
+import {
+  commitCapture,
+  prepareCapture,
+  safeVaultNotePath,
+  type CaptureWriteMode,
+} from "../capture/safe.js";
+import {
+  buildGraphCache,
+  graphCachePath,
+  graphCacheStatus,
+  lazyLoadNoteBody,
+  retrieveByAxis,
+} from "../graph/cache.js";
+import { loadOntology } from "../ontology/loader.js";
+import { resolveConcept } from "../ontology/resolver.js";
+import type { Concept, Ontology } from "../ontology/types.js";
 
-export interface LexaMcpTool {
-  name: string;
-  description: string;
+const SERVER_VERSION = "0.0.0";
+
+function bundledOntologyDir(): string {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  return path.resolve(__dirname, "../../core/ontology");
 }
 
-export const lexaMcpTools: LexaMcpTool[] = [
+async function activeOntology(vault: string): Promise<{ ontology: Ontology; source: string }> {
+  const localOntologyDir = path.join(vault, ".lexa");
+  const lexaKind = await pathKind(localOntologyDir);
+  if (lexaKind === "missing") {
+    return { ontology: await loadOntology(bundledOntologyDir()), source: "bundled" };
+  }
+  if (lexaKind !== "directory") {
+    throw new Error("Local .lexa exists but is not a directory.");
+  }
+
+  const taxonomyKind = await pathKind(path.join(localOntologyDir, "taxonomy.yaml"));
+  const conceptsKind = await pathKind(path.join(localOntologyDir, "concepts"));
+
+  if (taxonomyKind === "missing" && conceptsKind === "missing") {
+    return { ontology: await loadOntology(bundledOntologyDir()), source: "bundled" };
+  }
+  if (taxonomyKind !== "file" || conceptsKind !== "directory") {
+    throw new Error(
+      "Local .lexa ontology is incomplete; expected .lexa/taxonomy.yaml and .lexa/concepts/.",
+    );
+  }
+
+  return { ontology: await loadOntology(localOntologyDir), source: "vault" };
+}
+
+async function pathKind(target: string): Promise<"missing" | "file" | "directory" | "other"> {
+  try {
+    const info = await stat(target);
+    if (info.isFile()) return "file";
+    if (info.isDirectory()) return "directory";
+    return "other";
+  } catch (error) {
+    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+      return "missing";
+    }
+    throw error;
+  }
+}
+
+function jsonText(value: unknown): CallToolResult {
+  return {
+    content: [
+      {
+        type: "text",
+        text: JSON.stringify(value, null, 2),
+      },
+    ],
+  };
+}
+
+function errorText(message: string): CallToolResult {
+  return {
+    isError: true,
+    content: [
+      {
+        type: "text",
+        text: message,
+      },
+    ],
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function stringArg(args: Record<string, unknown> | undefined, key: string): string | undefined {
+  const value = args?.[key];
+  return typeof value === "string" ? value : undefined;
+}
+
+function conceptSummary(concept: Concept): Record<string, unknown> {
+  return {
+    concept: concept.concept,
+    intent: concept.intent,
+    folder: concept.folder,
+    fields: concept.fields.map((field) => ({
+      name: field.name,
+      type: field.type,
+      required: field.required,
+      intent: field.intent,
+    })),
+    retrievalViews: (concept.lenses ?? []).map((lens) => ({
+      name: lens.name,
+      intent: lens.intent,
+      fields: lens.fields,
+    })),
+  };
+}
+
+export const lexaMcpTools: Tool[] = [
   {
-    name: "capture",
-    description: "Capture a note into the vault with validated frontmatter.",
+    name: "lexa_graph_status",
+    title: "Lexa graph/status",
+    description:
+      "Read-only status for the active Lexa ontology, graph/search cache phase, and gated write-tool posture.",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
   },
   {
-    name: "retrieve",
-    description: "Retrieve notes matching a concept lens and field filters.",
+    name: "lexa_graph_build",
+    title: "Lexa graph build",
+    description:
+      "Build the derived graph/search cache from markdown, frontmatter, folders, and wikilinks.",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
   },
   {
-    name: "validate_frontmatter",
-    description: "Validate a note's frontmatter against the active ontology.",
+    name: "lexa_list_concepts",
+    title: "Lexa list concepts",
+    description:
+      "Read the active ontology concepts, frontmatter axes, folder bindings, and retrieval views.",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  {
+    name: "lexa_retrieve_by_axis",
+    title: "Lexa retrieve by axis",
+    description:
+      "Axis-first retrieval over the derived cache; optional lexical query only ranks inside the narrowed candidate set.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        concept: { type: "string" },
+        folder: { type: "string" },
+        property: { type: "string" },
+        value: { type: "string" },
+        wikilink: { type: "string" },
+        query: { type: "string" },
+        limit: { type: "number" },
+      },
+    },
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  {
+    name: "lexa_lazy_load_note",
+    title: "Lexa lazy-load note body",
+    description:
+      "Load a selected note body only after axis/search narrowing has selected the note.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        notePath: {
+          type: "string",
+          description: "Vault-relative markdown note path.",
+        },
+      },
+      required: ["notePath"],
+    },
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  {
+    name: "lexa_validate_contract",
+    title: "Lexa validate contract",
+    description:
+      "Read one vault note and validate its frontmatter against the active folder/concept contract.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        notePath: {
+          type: "string",
+          description: "Vault-relative markdown note path, for example references/book.md.",
+        },
+      },
+      required: ["notePath"],
+    },
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  {
+    name: "lexa_capture_prepare",
+    title: "Lexa capture prepare",
+    description:
+      "Plan a safe capture: choose folder/concept, surface missing fields, or route ambiguous input to inbox without writing.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        concept: { type: "string" },
+        folder: { type: "string" },
+        filename: { type: "string" },
+        frontmatter: { type: "object" },
+      },
+    },
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  {
+    name: "lexa_capture_commit",
+    title: "Lexa capture commit",
+    description:
+      "Write or append a note only after vault path confinement and contract validation pass.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        notePath: { type: "string" },
+        frontmatter: { type: "object" },
+        body: { type: "string" },
+        mode: { type: "string", enum: ["create", "append"] },
+      },
+      required: ["notePath", "frontmatter", "body", "mode"],
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false,
+    },
   },
 ];
 
-/**
- * Create a Lexa MCP server handle.
- *
- * Returns a plain registry object in v0. In a future release this will construct
- * an @modelcontextprotocol/sdk Server instance with registered tool handlers.
- */
-export function createLexaMcpServer(): { tools: LexaMcpTool[] } {
-  /* TODO: wire @modelcontextprotocol/sdk in roadmap */
-  return { tools: lexaMcpTools };
+export interface LexaMcpServerOptions {
+  vault: string;
+}
+
+export function createLexaMcpServer(opts: LexaMcpServerOptions): Server {
+  const vault = path.resolve(opts.vault);
+  const server = new Server(
+    { name: "lexa", version: SERVER_VERSION },
+    {
+      capabilities: { tools: {} },
+      instructions:
+        "Lexa exposes ontology/status/cache/retrieval tools and safe capture tools. Capture commit is gated by vault confinement and contract validation.",
+    },
+  );
+
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    tools: lexaMcpTools,
+  }));
+
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    const args = isRecord(request.params.arguments) ? request.params.arguments : undefined;
+
+    if (request.params.name === "lexa_graph_status") {
+      try {
+        const { ontology, source } = await activeOntology(vault);
+        const cacheStatus = await graphCacheStatus(vault, ontology);
+        return jsonText({
+          vault,
+          ontologySource: source,
+          sourceOfTruth: ["markdown notes", ".lexa/taxonomy.yaml", ".lexa/concepts/*.yaml"],
+          counts: {
+            concepts: ontology.concepts.size,
+            folders: Object.keys(ontology.taxonomy.folders).length,
+          },
+          derivedState: cacheStatus,
+          writeTools: "capture-commit-gated-by-vault-confinement-and-contract-validation",
+          readTools: lexaMcpTools.map((tool) => tool.name),
+        });
+      } catch (error) {
+        return jsonText({
+          vault,
+          ontologySource: "vault-invalid",
+          sourceOfTruth: ["markdown notes", ".lexa/taxonomy.yaml", ".lexa/concepts/*.yaml"],
+          error: error instanceof Error ? error.message : String(error),
+          counts: null,
+          derivedState: {
+            exists: false,
+            staleness: {
+              schemaStale: true,
+              graphStale: true,
+              searchStale: true,
+              embeddingStale: "not-configured",
+              validationStale: true,
+              reasons: ["local .lexa exists but could not be loaded"],
+            },
+          },
+          writeTools: "disabled-invalid-ontology",
+          readTools: ["lexa_graph_status"],
+        });
+      }
+    }
+
+    try {
+    if (request.params.name === "lexa_graph_build") {
+      const { ontology, source } = await activeOntology(vault);
+      const cache = await buildGraphCache({ vault, ontology, write: true });
+      return jsonText({
+        vault,
+        ontologySource: source,
+        cachePath: graphCachePath(vault),
+        generatedAt: cache.generatedAt,
+        notes: cache.notes.length,
+        edges: cache.edges.length,
+        searchDocuments: cache.search.length,
+        sourceOfTruth: cache.sourceOfTruth,
+      });
+    }
+
+    if (request.params.name === "lexa_list_concepts") {
+      const { ontology, source } = await activeOntology(vault);
+      return jsonText({
+        vault,
+        ontologySource: source,
+        folders: ontology.taxonomy.folders,
+        concepts: Array.from(ontology.concepts.values()).map(conceptSummary),
+      });
+    }
+
+    if (request.params.name === "lexa_retrieve_by_axis") {
+      const { ontology, source } = await activeOntology(vault);
+      const limitValue = args?.["limit"];
+      const hits = await retrieveByAxis({
+        vault,
+        ontology,
+        concept: stringArg(args, "concept"),
+        folder: stringArg(args, "folder"),
+        property: stringArg(args, "property"),
+        value: stringArg(args, "value"),
+        wikilink: stringArg(args, "wikilink"),
+        query: stringArg(args, "query"),
+        limit: typeof limitValue === "number" ? limitValue : undefined,
+      });
+      return jsonText({
+        vault,
+        ontologySource: source,
+        mode: "axis-first-search-second",
+        bodyPolicy: "lazy-load",
+        hits,
+      });
+    }
+
+    if (request.params.name === "lexa_lazy_load_note") {
+      const notePath = stringArg(args, "notePath");
+      if (!notePath) {
+        return errorText('Missing required string argument "notePath".');
+      }
+      return jsonText(await lazyLoadNoteBody(vault, notePath));
+    }
+
+    if (request.params.name === "lexa_validate_contract") {
+      const notePath = stringArg(args, "notePath");
+      if (!notePath) {
+        return errorText('Missing required string argument "notePath".');
+      }
+
+      let fullPath: string;
+      try {
+        fullPath = safeVaultNotePath(vault, notePath);
+      } catch (error) {
+        return errorText(error instanceof Error ? error.message : String(error));
+      }
+
+      const { ontology, source } = await activeOntology(vault);
+      const normalizedNotePath = path.relative(vault, fullPath).replace(/\\/g, "/");
+      const concept = resolveConcept(ontology, normalizedNotePath);
+      if (!concept) {
+        return jsonText({
+          vault,
+          ontologySource: source,
+          notePath: normalizedNotePath,
+          concept: null,
+          valid: false,
+          violations: [
+            {
+              field: "path",
+              rule: "folder-binding",
+              message: "No concept binding resolves for this note path.",
+            },
+          ],
+        });
+      }
+
+      const raw = await readFile(fullPath, "utf-8");
+      const { frontmatter, hasFrontmatter } = parseNote(raw);
+      const result = validateFrontmatter(frontmatter, concept);
+      return jsonText({
+        vault,
+        ontologySource: source,
+        notePath: normalizedNotePath,
+        concept: concept.concept,
+        hasFrontmatter,
+        valid: result.valid,
+        violations: result.violations,
+      });
+    }
+
+    if (request.params.name === "lexa_capture_prepare") {
+      const { ontology, source } = await activeOntology(vault);
+      const frontmatterArg = args?.["frontmatter"];
+      const frontmatter = isRecord(frontmatterArg) ? frontmatterArg : {};
+      return jsonText({
+        vault,
+        ontologySource: source,
+        plan: prepareCapture({
+          vault,
+          ontology,
+          concept: stringArg(args, "concept"),
+          folder: stringArg(args, "folder"),
+          filename: stringArg(args, "filename"),
+          frontmatter,
+        }),
+      });
+    }
+
+    if (request.params.name === "lexa_capture_commit") {
+      const { ontology, source } = await activeOntology(vault);
+      const notePath = stringArg(args, "notePath");
+      const body = stringArg(args, "body");
+      const mode = stringArg(args, "mode");
+      const frontmatterArg = args?.["frontmatter"];
+      if (!notePath || !body || !isCaptureMode(mode) || !isRecord(frontmatterArg)) {
+        return errorText(
+          'Missing required arguments: notePath:string, frontmatter:object, body:string, mode:"create"|"append".',
+        );
+      }
+      try {
+        return jsonText({
+          vault,
+          ontologySource: source,
+          result: await commitCapture({
+            vault,
+            ontology,
+            notePath,
+            frontmatter: frontmatterArg,
+            body,
+            mode,
+          }),
+        });
+      } catch (error) {
+        return errorText(error instanceof Error ? error.message : String(error));
+      }
+    }
+
+    return errorText(`Unknown Lexa tool: ${request.params.name}`);
+    } catch (error) {
+      return errorText(`Lexa MCP error: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  });
+
+  return server;
+}
+
+export async function runMcpServer(opts: LexaMcpServerOptions): Promise<void> {
+  const server = createLexaMcpServer(opts);
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+}
+
+function isCaptureMode(value: string | undefined): value is CaptureWriteMode {
+  return value === "create" || value === "append";
 }

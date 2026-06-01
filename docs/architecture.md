@@ -1,6 +1,9 @@
 # Lexa Architecture
 
-## Posture: Plugin-Inside, Not OS-Above
+> Canonical product architecture lives in [`docs/harness-architecture.md`](./harness-architecture.md).
+> This file summarizes the host/runtime posture and current repository reality.
+
+## Posture: Axis Graph Harness Inside the Host
 
 Lexa lives *inside* each host agent and operates beneath it. The control direction is:
 
@@ -10,7 +13,17 @@ Host agent (Claude Code / Codex / Hermes)
         └── reads/writes Obsidian vault (plain markdown)
 ```
 
-This is the opposite of an OS-above orchestrator (e.g., ouroboros in its orchestrator mode), which drives host agents top-down. Lexa deliberately borrows ouroboros's *semantic convention format* (concept + intent + fields + lenses) but rejects its heavy orchestration posture. The result is a lighter plugin that adds zero new runtime dependencies to the host — it is simply invoked, not in charge.
+This is the opposite of an OS-above orchestrator (e.g., ouroboros in its orchestrator mode), which drives host agents top-down. Lexa borrows the installable harness idea — skills, deterministic gates, and eventually MCP state/runtime surfaces — but it is not in charge of the host agent.
+
+Lexa's product posture is an **axis graph harness**:
+
+- frontmatter fields are user-owned retrieval axes,
+- folders create physical folder-to-concept placement edges,
+- wikilinks create explicit user-authored relation edges,
+- note bodies are payload loaded after axis/search narrowing,
+- capture and retrieval are separate flows over the same ontology contract.
+
+The full terminology lock is in the harness architecture doc. In short: Lexa helps the user operate their own knowledge system so notes can be retrieved and reused later; it does not fill the body content for them.
 
 ## The 3-Host Handshake: Shared CORE + Thin ADAPTERS
 
@@ -46,7 +59,7 @@ All knowledge logic (validation, ontology loading, folder resolution) is written
 │  src/ontology/resolver.ts resolve note path → Concept            │
 │  src/conventions/         validateFrontmatter → ValidationResult │
 │  src/adapt/HostAdapter.ts per-host adapter interface             │
-│  src/mcp/server.ts        [ROADMAP] no-op stub in v0             │
+│  src/mcp/server.ts        stdio MCP: status/read/cache/capture   │
 └───────────────────────────┬──────────────────────────────────────┘
                             │ reads / writes
                             ▼
@@ -62,11 +75,21 @@ All knowledge logic (validation, ontology loading, folder resolution) is written
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-## MCP Backbone — ROADMAP
+## MCP Backbone — Current Boundary and Roadmap
 
-MCP as the shared cross-host transport for capture, retrieve, and validate operations is the intended v1+ architecture. In v0, `src/mcp/server.ts` is an **honest no-op stub**: it exports a tool registry object and does not throw on import, but no MCP server is actually started and no `@modelcontextprotocol/sdk` dependency is required. All working code in v0 goes through the `lexa` CLI.
+MCP is the shared cross-host transport for retrieve, graph/status, validation, cache, and safe capture operations. In the current repository, `src/mcp/server.ts` starts a real stdio MCP server through `lexa mcp`.
 
-Docs that mention "MCP backbone" as a present-tense feature are incorrect. The correct framing is: MCP is the intended cross-host backbone; v0 ships the CLI and the convention engine only.
+The correct runtime framing is:
+
+1. **Now**: CLI setup/doctor and convention engine are real; Claude Code skills exist as installable/guided surfaces.
+2. **Next**: install shell can print exact dry-run Claude plugin and MCP registration commands (`lexa setup --install-claude`) without claiming a live runtime.
+3. **Now in Phase 2**: real stdio MCP read/status tools are available through `lexa mcp`.
+4. **Now in Phase 3**: derived graph/search cache tools are available for axis-first retrieval and lazy body load.
+5. **Now in Phase 4**: safe capture prepare/commit tools are available after path-safety and vault-confinement tests.
+
+## Retrieval View Compatibility
+
+Existing concept YAML may use `lenses`. Keep that key backward-compatible, but explain it to users as a **retrieval view**: an output shape applied after axis graph narrowing and optional search. A retrieval view is not the graph itself.
 
 ## Stack
 

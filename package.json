@@ -1,6 +1,6 @@
 {
   "name": "lexa",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A host-agnostic, user-owned convention layer for Obsidian (plain-markdown) knowledge bases. Invoked from inside Claude Code, Codex, and Hermes to make knowledge capture and retrieval happen under a declared semantic convention.",
   "type": "module",
   "license": "MIT",
@@ -11,7 +11,10 @@
   "types": "dist/index.d.ts",
   "files": [
     "dist",
-    "core"
+    "core",
+    "adapters",
+    "docs/install.md",
+    "docs/release.md"
   ],
   "engines": {
     "node": ">=18"
@@ -19,14 +22,41 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "audit": "npm audit --omit=dev",
+    "release:pack": "node scripts/release-pack.mjs",
+    "release:setup-smoke": "node scripts/release-artifact-smoke.mjs --setup-only",
+    "release:mcp-smoke": "node scripts/release-artifact-smoke.mjs --mcp-only",
+    "release:artifact-smoke": "node scripts/release-artifact-smoke.mjs",
+    "release:plugin": "node scripts/release-plugin.mjs",
+    "release:check": "npm run lint && npm run build && npm test && npm run audit && npm run release:pack && npm run release:artifact-smoke && npm run release:plugin"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "yaml": "^2.5.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GoBeromsu/lexa.git"
+  },
+  "homepage": "https://github.com/GoBeromsu/lexa#readme",
+  "bugs": {
+    "url": "https://github.com/GoBeromsu/lexa/issues"
+  },
+  "keywords": [
+    "obsidian",
+    "knowledge-base",
+    "mcp",
+    "frontmatter",
+    "markdown",
+    "claude-code"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

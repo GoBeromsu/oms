@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { realpathSync } from "node:fs";
 import { readFile, readdir, mkdir, copyFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +9,7 @@ import { loadOntology } from "../ontology/loader.js";
 import { resolveConcept } from "../ontology/resolver.js";
 import { parseNote } from "../conventions/frontmatter.js";
 import { validateFrontmatter } from "../conventions/validate.js";
+import { runMcpServer } from "../mcp/server.js";
 import type { Taxonomy, FolderBinding } from "../ontology/types.js";
 
 // ---------------------------------------------------------------------------
@@ -25,6 +27,16 @@ function bundledOntologyDir(): string {
   return path.resolve(__dirname, "../../core/ontology");
 }
 
+/**
+ * Resolve the bundled Claude Code adapter directory.
+ * Kept parallel to bundledOntologyDir so source and built paths both work.
+ */
+function bundledClaudeAdapterDir(): string {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  return path.resolve(__dirname, "../../adapters/claude-code");
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -32,6 +44,41 @@ function bundledOntologyDir(): string {
 /** Humanize a folder name: "references" → "References". */
 function humanize(name: string): string {
   return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+/** Quote a value for copy/pasteable POSIX shell commands. */
+function shellQuote(value: string): string {
+  if (/^[A-Za-z0-9_/:=.,@%+-]+$/.test(value)) {
+    return value;
+  }
+  return `'${value.replace(/'/g, "'\\''")}'`;
+}
+
+export interface ClaudeInstallPlan {
+  pluginPath: string;
+  pluginInstallCommand: string;
+  mcpRegistrationCommand: string;
+  mcpRuntimeStatus: "read-status-runtime";
+}
+
+export function buildClaudeInstallPlan(opts: { vault: string }): ClaudeInstallPlan {
+  const pluginPath = bundledClaudeAdapterDir();
+  return {
+    pluginPath,
+    pluginInstallCommand: `claude plugin install ${shellQuote(pluginPath)}`,
+    mcpRegistrationCommand: `claude mcp add lexa -- npx lexa mcp --vault ${shellQuote(opts.vault)}`,
+    mcpRuntimeStatus: "read-status-runtime",
+  };
+}
+
+function printClaudeInstallPlan(plan: ClaudeInstallPlan): void {
+  console.log("Claude Code harness install plan (dry-run).");
+  console.log(`  Plugin path: ${plan.pluginPath}`);
+  console.log(`  Plugin command: ${plan.pluginInstallCommand}`);
+  console.log(`  MCP command: ${plan.mcpRegistrationCommand}`);
+  console.log(
+    "  MCP status: status/read/cache/retrieval plus safe capture; commit is gated by vault confinement and contract validation.",
+  );
 }
 
 /** Walk a directory recursively, yielding relative paths for all .md files. */
@@ -65,8 +112,9 @@ async function* walkMarkdown(
 export async function runSetup(opts: {
   vault: string;
   yes: boolean;
+  installClaude?: boolean;
 }): Promise<void> {
-  const { vault, yes } = opts;
+  const { vault, yes, installClaude = false } = opts;
   const nonInteractive = yes || process.env["LEXA_NON_INTERACTIVE"] === "1";
 
   const ontologyDir = bundledOntologyDir();
@@ -188,6 +236,11 @@ export async function runSetup(opts: {
   console.log(`  Concepts: ${copiedFiles.join(", ") || "(none)"}`);
   console.log(`  Folders:  ${Object.keys(folderBindings).join(", ") || "(none)"}`);
   console.log(`\nRun "npx lexa doctor" to validate existing notes.\n`);
+
+  if (installClaude) {
+    printClaudeInstallPlan(buildClaudeInstallPlan({ vault }));
+    console.log("");
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -268,16 +321,19 @@ function printUsage(): void {
 lexa — convention layer for Obsidian vaults
 
 Usage:
-  lexa setup [--vault <path>] [--yes]
+  lexa setup [--vault <path>] [--yes] [--install-claude]
   lexa doctor [--vault <path>]
+  lexa mcp [--vault <path>]
 
 Commands:
   setup    Adopt an existing vault into the Lexa convention.
   doctor   Validate vault notes against the active ontology.
+  mcp      Start the read/status MCP stdio server.
 
 Options:
   --vault <path>   Path to the vault root (default: current directory).
   --yes            Non-interactive: accept all defaults (setup only).
+  --install-claude Print Claude Code plugin install and MCP registration commands (dry-run).
 `);
 }
 
@@ -288,6 +344,7 @@ async function main(): Promise<void> {
   // Parse --vault and --yes flags.
   let vault = process.cwd();
   let yes = false;
+  let installClaude = false;
 
   for (let i = 1; i < argv.length; i++) {
     if (argv[i] === "--vault" && argv[i + 1]) {
@@ -295,13 +352,17 @@ async function main(): Promise<void> {
       i++;
     } else if (argv[i] === "--yes") {
       yes = true;
+    } else if (argv[i] === "--install-claude") {
+      installClaude = true;
     }
   }
 
   if (command === "setup") {
-    await runSetup({ vault, yes });
+    await runSetup({ vault, yes, installClaude });
   } else if (command === "doctor") {
     process.exitCode = await runDoctor({ vault });
+  } else if (command === "mcp") {
+    await runMcpServer({ vault });
   } else {
     printUsage();
     process.exitCode = 0;
@@ -311,11 +372,22 @@ async function main(): Promise<void> {
 // Guard: only run main() when this file is the entry point.
 // Works for both source (`src/cli/lexa.ts`) and built (`dist/cli/lexa.js`) paths.
 const __filename = fileURLToPath(import.meta.url);
+
+function sameEntrypoint(left: string, right: string): boolean {
+  const resolvedLeft = path.resolve(left);
+  const resolvedRight = path.resolve(right);
+  if (resolvedLeft === resolvedRight) return true;
+  try {
+    return realpathSync(resolvedLeft) === realpathSync(resolvedRight);
+  } catch {
+    return false;
+  }
+}
+
 const isMain =
   process.argv[1] !== undefined &&
-  (process.argv[1] === __filename ||
-    process.argv[1] === __filename.replace(/\.ts$/, ".js") ||
-    path.resolve(process.argv[1]) === __filename);
+  (sameEntrypoint(process.argv[1], __filename) ||
+    sameEntrypoint(process.argv[1], __filename.replace(/\.ts$/, ".js")));
 
 if (isMain) {
   main().catch((err: unknown) => {

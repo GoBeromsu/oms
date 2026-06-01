@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  build-and-test:
+  release-check:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -18,5 +18,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
+      - run: npm run lint
       - run: npm run build
       - run: npm test
+      - run: npm run audit
+      - run: npm run release:pack
+      - run: npm run release:artifact-smoke
+      - run: npm run release:plugin
