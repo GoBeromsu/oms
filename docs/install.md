@@ -46,8 +46,8 @@ From a checkout or installed package:
 ```bash
 npm ci
 npm run build
-npx @goberomsu/lexa install --runtime all --vault /path/to/vault --dry-run
-npx @goberomsu/lexa install --runtime all --vault /path/to/vault --yes
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz install --runtime all --vault /path/to/vault --dry-run
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz install --runtime all --vault /path/to/vault --yes
 ```
 
 Runtime selection follows the Ouroboros pattern:
@@ -72,14 +72,14 @@ All host writes are namespaced under `lexa` and are reversible with `lexa uninst
 `setup` still adopts a vault into the Lexa ontology and can print the Claude Code plan:
 
 ```bash
-npx @goberomsu/lexa setup --vault /path/to/vault --yes --install-claude
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz setup --vault /path/to/vault --yes --install-claude
 ```
 
 Typical printed commands look like:
 
 ```bash
 claude plugin install /path/to/lexa/adapters/claude-code
-claude mcp add lexa -- npx @goberomsu/lexa mcp --vault /path/to/vault
+claude mcp add lexa -- npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz mcp --vault /path/to/vault
 ```
 
 ## Uninstall
@@ -107,7 +107,7 @@ The uninstaller removes Lexa host registrations and adapter files. It does **not
 ## Verify the install
 
 ```bash
-npx @goberomsu/lexa doctor --vault /path/to/vault
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor --vault /path/to/vault
 lexa install --runtime all --vault /path/to/vault --dry-run
 claude plugin validate adapters/claude-code
 ```

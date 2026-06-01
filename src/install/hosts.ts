@@ -34,7 +34,8 @@ export interface HostOperationResult {
 const HOSTS: HostRuntime[] = ["claude", "codex", "hermes"];
 const MANAGED_CODEX_START = "# BEGIN LEXA MANAGED MCP";
 const MANAGED_CODEX_END = "# END LEXA MANAGED MCP";
-const DEFAULT_PACKAGE_SPEC = "@goberomsu/lexa";
+const DEFAULT_PACKAGE_SPEC =
+  "https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz";
 const CODEX_SKILL_PREFIX = "lexa-";
 const CODEX_RULE_FILENAME = "lexa.md";
 const HERMES_SKILL_CATEGORY = "knowledge-management";
@@ -74,7 +75,7 @@ function packageSpec(options: HostOperationOptions): string {
 }
 
 function mcpArgs(options: HostOperationOptions): string[] {
-  return [packageSpec(options), "mcp", "--vault", options.vault];
+  return ["-y", packageSpec(options), "mcp", "--vault", options.vault];
 }
 
 function jsonString(value: string): string {

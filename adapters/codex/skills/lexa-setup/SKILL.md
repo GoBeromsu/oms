@@ -10,13 +10,13 @@ Use when the user wants to initialize Lexa for a vault.
 Run:
 
 ```bash
-npx @goberomsu/lexa setup --vault <vault> --yes
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz setup --vault <vault> --yes
 ```
 
 Then, when host registration is desired:
 
 ```bash
-npx @goberomsu/lexa install --runtime codex --vault <vault> --yes
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz install --runtime codex --vault <vault> --yes
 ```
 
 Do not modify vault notes during setup. Lexa writes only `vault/.lexa/taxonomy.yaml` and `vault/.lexa/concepts/`.

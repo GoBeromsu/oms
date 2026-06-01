@@ -3,7 +3,7 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/GoBeromsu/lexa/main/scripts/install.sh | bash
 set -euo pipefail
 
-PACKAGE_SPEC="${LEXA_PACKAGE_SPEC:-https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.1/goberomsu-lexa-0.1.1.tgz}"
+PACKAGE_SPEC="${LEXA_PACKAGE_SPEC:-https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz}"
 RUNTIME="${LEXA_INSTALL_RUNTIME:-auto}"
 VAULT="${LEXA_VAULT:-$PWD}"
 EXECUTE="${LEXA_EXECUTE_EXTERNAL:-0}"

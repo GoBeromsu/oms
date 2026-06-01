@@ -8,7 +8,7 @@ This vault is governed by Lexa conventions stored in `.lexa/`.
 All knowledge capture and retrieval must follow the declared semantic convention.
 
 **Before working with vault notes:**
-- Run `npx @goberomsu/lexa doctor` to validate existing notes against the convention (exits 0, non-blocking).
+- Run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor` to validate existing notes against the convention (exits 0, non-blocking).
 - Read `.lexa/taxonomy.yaml` to understand which folders hold which concepts.
 - Read `.lexa/concepts/*.yaml` to understand field requirements and lenses.
 
@@ -23,4 +23,4 @@ All knowledge capture and retrieval must follow the declared semantic convention
 - Return only the fields the lens specifies — do not dump full frontmatter.
 
 **Convention violations are warnings, not errors (v0).**
-`npx @goberomsu/lexa doctor` always exits 0. Fix violations incrementally.
+`npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor` always exits 0. Fix violations incrementally.
