@@ -47,7 +47,7 @@ All knowledge logic (validation, ontology loading, folder resolution, graph/cach
 │                                                                  │
 │  host ADAPTER                                                    │
 │  ├─ plugin.json / rule+skill bundle / SOUL.md fragment              │
-│  └─ shells out to: npx @goberomsu/lexa setup | lexa doctor | lexa define    │
+│  └─ shells out to: npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz setup | lexa doctor | lexa define    │
 └───────────────────────────┬──────────────────────────────────────┘
                             │ invokes
                             ▼

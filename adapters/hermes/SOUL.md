@@ -7,12 +7,12 @@
 This vault is governed by Lexa conventions stored in `.lexa/`.
 
 **Before working with vault notes:**
-- Run `npx @goberomsu/lexa doctor` to validate notes against the convention (exits 0, non-blocking).
+- Run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor` to validate notes against the convention (exits 0, non-blocking).
 - Read `.lexa/taxonomy.yaml` for folder-to-concept bindings.
 - Read `.lexa/concepts/*.yaml` for field declarations and lenses.
 
 **Capture:** Follow the librarian persona — resolve concept, resolve folder from taxonomy,
-construct required frontmatter, write note, then run `npx @goberomsu/lexa doctor`.
+construct required frontmatter, write note, then run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor`.
 
 **Retrieve:** Follow the retriever persona — identify purpose, match lens, project lens fields only.
 

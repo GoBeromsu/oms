@@ -2,7 +2,13 @@
   "mcpServers": {
     "lexa": {
       "command": "npx",
-      "args": ["@goberomsu/lexa", "mcp", "--vault", "."]
+      "args": [
+        "-y",
+        "https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz",
+        "mcp",
+        "--vault",
+        "."
+      ]
     }
   }
 }

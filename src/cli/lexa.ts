@@ -17,6 +17,9 @@ import {
 } from "../install/hosts.js";
 import type { Taxonomy, FolderBinding } from "../ontology/types.js";
 
+const DEFAULT_RELEASE_PACKAGE_SPEC =
+  "https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz";
+
 // ---------------------------------------------------------------------------
 // Path helpers
 // ---------------------------------------------------------------------------
@@ -81,7 +84,7 @@ export function buildClaudeInstallPlan(opts: { vault: string }): ClaudeInstallPl
   return {
     pluginPath,
     pluginInstallCommand: `claude plugin install ${shellQuote(pluginPath)}`,
-    mcpRegistrationCommand: `claude mcp add lexa -- npx @goberomsu/lexa mcp --vault ${shellQuote(opts.vault)}`,
+    mcpRegistrationCommand: `claude mcp add lexa -- npx -y ${shellQuote(DEFAULT_RELEASE_PACKAGE_SPEC)} mcp --vault ${shellQuote(opts.vault)}`,
     mcpRuntimeStatus: "read-status-runtime",
   };
 }
@@ -250,7 +253,7 @@ export async function runSetup(opts: {
   console.log(`  Written:  ${path.join(lexaDir, "taxonomy.yaml")}`);
   console.log(`  Concepts: ${copiedFiles.join(", ") || "(none)"}`);
   console.log(`  Folders:  ${Object.keys(folderBindings).join(", ") || "(none)"}`);
-  console.log(`\nRun "npx @goberomsu/lexa doctor" to validate existing notes.\n`);
+  console.log(`\nRun "npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor" to validate existing notes.\n`);
 
   if (installClaude) {
     printClaudeInstallPlan(buildClaudeInstallPlan({ vault }));

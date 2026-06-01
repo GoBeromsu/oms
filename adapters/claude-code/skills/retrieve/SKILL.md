@@ -18,7 +18,7 @@ Surface the right notes and fields for a given purpose using the vault's declare
 Conceptually shells out to:
 
 ```bash
-npx @goberomsu/lexa retrieve
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz retrieve
 ```
 
 **Runtime note:** Retrieval is available through MCP tools (`lexa_retrieve_by_axis`

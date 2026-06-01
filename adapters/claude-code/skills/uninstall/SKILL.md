@@ -1,6 +1,6 @@
 ---
 name: lexa-uninstall
-description: Remove Lexa host adapter and MCP registrations by running npx @goberomsu/lexa uninstall.
+description: Remove Lexa host adapter and MCP registrations by running npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz uninstall.
 ---
 
 # Skill: lexa-uninstall (Claude Code)
@@ -18,17 +18,17 @@ Remove Lexa host registrations and adapter files. This does **not** delete vault
 Shells out to:
 
 ```bash
-npx @goberomsu/lexa uninstall [--runtime <all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz uninstall [--runtime <all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
 ```
 
 ## Recommended flow
 
 ```bash
 # Preview first:
-npx @goberomsu/lexa uninstall --runtime all --dry-run
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz uninstall --runtime all --dry-run
 
 # Remove Lexa host registrations:
-npx @goberomsu/lexa uninstall --runtime all --yes
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz uninstall --runtime all --yes
 ```
 
 Use `--execute` only when you want Lexa to call external host CLIs such as `claude mcp remove lexa` or `claude plugin uninstall lexa`.
