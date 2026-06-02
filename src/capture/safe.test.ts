@@ -22,7 +22,7 @@ afterEach(async () => {
 });
 
 describe("safe capture", () => {
-  it("rejects paths outside the vault and internal OMS folders", () => {
+  it("rejects paths outside the vault and internal Oh My Second Brain folders", () => {
     expect(() => safeVaultNotePath("/tmp/vault", "../escape.md")).toThrow(/unsafe|inside/);
     expect(() => safeVaultNotePath("/tmp/vault", "/tmp/vault/note.md")).toThrow(/relative/);
     expect(() => safeVaultNotePath("/tmp/vault", ".oms/cache/bad.md")).toThrow(/internal/);

@@ -79,7 +79,7 @@ const forbidden = [
   "adapters/codex/skills/lexa-retrieve/SKILL.md",
 ].filter((forbiddenPath) => hasPath(files, forbiddenPath));
 if (forbidden.length > 0) {
-  fail(`package tarball includes forbidden legacy OMS assets:\n${forbidden.map((item) => `  - ${item}`).join("\n")}`);
+  fail(`package tarball includes forbidden legacy removed assets:\n${forbidden.map((item) => `  - ${item}`).join("\n")}`);
 }
 
 const packageJson = JSON.parse(readFileSync("package.json", "utf-8"));

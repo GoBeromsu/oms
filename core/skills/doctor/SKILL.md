@@ -1,6 +1,6 @@
 ---
 name: doctor
-description: Validate vault notes against the OMS convention and report violations (REAL today).
+description: Validate vault notes against the Oh My Second Brain convention and report violations (REAL today).
 ---
 
 # Skill: doctor
@@ -11,7 +11,7 @@ This skill is **REAL in v0** — the CLI command is fully implemented.
 ## Shell-out
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor [--vault <path>]
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor [--vault <path>]
 ```
 
 - `--vault <path>` — path to your Obsidian vault root (default: current directory).
@@ -40,7 +40,7 @@ Undeclared frontmatter fields are **never** reported as violations
 
 ## Recommended usage
 
-Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor` after:
+Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor` after:
 - Any `oms setup` run
 - Adding a new field via `oms define`
 - Bulk-editing notes

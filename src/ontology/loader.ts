@@ -4,7 +4,7 @@ import { parse as parseYaml } from "yaml";
 import type { Concept, Ontology, Taxonomy } from "./types.js";
 
 /**
- * Load a OMS ontology from a directory that contains:
+ * Load an Oh My Second Brain ontology from a directory that contains:
  *   <ontologyDir>/taxonomy.yaml
  *   <ontologyDir>/concepts/*.yaml
  *

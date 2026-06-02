@@ -1,19 +1,19 @@
-# OMS Harness Architecture
+# Oh My Second Brain Harness Architecture
 
-OMS is an **axis graph harness** for an Obsidian markdown vault. Its purpose is not to generate note content for the user. Its purpose is to give host agents a deterministic contract for where knowledge belongs, which frontmatter axes describe it, how it links to other notes, and how it should be retrieved later.
+Oh My Second Brain is an **axis graph harness** for an Obsidian markdown vault. Its purpose is not to generate note content for the user. Its purpose is to give host agents a deterministic contract for where knowledge belongs, which frontmatter axes describe it, how it links to other notes, and how it should be retrieved later.
 
 The architecture is docs-first because the core product claim is semantic: capture is only good when it makes future retrieval and reuse easier.
 
 ## 1. Retrieval and reuse are the telos
 
-OMS treats note making as a retrieval problem. A new note is successful when it can be found and reused later through the user's own knowledge axes.
+Oh My Second Brain treats note making as a retrieval problem. A new note is successful when it can be found and reused later through the user's own knowledge axes.
 
 That means capture and retrieval are separate flows over the same substrate:
 
 - **Capture**: place the note under the right folder/concept, fill the frontmatter axes, preserve user body content, and validate contract conformity.
 - **Retrieval**: narrow by folder/concept/frontmatter/wikilink axes first, optionally rank by search, then lazy-load the selected note bodies as payload.
 
-OMS therefore optimizes for future reuse, not for the shortest possible write path.
+Oh My Second Brain therefore optimizes for future reuse, not for the shortest possible write path.
 
 ## 2. User-owned ontology
 
@@ -23,11 +23,11 @@ The ontology is owned by the vault:
 - `vault/.oms/concepts/*.yaml` declares concepts, frontmatter fields, and retrieval views.
 - Markdown notes remain ordinary Obsidian notes.
 
-OMS ships defaults, but setup copies them into the vault. After that, the live ontology is the user's editable contract. OMS must not impose a fixed taxonomy or silently overwrite user convention files.
+Oh My Second Brain ships defaults, but setup copies them into the vault. After that, the live ontology is the user's editable contract. Oh My Second Brain must not impose a fixed taxonomy or silently overwrite user convention files.
 
 ## 3. Axes: frontmatter, folders, and wikilinks
 
-OMS's intentional graph is built from user-authored structure:
+Oh My Second Brain's intentional graph is built from user-authored structure:
 
 | Primitive | Meaning |
 |---|---|
@@ -46,7 +46,7 @@ A note has two operational layers:
 1. **Graph surface**: path, folder, frontmatter, and wikilinks. This layer is used to validate the contract and build the intentional ontology graph.
 2. **Body payload**: prose, excerpts, evidence, and free-form markdown. This layer is loaded lazily after axis/search narrowing.
 
-OMS does not judge whether the body is true, complete, or high quality. Body content belongs to the user. OMS only checks whether the note conforms to the declared retrieval contract.
+Oh My Second Brain does not judge whether the body is true, complete, or high quality. Body content belongs to the user. Oh My Second Brain only checks whether the note conforms to the declared retrieval contract.
 
 ## 5. Capture flow
 
@@ -84,7 +84,7 @@ This is the main difference from generic search. Search is useful, but it is not
 
 ## 7. Retrieval views, not "lens projection"
 
-Existing concept files may contain `lenses`. OMS keeps this schema for compatibility, but user-facing docs should call them **retrieval views**.
+Existing concept files may contain `lenses`. Oh My Second Brain keeps this schema for compatibility, but user-facing docs should call them **retrieval views**.
 
 A retrieval view is not the graph itself. It is an output shape applied after candidate notes have been selected by axis graph narrowing and optional search. For example, a `synthesis` retrieval view may choose to show `title`, `source-url`, and `author`, while an `audit` view may show `status` and `date-read`.
 
@@ -98,7 +98,7 @@ Avoid the phrase "lens projection" unless a document defines it locally. Prefer 
 
 ## 8. Contract-conformity gates
 
-OMS gates structural conformity, not content quality.
+Oh My Second Brain gates structural conformity, not content quality.
 
 Contract checks include:
 
@@ -141,7 +141,7 @@ Graph status should report stale slices separately: schema stale, graph stale, s
 
 ## 10. Claude Code skill/MCP installation surface
 
-The first installable target is Claude Code. The harness surface should make OMS usable where the user is already working:
+The first installable target is Claude Code. The harness surface should make Oh My Second Brain usable where the user is already working:
 
 - skills for setup, doctor, capture, retrieve, and graph/status operations
 - CLI commands for deterministic local actions
@@ -162,7 +162,7 @@ Docs must not describe MCP write/capture runtime as present tense until the serv
 The Phase 1 command surface is intentionally dry-run for Claude runtime registration:
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz setup --vault /path/to/vault --yes --install-claude
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz setup --vault /path/to/vault --yes --install-claude
 ```
 
 This initializes `.oms/` and prints a Claude Code plugin install command plus a `claude mcp add ...` command. It does not mutate Claude config. Capture/write tools are only available through the gated safe-write path.
@@ -191,10 +191,10 @@ The write path rejects absolute paths, `..` escapes, non-markdown targets, `.oms
 
 ## 11. External inspiration boundaries
 
-OMS borrows patterns, not product identity:
+Oh My Second Brain borrows patterns, not product identity:
 
 - **QMD**: anywhere access to a local markdown knowledge base through CLI/MCP/skills; qmd-like lexical/vector search is a derived support layer.
-- **Graphify**: graph effect as a useful retrieval affordance; OMS's graph is grounded in intentional frontmatter/folder/wikilink axes instead of inferred body concepts by default.
-- **Ouroboros**: installable harness posture, stateful MCP/skill surfaces, and deterministic gates; OMS is not an OS-above host orchestrator.
+- **Graphify**: graph effect as a useful retrieval affordance; Oh My Second Brain's graph is grounded in intentional frontmatter/folder/wikilink axes instead of inferred body concepts by default.
+- **Ouroboros**: installable harness posture, stateful MCP/skill surfaces, and deterministic gates; Oh My Second Brain is not an OS-above host orchestrator.
 
-The boundary matters: OMS is a user-owned ontology harness for Obsidian markdown folders, not a generic search engine, automatic graph extractor, or content generator.
+The boundary matters: Oh My Second Brain is a user-owned ontology harness for Obsidian markdown folders, not a generic search engine, automatic graph extractor, or content generator.

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# OMS installer — installs the package and registers host adapters.
+# Oh My Second Brain installer — installs the package and registers host adapters.
 # Usage: curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/install.sh | bash
 set -euo pipefail
 
-PACKAGE_SPEC="${OMS_PACKAGE_SPEC:-https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz}"
+PACKAGE_SPEC="${OMS_PACKAGE_SPEC:-https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz}"
 RUNTIME="${OMS_INSTALL_RUNTIME:-auto}"
 VAULT="${OMS_VAULT:-$PWD}"
 EXECUTE="${OMS_EXECUTE_EXTERNAL:-0}"
@@ -22,11 +22,11 @@ while [ "$#" -gt 0 ]; do
 done
 
 if ! command -v npm >/dev/null 2>&1; then
-  echo "Error: npm is required to install OMS." >&2
+  echo "Error: npm is required to install Oh My Second Brain." >&2
   exit 1
 fi
 
-echo "OMS Installer"
+echo "Oh My Second Brain Installer"
 echo "  package: $PACKAGE_SPEC"
 echo "  runtime: $RUNTIME"
 echo "  vault:   $VAULT"
@@ -46,4 +46,4 @@ else
 fi
 
 echo
-echo "OMS install complete. Run: oms doctor --vault \"$VAULT\""
+echo "Oh My Second Brain install complete. Run: oms doctor --vault \"$VAULT\""

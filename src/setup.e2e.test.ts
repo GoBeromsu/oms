@@ -60,7 +60,7 @@ describe("runSetup --yes E2E", () => {
     expect(plan.pluginPath).toContain("adapters/claude-code");
     expect(plan.pluginInstallCommand).toContain("claude plugin install");
     expect(plan.mcpRegistrationCommand).toBe(
-      "claude mcp add oms -- npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz mcp --vault '/tmp/My Vault'",
+      "claude mcp add oms -- npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz mcp --vault '/tmp/My Vault'",
     );
     expect(plan.mcpRuntimeStatus).toBe("read-status-runtime");
   });

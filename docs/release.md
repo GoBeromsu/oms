@@ -1,6 +1,6 @@
-# Release OMS
+# Release Oh My Second Brain
 
-OMS releases are npm-first and Claude Code validated. The release process must prove the published tarball works, not merely the repository checkout.
+Oh My Second Brain releases are npm-first and Claude Code validated. The release process must prove the published tarball works, not merely the repository checkout.
 
 ## Release contract
 

@@ -35,7 +35,7 @@ const HOSTS: HostRuntime[] = ["claude", "codex", "hermes"];
 const MANAGED_CODEX_START = "# BEGIN OMS MANAGED MCP";
 const MANAGED_CODEX_END = "# END OMS MANAGED MCP";
 const DEFAULT_PACKAGE_SPEC =
-  "https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz";
+  "https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz";
 const CODEX_SKILL_PREFIX = "oms-";
 const CODEX_RULE_FILENAME = "oms.md";
 const HERMES_SKILL_CATEGORY = "knowledge-management";
@@ -128,7 +128,7 @@ function mcpServerEntry(options: HostOperationOptions): Record<string, unknown> 
 function refuseSymlinkedLeaf(target: string): void {
   if (!existsSync(target)) return;
   if (lstatSync(target).isSymbolicLink()) {
-    throw new Error(`Refusing to replace symlinked OMS install target: ${target}`);
+    throw new Error(`Refusing to replace symlinked Oh My Second Brain install target: ${target}`);
   }
 }
 
@@ -212,7 +212,7 @@ async function installClaude(options: HostOperationOptions): Promise<HostOperati
 async function uninstallClaude(options: HostOperationOptions): Promise<HostOperationResult> {
   const claudeDir = hostHome(options.homeDir, ".claude", "OMS_CLAUDE_HOME");
   const commands = ["claude mcp remove oms", "claude plugin uninstall oms"];
-  const messages = ["Claude Code uninstall removes the OMS MCP entry and, when requested, asks Claude CLI to uninstall the plugin."];
+  const messages = ["Claude Code uninstall removes the Oh My Second Brain MCP entry and, when requested, asks Claude CLI to uninstall the plugin."];
   let changed = await removeClaudeMcp(options, claudeDir);
 
   if (options.executeExternal && commandExists("claude") && !options.dryRun) {
@@ -354,7 +354,7 @@ async function installCodex(options: HostOperationOptions): Promise<HostOperatio
     skipped: false,
     paths: [configPath, pluginTarget, ...nativePaths],
     commands: [`Codex MCP config: ${configPath}`],
-    messages: ["Installed Codex-native OMS rules, namespaced skills, plugin assets, and managed MCP/env config."],
+    messages: ["Installed Codex-native Oh My Second Brain rules, namespaced skills, plugin assets, and managed MCP/env config."],
   };
 }
 
@@ -393,7 +393,7 @@ async function uninstallCodex(options: HostOperationOptions): Promise<HostOperat
     skipped: !changed,
     paths: [configPath, pluginTarget, ruleTarget, path.join(skillsRoot, `${CODEX_SKILL_PREFIX}*`)],
     commands: [],
-    messages: ["Removed Codex managed MCP block, OMS rule, namespaced OMS skills, and plugin assets."],
+    messages: ["Removed Codex managed MCP block, Oh My Second Brain rule, namespaced Oh My Second Brain skills, and plugin assets."],
   };
 }
 
@@ -438,7 +438,7 @@ async function installHermes(options: HostOperationOptions): Promise<HostOperati
     skipped: false,
     paths: [adapterTarget, skillTarget, configPath],
     commands: [`Hermes MCP config: ${configPath}`],
-    messages: ["Installed Hermes-native OMS skill bundle and registered mcp_servers.oms in ~/.hermes/config.yaml."],
+    messages: ["Installed Hermes-native Oh My Second Brain skill bundle and registered mcp_servers.oms in ~/.hermes/config.yaml."],
   };
 }
 
@@ -464,7 +464,7 @@ async function uninstallHermes(options: HostOperationOptions): Promise<HostOpera
     skipped: !changed,
     paths: [adapterTarget, skillTarget, configPath],
     commands: [],
-    messages: ["Removed Hermes OMS skill bundle, adapter copy, legacy descriptor files, and mcp_servers.oms."],
+    messages: ["Removed Hermes Oh My Second Brain skill bundle, adapter copy, legacy descriptor files, and mcp_servers.oms."],
   };
 }
 
@@ -487,7 +487,7 @@ export async function runHostOperation(options: HostOperationOptions): Promise<H
 
 export function formatHostOperationResults(results: HostOperationResult[], dryRun: boolean): string {
   const lines: string[] = [];
-  lines.push(dryRun ? "OMS host operation plan (dry-run)." : "OMS host operation complete.");
+  lines.push(dryRun ? "Oh My Second Brain host operation plan (dry-run)." : "Oh My Second Brain host operation complete.");
   for (const result of results) {
     lines.push(`- ${result.runtime} ${result.action}: ${result.skipped ? "skipped" : result.changed || dryRun ? "ok" : "no changes"}`);
     for (const message of result.messages) lines.push(`  ${message}`);

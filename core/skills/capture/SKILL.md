@@ -1,11 +1,11 @@
 ---
 name: capture
-description: Capture knowledge into the vault under the declared OMS convention.
+description: Capture knowledge into the vault under the declared Oh My Second Brain convention.
 ---
 
 # Skill: capture
 
-Place a piece of knowledge into the vault according to the OMS convention.
+Place a piece of knowledge into the vault according to the Oh My Second Brain convention.
 The librarian persona governs this action.
 
 ## What this skill does
@@ -18,7 +18,7 @@ The librarian persona governs this action.
    - Fill optional fields where values are known.
    - Leave undeclared (extra) frontmatter fields untouched (`additionalProperties: preserve`).
 5. Write the note body after the frontmatter block.
-6. Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor` (non-blocking, exits 0) to confirm the new note passes field validation.
+6. Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor` (non-blocking, exits 0) to confirm the new note passes field validation.
 
 ## Conceptual shell-out (roadmap — NOT wired in v0)
 
@@ -40,7 +40,7 @@ User: "Save this paper: 'Attention Is All You Need', arxiv.org/abs/1706.03762"
      source-url: "https://arxiv.org/abs/1706.03762"
      captured-at: "2026-05-31"
 5. write note body
-6. npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor  ← verify (exits 0, non-blocking)
+6. npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor  ← verify (exits 0, non-blocking)
 ```
 
 ## Persona

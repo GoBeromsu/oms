@@ -1,6 +1,6 @@
 ---
 name: Implementation slice
-about: Plan one focused OMS implementation issue
+about: Plan one focused Oh My Second Brain implementation issue
 ---
 
 ## Goal

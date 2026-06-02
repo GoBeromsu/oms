@@ -18,7 +18,7 @@ function textPayload(result: Awaited<ReturnType<Client["callTool"]>>): Record<st
   return JSON.parse(block.type === "text" ? block.text : "{}") as Record<string, unknown>;
 }
 
-describe("OMS MCP stdio server", () => {
+describe("Oh My Second Brain MCP stdio server", () => {
   it("exposes read/status tools and validates a fixture note", async () => {
     const transport = new StdioClientTransport({
       command: process.execPath,
@@ -103,7 +103,7 @@ describe("OMS MCP stdio server", () => {
       });
       expect(commit.isError).toBe(true);
       expect(commit.content[0]?.type === "text" ? commit.content[0].text : "").toContain(
-        "OMS MCP error",
+        "Oh My Second Brain MCP error",
       );
     } finally {
       await client.close();

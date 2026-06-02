@@ -1,6 +1,6 @@
 ---
 name: oms-capture
-description: Capture knowledge into the vault under the OMS convention using gated MCP prepare/commit tools.
+description: Capture knowledge into the vault under the Oh My Second Brain convention using gated MCP prepare/commit tools.
 ---
 
 # Skill: oms-capture (Claude Code)
@@ -27,7 +27,7 @@ after prepare returns `ready` or the user has supplied missing fields.
 5. If required fields are missing, ask for them; do not write.
 6. If placement is ambiguous, route to inbox.
 7. Commit only through `oms_capture_commit` (`create` or `append`).
-8. Shell out: `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor` (non-blocking, exits 0) to confirm the note is clean.
+8. Shell out: `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor` (non-blocking, exits 0) to confirm the note is clean.
 
 ## Example
 

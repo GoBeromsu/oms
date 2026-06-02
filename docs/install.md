@@ -1,6 +1,6 @@
-# Install OMS
+# Install Oh My Second Brain
 
-OMS v0 is distributed as one npm/GitHub-release package that contains the CLI/runtime, the default ontology, host adapter assets, host-native skill/rule bundles, and shell installers. Claude Code, Codex, and Hermes all install a OMS host surface backed by the same MCP capture/retrieve runtime.
+Oh My Second Brain v0 is distributed as one npm/GitHub-release package that contains the CLI/runtime, the default ontology, host adapter assets, host-native skill/rule bundles, and shell installers. Claude Code, Codex, and Hermes all install an `oms` host surface for Oh My Second Brain backed by the same MCP capture/retrieve runtime.
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ Useful overrides:
 # Pick one host instead of auto-detection.
 curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/install.sh | bash -s -- --runtime claude
 
-# Install every host adapter and point OMS at a specific vault.
+# Install every host adapter and point Oh My Second Brain at a specific vault.
 curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/install.sh | bash -s -- --runtime all --vault /path/to/vault
 
 # Also execute external host CLIs where available, e.g. claude plugin/mcp commands.
@@ -46,8 +46,8 @@ From a checkout or installed package:
 ```bash
 npm ci
 npm run build
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz install --runtime all --vault /path/to/vault --dry-run
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz install --runtime all --vault /path/to/vault --yes
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz install --runtime all --vault /path/to/vault --dry-run
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz install --runtime all --vault /path/to/vault --yes
 ```
 
 Runtime selection follows the Ouroboros pattern:
@@ -69,17 +69,17 @@ All host writes are namespaced under `oms` and are reversible with `oms uninstal
 
 ## Legacy setup flow
 
-`setup` still adopts a vault into the OMS ontology and can print the Claude Code plan:
+`setup` still adopts a vault into the Oh My Second Brain ontology and can print the Claude Code plan:
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz setup --vault /path/to/vault --yes --install-claude
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz setup --vault /path/to/vault --yes --install-claude
 ```
 
 Typical printed commands look like:
 
 ```bash
 claude plugin install /path/to/oms/adapters/claude-code
-claude mcp add oms -- npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz mcp --vault /path/to/vault
+claude mcp add oms -- npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz mcp --vault /path/to/vault
 ```
 
 ## Uninstall
@@ -102,14 +102,14 @@ One-line uninstall:
 curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/uninstall.sh | bash -s -- --yes
 ```
 
-The uninstaller removes OMS host registrations and adapter files. It does **not** remove vault notes or `vault/.oms/` ontology data. Pass `--keep-package` to the shell uninstaller if you want to keep the globally installed package.
+The uninstaller removes Oh My Second Brain host registrations and adapter files. It does **not** remove vault notes or `vault/.oms/` ontology data. Pass `--keep-package` to the shell uninstaller if you want to keep the globally installed package.
 
 ## Verify the install
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor --vault /path/to/vault
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor --vault /path/to/vault
 oms install --runtime all --vault /path/to/vault --dry-run
 claude plugin validate adapters/claude-code
 ```
 
-Inside a host runtime, verify the MCP server by listing MCP tools or asking for OMS graph/status. The server exposes status, graph build, axis retrieval, lazy note loading, contract validation, and gated capture tools.
+Inside a host runtime, verify the MCP server by listing MCP tools or asking for Oh My Second Brain graph/status. The server exposes status, graph build, axis retrieval, lazy note loading, contract validation, and gated capture tools.

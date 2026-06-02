@@ -1,6 +1,6 @@
 ---
 name: oms-uninstall
-description: Remove OMS host adapter files and MCP registration without deleting vault notes or vault ontology.
+description: Remove Oh My Second Brain host adapter files and MCP registration without deleting vault notes or vault ontology.
 ---
 
 # oms-uninstall
@@ -8,13 +8,13 @@ description: Remove OMS host adapter files and MCP registration without deleting
 Preview first:
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz uninstall --runtime all --dry-run
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz uninstall --runtime all --dry-run
 ```
 
 Remove host registrations:
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz uninstall --runtime all --yes
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz uninstall --runtime all --yes
 ```
 
 Never delete vault notes or `vault/.oms/` as part of host uninstall.

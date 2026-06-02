@@ -75,7 +75,7 @@ function setupSmoke(packageRoot, vault) {
   assertPath(path.join(vault, ".oms/taxonomy.yaml"), "vault taxonomy");
   assertPath(path.join(vault, ".oms/concepts"), "vault concepts directory");
   if (!output.includes("claude plugin install")) fail("setup output did not include Claude plugin install command");
-  if (!output.includes("claude mcp add oms -- npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz mcp --vault")) {
+  if (!output.includes("claude mcp add oms -- npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz mcp --vault")) {
     fail("setup output did not include Claude MCP registration command");
   }
   const pluginPathLine = output.split(/\r?\n/).find((line) => line.includes("Plugin path:"));
@@ -139,9 +139,9 @@ try {
   assertPath(path.join(packageRoot, "dist"), "dist directory");
   assertPath(path.join(packageRoot, "core"), "core directory");
   assertPath(path.join(packageRoot, "adapters/claude-code/.claude-plugin/plugin.json"), "Claude plugin manifest");
-  assertPath(path.join(packageRoot, "adapters/codex/rules/oms.md"), "Codex OMS rule");
-  assertPath(path.join(packageRoot, "adapters/codex/skills/oms-capture/SKILL.md"), "Codex OMS capture skill");
-  assertPath(path.join(packageRoot, "adapters/hermes/skills/capture/SKILL.md"), "Hermes OMS capture skill");
+  assertPath(path.join(packageRoot, "adapters/codex/rules/oms.md"), "Codex Oh My Second Brain rule");
+  assertPath(path.join(packageRoot, "adapters/codex/skills/oms-capture/SKILL.md"), "Codex Oh My Second Brain capture skill");
+  assertPath(path.join(packageRoot, "adapters/hermes/skills/capture/SKILL.md"), "Hermes Oh My Second Brain capture skill");
   assertPath(path.join(packageRoot, "docs/install.md"), "install docs");
   assertPath(path.join(packageRoot, "docs/release.md"), "release docs");
   assertPath(path.join(packageRoot, "scripts/install.sh"), "install shell script");
