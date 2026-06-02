@@ -69,6 +69,19 @@ if (missing.length > 0) {
   fail(`package tarball is missing required release assets:\n${missing.map((item) => `  - ${item}`).join("\n")}\nUpdate package.json files or create the missing release docs.`);
 }
 
+const forbidden = [
+  "dist/cli/lexa.js",
+  "dist/cli/lexa.d.ts",
+  "dist/cli/lexa.js.map",
+  "adapters/codex/rules/lexa.md",
+  "adapters/codex/skills/lexa-setup/SKILL.md",
+  "adapters/codex/skills/lexa-capture/SKILL.md",
+  "adapters/codex/skills/lexa-retrieve/SKILL.md",
+].filter((forbiddenPath) => hasPath(files, forbiddenPath));
+if (forbidden.length > 0) {
+  fail(`package tarball includes forbidden legacy OMS assets:\n${forbidden.map((item) => `  - ${item}`).join("\n")}`);
+}
+
 const packageJson = JSON.parse(readFileSync("package.json", "utf-8"));
 const pluginJson = JSON.parse(readFileSync("adapters/claude-code/.claude-plugin/plugin.json", "utf-8"));
 if (packageJson.version !== pluginJson.version) {
