@@ -27,7 +27,7 @@ then returns only the lens-selected fields.
 
 ```
 1. Parse user purpose → keyword(s)
-2. For each concept in vault/.lexa/concepts/*.yaml:
+2. For each concept in vault/.oms/concepts/*.yaml:
      for each lens in concept.lenses:
        score = semantic_overlap(purpose, lens.intent)
 3. Select lens with highest score
