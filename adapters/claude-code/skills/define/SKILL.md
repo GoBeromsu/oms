@@ -1,6 +1,6 @@
 ---
 name: lexa-define
-description: Grow the vault convention by adding a metadata field to a concept. Entry point is npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz define (roadmap).
+description: Grow the vault convention by adding a metadata field to a concept. Entry point is npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz define (roadmap).
 ---
 
 # Skill: lexa-define (Claude Code)
@@ -19,10 +19,10 @@ Each frontmatter key is a unit of convention with a declared `intent`, type, and
 Intended to shell out to:
 
 ```bash
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz define
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz define
 ```
 
-**Roadmap note:** The `lexa define` interactive runtime is not yet implemented in v0.
+**Roadmap note:** The `lxa define` interactive runtime is not yet implemented in v0.
 Today this skill guides you through the same steps manually (agent-guided).
 
 ## Agent-guided steps (v0)
@@ -34,7 +34,7 @@ Today this skill guides you through the same steps manually (agent-guided).
 5. Choose **required**: yes / no.
 6. Optionally set **normalize** (e.g. `lowercase`) or **immutable** (lock after creation).
 7. Append the entry to `vault/.lexa/concepts/<concept>.yaml`.
-8. Run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor` to validate existing notes against the updated schema.
+8. Run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor` to validate existing notes against the updated schema.
 
 ## YAML snippet to append
 
@@ -48,4 +48,4 @@ fields:
 
 ## When the runtime ships
 
-`npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz define` will run the same Q&A interactively and write the YAML for you.
+`npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz define` will run the same Q&A interactively and write the YAML for you.

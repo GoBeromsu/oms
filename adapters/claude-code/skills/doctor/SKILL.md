@@ -1,6 +1,6 @@
 ---
 name: lexa-doctor
-description: Validate vault notes against the Lexa convention by running npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor.
+description: Validate vault notes against the Lexa convention by running npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor.
 ---
 
 # Skill: lexa-doctor (Claude Code)
@@ -19,7 +19,7 @@ This skill is **REAL in v0** — it shells out to the fully-implemented CLI.
 Shells out to:
 
 ```bash
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor [--vault <path>]
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor [--vault <path>]
 ```
 
 The CLI will:
@@ -39,7 +39,7 @@ The CLI will:
 ## Example
 
 ```bash
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor --vault ~/Documents/MyVault
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor --vault ~/Documents/MyVault
 ```
 
 ## Sample output
@@ -54,5 +54,5 @@ Checked 12 notes. 2 violations found. (exits 0)
 
 ## Roadmap
 
-Doctor is fully real in v0. Run it after any `lexa setup`, `lexa define`,
+Doctor is fully real in v0. Run it after any `lxa setup`, `lxa define`,
 or bulk note edit to keep your vault clean.

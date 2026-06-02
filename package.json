@@ -1,10 +1,11 @@
 {
-  "name": "@goberomsu/lexa",
-  "version": "0.1.2",
+  "name": "lxa-vault",
+  "version": "0.1.3",
   "description": "A host-agnostic, user-owned convention layer for Obsidian (plain-markdown) knowledge bases. Invoked from inside Claude Code, Codex, and Hermes to make knowledge capture and retrieval happen under a declared semantic convention.",
   "type": "module",
   "license": "MIT",
   "bin": {
+    "lxa": "dist/cli/lexa.js",
     "lexa": "dist/cli/lexa.js"
   },
   "main": "dist/index.js",

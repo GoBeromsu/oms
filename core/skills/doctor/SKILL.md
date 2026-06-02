@@ -11,7 +11,7 @@ This skill is **REAL in v0** — the CLI command is fully implemented.
 ## Shell-out
 
 ```bash
-npx lexa doctor [--vault <path>]
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor [--vault <path>]
 ```
 
 - `--vault <path>` — path to your Obsidian vault root (default: current directory).
@@ -40,10 +40,10 @@ Undeclared frontmatter fields are **never** reported as violations
 
 ## Recommended usage
 
-Run `npx lexa doctor` after:
-- Any `lexa setup` run
-- Adding a new field via `lexa define`
+Run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor` after:
+- Any `lxa setup` run
+- Adding a new field via `lxa define`
 - Bulk-editing notes
 
-Integrate into CI by adding `npx lexa doctor --vault ./vault` to your workflow.
+Integrate into CI by adding `npx lxa doctor --vault ./vault` to your workflow.
 It will never fail the build in v0.

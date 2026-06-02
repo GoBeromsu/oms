@@ -12,7 +12,7 @@ type, and optional rules (`required`, `normalize`, `immutable`).
 ## Entry point
 
 ```bash
-npx lexa define
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz define
 ```
 
 This is the intended user-facing command (roadmap: interactive runtime not built yet).
@@ -27,7 +27,7 @@ Use `define` as **agent-guided convention editing** until the interactive runtim
 4. Ask: **type** (`string` | `string[]` | `date` | `url` | `boolean`), **required** (yes/no).
 5. Optionally ask: `normalize` (e.g. `lowercase`), `immutable` (lock after creation).
 6. Open `vault/.lexa/concepts/<concept>.yaml` and append the new field entry.
-7. Run `npx lexa doctor` to validate existing notes against the updated schema (exits 0).
+7. Run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor` to validate existing notes against the updated schema (exits 0).
 
 ## Convention YAML shape (one field entry)
 
@@ -55,5 +55,5 @@ vault/.lexa/
   taxonomy.yaml
 ```
 
-Lexa ships defaults (from `core/ontology/`); `lexa setup` copies them into the vault.
+Lexa ships defaults (from `core/ontology/`); `lxa setup` copies them into the vault.
 The user then edits them at will — Lexa only enforces, never overwrites.

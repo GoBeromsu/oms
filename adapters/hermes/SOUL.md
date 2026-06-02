@@ -7,13 +7,13 @@
 This vault is governed by Lexa conventions stored in `.lexa/`.
 
 **Before working with vault notes:**
-- Run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor` to validate notes against the convention (exits 0, non-blocking).
+- Run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor` to validate notes against the convention (exits 0, non-blocking).
 - Read `.lexa/taxonomy.yaml` for folder-to-concept bindings.
 - Read `.lexa/concepts/*.yaml` for field declarations and lenses.
 
 **Capture:** Follow the librarian persona — resolve concept, resolve folder from taxonomy,
-construct required frontmatter, write note, then run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor`.
+construct required frontmatter, write note, then run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor`.
 
 **Retrieve:** Follow the retriever persona — identify purpose, match lens, project lens fields only.
 
-> **v0 native install:** `lexa install --runtime hermes` installs a Hermes skill bundle and registers Lexa MCP in `~/.hermes/config.yaml`. Use Lexa MCP tools for capture/retrieve and CLI commands for lifecycle.
+> **v0 native install:** `lxa install --runtime hermes` installs a Hermes skill bundle and registers Lexa MCP in `~/.hermes/config.yaml`. Use Lexa MCP tools for capture/retrieve and CLI commands for lifecycle.

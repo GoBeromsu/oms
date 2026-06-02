@@ -51,7 +51,7 @@ The function collects all violations into an array and returns them. It does not
 
 The `immutable` rule within `Violation.rule` is intentionally kept in the union even though no code path emits it in v0. When a field is declared `immutable: true`, the field is validated for presence and type only; the immutability constraint is silently skipped. JSDoc on the function states this explicitly.
 
-`lexa doctor` inspects the returned `ValidationResult`, formats violations as human-readable warnings, and **exits 0 regardless of `valid`**. There is no exit code that signals "convention violated" in v0.
+`lxa doctor` inspects the returned `ValidationResult`, formats violations as human-readable warnings, and **exits 0 regardless of `valid`**. There is no exit code that signals "convention violated" in v0.
 
 ## Consequences
 
@@ -75,5 +75,5 @@ A throwing implementation would align with the fail-fast style common in parsers
 This was rejected because:
 
 1. Lexa's declared enforcement policy is `onViolation: warn`. An exception-throwing function implements `onViolation: error` at the API level and forces every caller to add try/catch boilerplate to recover the non-blocking behavior promised by the policy.
-2. `lexa doctor` needs to validate an entire vault and report a summary. A throwing validator would require either catching and continuing in a loop (awkward) or a separate "collect" wrapper on top of the throwing function (duplication).
+2. `lxa doctor` needs to validate an entire vault and report a summary. A throwing validator would require either catching and continuing in a loop (awkward) or a separate "collect" wrapper on top of the throwing function (duplication).
 3. Host agents invoking validation inside a larger workflow must not be aborted by a missing frontmatter field. The convention layer must be transparent to the host's own error handling.

@@ -46,8 +46,8 @@ From a checkout or installed package:
 ```bash
 npm ci
 npm run build
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz install --runtime all --vault /path/to/vault --dry-run
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz install --runtime all --vault /path/to/vault --yes
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz install --runtime all --vault /path/to/vault --dry-run
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz install --runtime all --vault /path/to/vault --yes
 ```
 
 Runtime selection follows the Ouroboros pattern:
@@ -65,21 +65,21 @@ Runtime selection follows the Ouroboros pattern:
 | Codex | Installs `~/.codex/rules/lexa.md`, `~/.codex/skills/lexa-*`, copies adapter files to `~/.codex/plugins/lexa`, and writes a managed `[mcp_servers.lexa]` block plus `LEXA_AGENT_RUNTIME=codex` env in `~/.codex/config.toml`. |
 | Hermes | Installs `~/.hermes/skills/knowledge-management/lexa/`, copies adapter files to `~/.hermes/adapters/lexa`, and writes `mcp_servers.lexa` in `~/.hermes/config.yaml`. |
 
-All host writes are namespaced under `lexa` and are reversible with `lexa uninstall`.
+All host writes are namespaced under `lexa` and are reversible with `lxa uninstall`.
 
 ## Legacy setup flow
 
 `setup` still adopts a vault into the Lexa ontology and can print the Claude Code plan:
 
 ```bash
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz setup --vault /path/to/vault --yes --install-claude
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz setup --vault /path/to/vault --yes --install-claude
 ```
 
 Typical printed commands look like:
 
 ```bash
 claude plugin install /path/to/lexa/adapters/claude-code
-claude mcp add lexa -- npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz mcp --vault /path/to/vault
+claude mcp add lexa -- npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz mcp --vault /path/to/vault
 ```
 
 ## Uninstall
@@ -87,13 +87,13 @@ claude mcp add lexa -- npx -y https://github.com/GoBeromsu/lexa/releases/downloa
 Preview first:
 
 ```bash
-lexa uninstall --runtime all --dry-run
+lxa uninstall --runtime all --dry-run
 ```
 
 Remove host registrations and adapter files:
 
 ```bash
-lexa uninstall --runtime all --yes
+lxa uninstall --runtime all --yes
 ```
 
 One-line uninstall:
@@ -107,8 +107,8 @@ The uninstaller removes Lexa host registrations and adapter files. It does **not
 ## Verify the install
 
 ```bash
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor --vault /path/to/vault
-lexa install --runtime all --vault /path/to/vault --dry-run
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor --vault /path/to/vault
+lxa install --runtime all --vault /path/to/vault --dry-run
 claude plugin validate adapters/claude-code
 ```
 

@@ -3,7 +3,7 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/GoBeromsu/lexa/main/scripts/install.sh | bash
 set -euo pipefail
 
-PACKAGE_SPEC="${LEXA_PACKAGE_SPEC:-https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz}"
+PACKAGE_SPEC="${LEXA_PACKAGE_SPEC:-https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz}"
 RUNTIME="${LEXA_INSTALL_RUNTIME:-auto}"
 VAULT="${LEXA_VAULT:-$PWD}"
 EXECUTE="${LEXA_EXECUTE_EXTERNAL:-0}"
@@ -39,7 +39,11 @@ if [ "$EXECUTE" = "1" ]; then
   ARGS+=(--execute)
 fi
 
-lexa "${ARGS[@]}"
+if command -v lxa >/dev/null 2>&1; then
+  lxa "${ARGS[@]}"
+else
+  lexa "${ARGS[@]}"
+fi
 
 echo
-echo "Lexa install complete. Run: lexa doctor --vault \"$VAULT\""
+echo "Lexa install complete. Run: lxa doctor --vault \"$VAULT\""

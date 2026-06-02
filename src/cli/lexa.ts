@@ -18,7 +18,7 @@ import {
 import type { Taxonomy, FolderBinding } from "../ontology/types.js";
 
 const DEFAULT_RELEASE_PACKAGE_SPEC =
-  "https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz";
+  "https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz";
 
 // ---------------------------------------------------------------------------
 // Path helpers
@@ -220,7 +220,7 @@ export async function runSetup(opts: {
 
   // Write the vault-local ontology. `.lexa/` IS the ontology directory:
   // `.lexa/taxonomy.yaml` + `.lexa/concepts/*.yaml`, matching loadOntology's
-  // contract so `lexa doctor` can load it directly.
+  // contract so `lxa doctor` can load it directly.
   const lexaDir = path.join(vault, ".lexa");
   const conceptsOutDir = path.join(lexaDir, "concepts");
   await mkdir(conceptsOutDir, { recursive: true });
@@ -253,7 +253,7 @@ export async function runSetup(opts: {
   console.log(`  Written:  ${path.join(lexaDir, "taxonomy.yaml")}`);
   console.log(`  Concepts: ${copiedFiles.join(", ") || "(none)"}`);
   console.log(`  Folders:  ${Object.keys(folderBindings).join(", ") || "(none)"}`);
-  console.log(`\nRun "npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor" to validate existing notes.\n`);
+  console.log(`\nRun "npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor" to validate existing notes.\n`);
 
   if (installClaude) {
     printClaudeInstallPlan(buildClaudeInstallPlan({ vault }));
@@ -336,14 +336,14 @@ export async function runDoctor(opts: { vault: string }): Promise<number> {
 
 function printUsage(): void {
   console.log(`
-lexa — convention layer for Obsidian vaults
+lxa — Lexa convention layer for Obsidian vaults
 
 Usage:
-  lexa setup [--vault <path>] [--yes] [--install-claude]
-  lexa install [--vault <path>] [--runtime <auto|all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
-  lexa uninstall [--runtime <all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
-  lexa doctor [--vault <path>]
-  lexa mcp [--vault <path>]
+  lxa setup [--vault <path>] [--yes] [--install-claude]
+  lxa install [--vault <path>] [--runtime <auto|all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
+  lxa uninstall [--runtime <all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
+  lxa doctor [--vault <path>]
+  lxa mcp [--vault <path>]
 
 Commands:
   setup    Adopt an existing vault into the Lexa convention.

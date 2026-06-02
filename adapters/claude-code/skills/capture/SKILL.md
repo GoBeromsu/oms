@@ -27,7 +27,7 @@ after prepare returns `ready` or the user has supplied missing fields.
 5. If required fields are missing, ask for them; do not write.
 6. If placement is ambiguous, route to inbox.
 7. Commit only through `lexa_capture_commit` (`create` or `append`).
-8. Shell out: `npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor` (non-blocking, exits 0) to confirm the note is clean.
+8. Shell out: `npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor` (non-blocking, exits 0) to confirm the note is clean.
 
 ## Example
 

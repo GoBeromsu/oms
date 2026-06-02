@@ -152,7 +152,7 @@ Current-vs-target boundary:
 | Phase | Status | Scope |
 |---|---|---|
 | Phase 0 | docs/plan | This architecture and terminology lock. |
-| Phase 1 | install shell | Claude Code skills, `lexa setup`, and dry-run MCP registration guidance. |
+| Phase 1 | install shell | Claude Code skills, `lxa setup`, and dry-run MCP registration guidance. |
 | Phase 2 | runtime | Real stdio MCP read/status tools: `lexa_graph_status`, `lexa_list_concepts`, and `lexa_validate_contract`. Write tools remain gated. |
 | Phase 3 | derived cache | Ontology graph/search cache, invalidation slices, axis-first retrieval, and qmd-style lazy body access. |
 | Phase 4 | safe writes | Capture prepare/commit tools after path-safety and vault-confinement tests. |
@@ -162,7 +162,7 @@ Docs must not describe MCP write/capture runtime as present tense until the serv
 The Phase 1 command surface is intentionally dry-run for Claude runtime registration:
 
 ```bash
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz setup --vault /path/to/vault --yes --install-claude
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz setup --vault /path/to/vault --yes --install-claude
 ```
 
 This initializes `.lexa/` and prints a Claude Code plugin install command plus a `claude mcp add ...` command. It does not mutate Claude config. Capture/write tools are only available through the gated safe-write path.

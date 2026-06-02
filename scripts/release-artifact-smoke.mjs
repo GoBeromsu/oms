@@ -75,7 +75,7 @@ function setupSmoke(packageRoot, vault) {
   assertPath(path.join(vault, ".lexa/taxonomy.yaml"), "vault taxonomy");
   assertPath(path.join(vault, ".lexa/concepts"), "vault concepts directory");
   if (!output.includes("claude plugin install")) fail("setup output did not include Claude plugin install command");
-  if (!output.includes("claude mcp add lexa -- npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz mcp --vault")) {
+  if (!output.includes("claude mcp add lexa -- npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz mcp --vault")) {
     fail("setup output did not include Claude MCP registration command");
   }
   const pluginPathLine = output.split(/\r?\n/).find((line) => line.includes("Plugin path:"));
