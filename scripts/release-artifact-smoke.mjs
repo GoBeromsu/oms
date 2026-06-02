@@ -75,7 +75,7 @@ function setupSmoke(packageRoot, vault) {
   assertPath(path.join(vault, ".oms/taxonomy.yaml"), "vault taxonomy");
   assertPath(path.join(vault, ".oms/concepts"), "vault concepts directory");
   if (!output.includes("claude plugin install")) fail("setup output did not include Claude plugin install command");
-  if (!output.includes("claude mcp add oms -- npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz mcp --vault")) {
+  if (!output.includes("claude mcp add oms -- oms mcp --vault")) {
     fail("setup output did not include Claude MCP registration command");
   }
   const pluginPathLine = output.split(/\r?\n/).find((line) => line.includes("Plugin path:"));

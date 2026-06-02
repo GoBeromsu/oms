@@ -3,7 +3,7 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/install.sh | bash
 set -euo pipefail
 
-PACKAGE_SPEC="${OMS_PACKAGE_SPEC:-https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz}"
+PACKAGE_SPEC="${OMS_PACKAGE_SPEC:-oh-my-second-brain@0.1.6}"
 RUNTIME="${OMS_INSTALL_RUNTIME:-auto}"
 VAULT="${OMS_VAULT:-$PWD}"
 EXECUTE="${OMS_EXECUTE_EXTERNAL:-0}"

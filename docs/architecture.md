@@ -47,7 +47,7 @@ All knowledge logic (validation, ontology loading, folder resolution, graph/cach
 │                                                                  │
 │  host ADAPTER                                                    │
 │  ├─ plugin.json / rule+skill bundle / SOUL.md fragment              │
-│  └─ shells out to: npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz setup | oms doctor | oms define    │
+│  └─ shells out to: oms setup | oms doctor | oms define    │
 └───────────────────────────┬──────────────────────────────────────┘
                             │ invokes
                             ▼

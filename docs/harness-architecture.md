@@ -162,7 +162,7 @@ Docs must not describe MCP write/capture runtime as present tense until the serv
 The Phase 1 command surface is intentionally dry-run for Claude runtime registration:
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz setup --vault /path/to/vault --yes --install-claude
+oms setup --vault /path/to/vault --yes --install-claude
 ```
 
 This initializes `.oms/` and prints a Claude Code plugin install command plus a `claude mcp add ...` command. It does not mutate Claude config. Capture/write tools are only available through the gated safe-write path.

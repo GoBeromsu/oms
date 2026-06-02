@@ -17,9 +17,6 @@ import {
 } from "../install/hosts.js";
 import type { Taxonomy, FolderBinding } from "../ontology/types.js";
 
-const DEFAULT_RELEASE_PACKAGE_SPEC =
-  "https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz";
-
 // ---------------------------------------------------------------------------
 // Path helpers
 // ---------------------------------------------------------------------------
@@ -84,7 +81,7 @@ export function buildClaudeInstallPlan(opts: { vault: string }): ClaudeInstallPl
   return {
     pluginPath,
     pluginInstallCommand: `claude plugin install ${shellQuote(pluginPath)}`,
-    mcpRegistrationCommand: `claude mcp add oms -- npx -y ${shellQuote(DEFAULT_RELEASE_PACKAGE_SPEC)} mcp --vault ${shellQuote(opts.vault)}`,
+    mcpRegistrationCommand: `claude mcp add oms -- oms mcp --vault ${shellQuote(opts.vault)}`,
     mcpRuntimeStatus: "read-status-runtime",
   };
 }
@@ -253,7 +250,7 @@ export async function runSetup(opts: {
   console.log(`  Written:  ${path.join(omsDir, "taxonomy.yaml")}`);
   console.log(`  Concepts: ${copiedFiles.join(", ") || "(none)"}`);
   console.log(`  Folders:  ${Object.keys(folderBindings).join(", ") || "(none)"}`);
-  console.log(`\nRun "npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor" to validate existing notes.\n`);
+  console.log(`\nRun "oms doctor" to validate existing notes.\n`);
 
   if (installClaude) {
     printClaudeInstallPlan(buildClaudeInstallPlan({ vault }));

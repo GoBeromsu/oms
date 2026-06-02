@@ -18,7 +18,7 @@ Surface the right notes and fields for a given purpose using the vault's declare
 Conceptually shells out to:
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz retrieve
+oms retrieve
 ```
 
 **Runtime note:** Retrieval is available through MCP tools (`oms_retrieve_by_axis`

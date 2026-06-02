@@ -11,7 +11,7 @@ This skill is **REAL in v0** — the CLI command is fully implemented.
 ## Shell-out
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz setup [--vault <path>] [--yes]
+oms setup [--vault <path>] [--yes]
 ```
 
 - `--vault <path>` — path to your Obsidian vault root (default: current directory).
@@ -27,7 +27,7 @@ npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.t
 6. Copies the shipped default concepts into `vault/.oms/concepts/`.
 
 After setup, the vault is governed by Oh My Second Brain conventions.
-Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor` at any time to validate existing notes.
+Run `oms doctor` at any time to validate existing notes.
 
 ## What setup does NOT do
 
@@ -40,5 +40,5 @@ Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.
 Run the `doctor` skill to check your notes against the convention:
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor [--vault <path>]
+oms doctor [--vault <path>]
 ```

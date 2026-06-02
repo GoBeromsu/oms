@@ -10,10 +10,10 @@ Oh My Second Brain is a convention harness, not a content generator. The user ow
 
 | User intent | Preferred Oh My Second Brain surface |
 |---|---|
-| adopt a vault | `$oms-setup` or `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz setup --vault <path>` |
-| install host integration | `$oms-install` or `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz install --runtime codex --vault <path> --yes` |
-| uninstall host integration | `$oms-uninstall` or `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz uninstall --runtime codex --yes` |
-| validate notes | `$oms-doctor` or `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor --vault <path>` |
+| adopt a vault | `$oms-setup` or `oms setup --vault <path>` |
+| install host integration | `$oms-install` or `oms install --runtime codex --vault <path> --yes` |
+| uninstall host integration | `$oms-uninstall` or `oms uninstall --runtime codex --yes` |
+| validate notes | `$oms-doctor` or `oms doctor --vault <path>` |
 | capture knowledge | use MCP `oms_capture_prepare` then `oms_capture_commit` |
 | retrieve knowledge | use MCP `oms_retrieve_by_axis`, then `oms_lazy_load_note` only when needed |
 

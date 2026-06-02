@@ -7,12 +7,12 @@
 This vault is governed by Oh My Second Brain conventions stored in `.oms/`.
 
 **Before working with vault notes:**
-- Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor` to validate notes against the convention (exits 0, non-blocking).
+- Run `oms doctor` to validate notes against the convention (exits 0, non-blocking).
 - Read `.oms/taxonomy.yaml` for folder-to-concept bindings.
 - Read `.oms/concepts/*.yaml` for field declarations and lenses.
 
 **Capture:** Follow the librarian persona — resolve concept, resolve folder from taxonomy,
-construct required frontmatter, write note, then run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor`.
+construct required frontmatter, write note, then run `oms doctor`.
 
 **Retrieve:** Follow the retriever persona — identify purpose, match lens, project lens fields only.
 

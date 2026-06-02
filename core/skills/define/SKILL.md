@@ -12,7 +12,7 @@ type, and optional rules (`required`, `normalize`, `immutable`).
 ## Entry point
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz define
+oms define
 ```
 
 This is the intended user-facing command (roadmap: interactive runtime not built yet).
@@ -27,7 +27,7 @@ Use `define` as **agent-guided convention editing** until the interactive runtim
 4. Ask: **type** (`string` | `string[]` | `date` | `url` | `boolean`), **required** (yes/no).
 5. Optionally ask: `normalize` (e.g. `lowercase`), `immutable` (lock after creation).
 6. Open `vault/.oms/concepts/<concept>.yaml` and append the new field entry.
-7. Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor` to validate existing notes against the updated schema (exits 0).
+7. Run `oms doctor` to validate existing notes against the updated schema (exits 0).
 
 ## Convention YAML shape (one field entry)
 

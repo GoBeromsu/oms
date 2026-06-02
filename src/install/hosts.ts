@@ -34,8 +34,6 @@ export interface HostOperationResult {
 const HOSTS: HostRuntime[] = ["claude", "codex", "hermes"];
 const MANAGED_CODEX_START = "# BEGIN OMS MANAGED MCP";
 const MANAGED_CODEX_END = "# END OMS MANAGED MCP";
-const DEFAULT_PACKAGE_SPEC =
-  "https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz";
 const CODEX_SKILL_PREFIX = "oms-";
 const CODEX_RULE_FILENAME = "oms.md";
 const HERMES_SKILL_CATEGORY = "knowledge-management";
@@ -70,12 +68,8 @@ function hostHome(homeDir: string | undefined, dirname: string, envName: string)
   return process.env[envName] ? path.resolve(process.env[envName]!) : path.join(homeDir ?? homedir(), dirname);
 }
 
-function packageSpec(options: HostOperationOptions): string {
-  return options.packageSpec ?? DEFAULT_PACKAGE_SPEC;
-}
-
 function mcpArgs(options: HostOperationOptions): string[] {
-  return ["-y", packageSpec(options), "mcp", "--vault", options.vault];
+  return ["mcp", "--vault", options.vault];
 }
 
 function jsonString(value: string): string {
@@ -120,7 +114,7 @@ async function writeYamlObject(file: string, data: Record<string, unknown>, dryR
 
 function mcpServerEntry(options: HostOperationOptions): Record<string, unknown> {
   return {
-    command: "npx",
+    command: "oms",
     args: mcpArgs(options),
   };
 }
@@ -174,7 +168,7 @@ async function installClaude(options: HostOperationOptions): Promise<HostOperati
   const pluginPath = path.join(options.adapterRoot, "claude-code");
   const commands = [
     `claude plugin install ${pluginPath}`,
-    `claude mcp add oms -- npx ${mcpArgs(options).join(" ")}`,
+    `claude mcp add oms -- oms ${mcpArgs(options).join(" ")}`,
   ];
   const messages = ["Claude Code adapter is installed through Claude's plugin/MCP surfaces."];
   let changed = false;
@@ -245,7 +239,7 @@ function codexManagedBlock(options: HostOperationOptions): string {
     "# OMS MCP hookup for Codex CLI. Managed by `oms install/uninstall`.",
     "# Codex-native rules live in ~/.codex/rules/oms.md; skills live in ~/.codex/skills/oms-*.",
     "[mcp_servers.oms]",
-    'command = "npx"',
+    'command = "oms"',
     `args = [${args}]`,
     "",
     "[mcp_servers.oms.env]",

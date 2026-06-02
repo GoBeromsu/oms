@@ -24,7 +24,8 @@ describe("host installer/uninstaller", () => {
     const installed = await readFile(path.join(codexDir, "config.toml"), "utf-8");
     expect(installed).toContain("# BEGIN OMS MANAGED MCP");
     expect(installed).toContain("[mcp_servers.oms]");
-    expect(installed).toContain("oms-v0.1.5/oms-0.1.5.tgz");
+    expect(installed).toContain('command = "oms"');
+    expect(installed).toContain('args = ["mcp", "--vault", "/tmp/Vault"]');
     expect(installed).toContain("[other]");
     expect(existsSync(path.join(codexDir, "plugins", "oms", "AGENTS.md"))).toBe(true);
     expect(existsSync(path.join(codexDir, "rules", "oms.md"))).toBe(true);
@@ -44,7 +45,7 @@ describe("host installer/uninstaller", () => {
     await runHostOperation({ action: "install", runtime: "hermes", vault: "/tmp/Vault", homeDir: home, adapterRoot });
     const config = await readFile(path.join(home, ".hermes", "config.yaml"), "utf-8");
     expect(config).toContain("oms:");
-    expect(config).toContain("command: npx");
+    expect(config).toContain("command: oms");
     expect(existsSync(path.join(home, ".hermes", "skills", "knowledge-management", "oms", "capture", "SKILL.md"))).toBe(true);
     expect(existsSync(path.join(home, ".hermes", "adapters", "oms", "SOUL.md"))).toBe(true);
 

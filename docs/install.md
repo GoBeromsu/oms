@@ -11,7 +11,7 @@ Oh My Second Brain v0 is distributed as one npm/GitHub-release package that cont
 
 ## One-line install
 
-Until npm publishing is unblocked, the installer installs the GitHub release tarball asset by default:
+The installer uses the published npm package (`oh-my-second-brain@0.1.6`) by default:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/install.sh | bash
@@ -41,13 +41,12 @@ Environment knobs:
 
 ## CLI install
 
-From a checkout or installed package:
+From npm or a checkout:
 
 ```bash
-npm ci
-npm run build
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz install --runtime all --vault /path/to/vault --dry-run
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz install --runtime all --vault /path/to/vault --yes
+npm install -g oh-my-second-brain@0.1.6
+oms install --runtime all --vault /path/to/vault --dry-run
+oms install --runtime all --vault /path/to/vault --yes
 ```
 
 Runtime selection follows the Ouroboros pattern:
@@ -72,14 +71,14 @@ All host writes are namespaced under `oms` and are reversible with `oms uninstal
 `setup` still adopts a vault into the Oh My Second Brain ontology and can print the Claude Code plan:
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz setup --vault /path/to/vault --yes --install-claude
+oms setup --vault /path/to/vault --yes --install-claude
 ```
 
 Typical printed commands look like:
 
 ```bash
 claude plugin install /path/to/oms/adapters/claude-code
-claude mcp add oms -- npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz mcp --vault /path/to/vault
+claude mcp add oms -- oms mcp --vault /path/to/vault
 ```
 
 ## Uninstall
@@ -107,7 +106,7 @@ The uninstaller removes Oh My Second Brain host registrations and adapter files.
 ## Verify the install
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor --vault /path/to/vault
+oms doctor --vault /path/to/vault
 oms install --runtime all --vault /path/to/vault --dry-run
 claude plugin validate adapters/claude-code
 ```

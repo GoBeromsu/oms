@@ -8,7 +8,7 @@ This vault is governed by Oh My Second Brain conventions stored in `.oms/`.
 All knowledge capture and retrieval must follow the declared semantic convention.
 
 **Before working with vault notes:**
-- Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor` to validate existing notes against the convention (exits 0, non-blocking).
+- Run `oms doctor` to validate existing notes against the convention (exits 0, non-blocking).
 - Read `.oms/taxonomy.yaml` to understand which folders hold which concepts.
 - Read `.oms/concepts/*.yaml` to understand field requirements and lenses.
 
@@ -23,4 +23,4 @@ All knowledge capture and retrieval must follow the declared semantic convention
 - Return only the fields the lens specifies — do not dump full frontmatter.
 
 **Convention violations are warnings, not errors (v0).**
-`npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor` always exits 0. Fix violations incrementally.
+`oms doctor` always exits 0. Fix violations incrementally.
