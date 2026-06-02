@@ -1,16 +1,16 @@
-# Lexa Vault Convention — SSOT for Host Agents
+# OMS Vault Convention — SSOT for Host Agents
 
 This file is the authoritative reference a host agent (Claude Code, Codex, Hermes, or any
-other) reads when working inside a Lexa-managed vault. It explains the convention model so
+other) reads when working inside a OMS-managed vault. It explains the convention model so
 the agent understands *why* knowledge is organized the way it is — not just *where*.
 
 ---
 
 ## What is a Convention?
 
-A Lexa **convention** is declarative semantic data the **user owns**. It lives in
-`vault/.lexa/` (copied there by `lexa setup`; Lexa ships the defaults in `core/ontology/`).
-The user edits it freely. Lexa enforces whatever is declared — it does not impose structure.
+A OMS **convention** is declarative semantic data the **user owns**. It lives in
+`vault/.oms/` (copied there by `oms setup`; OMS ships the defaults in `core/ontology/`).
+The user edits it freely. OMS enforces whatever is declared — it does not impose structure.
 
 The convention has four building blocks:
 
@@ -88,17 +88,17 @@ A folder may bind to one concept, multiple concepts (list), or `null` (not yet a
 | `onViolation` | `warn` | Violations are logged but never block writes (v0 is non-blocking). |
 | `additionalProperties` | `preserve` | Frontmatter keys not declared in the concept are left untouched. |
 
-Lexa enforces what the user declared; it does not touch anything else.
+OMS enforces what the user declared; it does not touch anything else.
 
 ---
 
 ## User Ownership
 
-1. `lexa setup` scans the vault's existing top-level folders and creates `vault/.lexa/`.
-2. It copies shipped default concepts into `vault/.lexa/concepts/` and writes
-   `vault/.lexa/taxonomy.yaml` — seeded with the user's real folders.
+1. `oms setup` scans the vault's existing top-level folders and creates `vault/.oms/`.
+2. It copies shipped default concepts into `vault/.oms/concepts/` and writes
+   `vault/.oms/taxonomy.yaml` — seeded with the user's real folders.
 3. The user fills in `intent` values and adds or removes fields/lenses freely.
-4. Lexa never imposes a folder structure; it adopts what already exists.
+4. OMS never imposes a folder structure; it adopts what already exists.
 
 ---
 
