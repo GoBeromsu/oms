@@ -7,10 +7,10 @@
 This vault is governed by Lexa conventions stored in `.lexa/`.
 
 **Before working with vault notes:**
-- Run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor` to validate notes against the convention (exits 0, non-blocking).
+- Run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor` to validate notes against the convention (exits 0, non-blocking).
 - Read `.lexa/taxonomy.yaml` and `.lexa/concepts/*.yaml` for folder and field declarations.
 
 **Capture:** Use `$lexa-capture` skill or follow the librarian persona.
 **Retrieve:** Use `$lexa-retrieve` skill or follow the retriever persona with declared lenses.
 
-> **v0 native install:** `lexa install --runtime codex` installs Codex rules, `$lexa-*` skills, and a managed Codex MCP config. Use Lexa MCP tools for capture/retrieve and CLI commands for lifecycle.
+> **v0 native install:** `lxa install --runtime codex` installs Codex rules, `$lexa-*` skills, and a managed Codex MCP config. Use Lexa MCP tools for capture/retrieve and CLI commands for lifecycle.

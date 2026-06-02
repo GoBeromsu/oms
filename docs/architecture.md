@@ -36,7 +36,7 @@ All knowledge logic (validation, ontology loading, folder resolution, graph/cach
 | Convention file | `CLAUDE.md` / `AGENTS.md` | `AGENTS.md` | `SOUL.md` + context files |
 | Local vault access | yes | yes | yes |
 
-`adapters/claude-code/`, `adapters/codex/`, and `adapters/hermes/` all ship installable v0 host surfaces. `lexa install` copies host assets, installs Codex/Hermes skills or rules where the host expects them, and writes host MCP registration.
+`adapters/claude-code/`, `adapters/codex/`, and `adapters/hermes/` all ship installable v0 host surfaces. `lxa install` copies host assets, installs Codex/Hermes skills or rules where the host expects them, and writes host MCP registration.
 
 ## Flow Diagram
 
@@ -47,7 +47,7 @@ All knowledge logic (validation, ontology loading, folder resolution, graph/cach
 │                                                                  │
 │  host ADAPTER                                                    │
 │  ├─ plugin.json / rule+skill bundle / SOUL.md fragment              │
-│  └─ shells out to: npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz setup | lexa doctor | lexa define    │
+│  └─ shells out to: npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz setup | lxa doctor | lxa define    │
 └───────────────────────────┬──────────────────────────────────────┘
                             │ invokes
                             ▼
@@ -77,13 +77,13 @@ All knowledge logic (validation, ontology loading, folder resolution, graph/cach
 
 ## MCP Backbone — Current Boundary and Roadmap
 
-MCP is the shared cross-host transport for retrieve, graph/status, validation, cache, and safe capture operations. In the current repository, `src/mcp/server.ts` starts a real stdio MCP server through `lexa mcp`.
+MCP is the shared cross-host transport for retrieve, graph/status, validation, cache, and safe capture operations. In the current repository, `src/mcp/server.ts` starts a real stdio MCP server through `lxa mcp`.
 
 The correct runtime framing is:
 
 1. **Now**: CLI setup/doctor and convention engine are real; Claude Code skills exist as installable/guided surfaces.
-2. **Next**: install shell can print exact dry-run Claude plugin and MCP registration commands (`lexa setup --install-claude`) without claiming a live runtime.
-3. **Now in Phase 2**: real stdio MCP read/status tools are available through `lexa mcp`.
+2. **Next**: install shell can print exact dry-run Claude plugin and MCP registration commands (`lxa setup --install-claude`) without claiming a live runtime.
+3. **Now in Phase 2**: real stdio MCP read/status tools are available through `lxa mcp`.
 4. **Now in Phase 3**: derived graph/search cache tools are available for axis-first retrieval and lazy body load.
 5. **Now in Phase 4**: safe capture prepare/commit tools are available after path-safety and vault-confinement tests.
 

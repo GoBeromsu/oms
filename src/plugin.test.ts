@@ -50,11 +50,11 @@ describe("claude-code plugin DoD", () => {
     }
   });
 
-  it("the setup skill SKILL.md mentions 'npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz'", async () => {
+  it("the setup skill SKILL.md mentions 'npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz'", async () => {
     // The setup skill entry is "./skills/setup/" relative to the plugin root.
     const setupSkillPath = path.resolve(pluginRoot, "./skills/setup/SKILL.md");
     const content = await readFile(setupSkillPath, "utf-8");
-    expect(content).toContain("npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz");
+    expect(content).toContain("npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz");
   });
 });
 

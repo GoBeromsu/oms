@@ -11,7 +11,7 @@ This skill is **REAL in v0** — the CLI command is fully implemented.
 ## Shell-out
 
 ```bash
-npx lexa setup [--vault <path>] [--yes]
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz setup [--vault <path>] [--yes]
 ```
 
 - `--vault <path>` — path to your Obsidian vault root (default: current directory).
@@ -27,7 +27,7 @@ npx lexa setup [--vault <path>] [--yes]
 6. Copies the shipped default concepts into `vault/.lexa/concepts/`.
 
 After setup, the vault is governed by Lexa conventions.
-Run `npx lexa doctor` at any time to validate existing notes.
+Run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor` at any time to validate existing notes.
 
 ## What setup does NOT do
 
@@ -40,5 +40,5 @@ Run `npx lexa doctor` at any time to validate existing notes.
 Run the `doctor` skill to check your notes against the convention:
 
 ```bash
-npx lexa doctor [--vault <path>]
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor [--vault <path>]
 ```

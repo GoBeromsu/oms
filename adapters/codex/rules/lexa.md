@@ -10,10 +10,10 @@ Lexa is a convention harness, not a content generator. The user owns the ontolog
 
 | User intent | Preferred Lexa surface |
 |---|---|
-| adopt a vault | `$lexa-setup` or `npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz setup --vault <path>` |
-| install host integration | `$lexa-install` or `npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz install --runtime codex --vault <path> --yes` |
-| uninstall host integration | `$lexa-uninstall` or `npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz uninstall --runtime codex --yes` |
-| validate notes | `$lexa-doctor` or `npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz doctor --vault <path>` |
+| adopt a vault | `$lexa-setup` or `npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz setup --vault <path>` |
+| install host integration | `$lexa-install` or `npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz install --runtime codex --vault <path> --yes` |
+| uninstall host integration | `$lexa-uninstall` or `npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz uninstall --runtime codex --yes` |
+| validate notes | `$lexa-doctor` or `npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor --vault <path>` |
 | capture knowledge | use MCP `lexa_capture_prepare` then `lexa_capture_commit` |
 | retrieve knowledge | use MCP `lexa_retrieve_by_axis`, then `lexa_lazy_load_note` only when needed |
 

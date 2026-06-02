@@ -1,6 +1,6 @@
 ---
 name: lexa-setup
-description: Adopt an existing Obsidian vault into the Lexa convention by running npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz setup.
+description: Adopt an existing Obsidian vault into the Lexa convention by running npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz setup.
 ---
 
 # Skill: lexa-setup (Claude Code)
@@ -19,8 +19,8 @@ This skill is **REAL in v0** — it shells out to the fully-implemented CLI.
 Shells out to:
 
 ```bash
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz setup [--vault <path>] [--yes] [--install-claude]
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz install [--runtime <auto|all|claude|codex|hermes>] [--vault <path>] [--dry-run] [--execute] [--yes]
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz setup [--vault <path>] [--yes] [--install-claude]
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz install [--runtime <auto|all|claude|codex|hermes>] [--vault <path>] [--dry-run] [--execute] [--yes]
 ```
 
 The CLI will:
@@ -43,19 +43,19 @@ The CLI will:
 
 ```bash
 # Interactive (recommended first run):
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz setup --vault ~/Documents/MyVault
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz setup --vault ~/Documents/MyVault
 
 # Non-interactive (CI / scripted):
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz setup --vault ~/Documents/MyVault --yes
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz setup --vault ~/Documents/MyVault --yes
 
 # Preview all host adapter installs:
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz install --runtime all --vault ~/Documents/MyVault --dry-run
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz install --runtime all --vault ~/Documents/MyVault --dry-run
 
 # Install all host adapter/MCP registrations:
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz install --runtime all --vault ~/Documents/MyVault --yes
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz install --runtime all --vault ~/Documents/MyVault --yes
 
 # Also run external host CLIs where available:
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz install --runtime claude --vault ~/Documents/MyVault --yes --execute
+npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz install --runtime claude --vault ~/Documents/MyVault --yes --execute
 ```
 
 ## After setup
@@ -64,7 +64,7 @@ Run `/lexa-doctor` to validate your existing notes against the convention.
 
 ## Roadmap
 
-Setup plus `lexa install`/`lexa uninstall` host lifecycle commands are real and release-gated by unpacked npm tarball smoke tests. The MCP command starts
+Setup plus `lxa install`/`lxa uninstall` host lifecycle commands are real and release-gated by unpacked npm tarball smoke tests. The MCP command starts
 the status/read/cache/capture runtime (`lexa_graph_status`, `lexa_graph_build`,
 `lexa_list_concepts`, `lexa_retrieve_by_axis`, `lexa_lazy_load_note`,
 `lexa_validate_contract`, `lexa_capture_prepare`, `lexa_capture_commit`).

@@ -60,7 +60,7 @@ describe("runSetup --yes E2E", () => {
     expect(plan.pluginPath).toContain("adapters/claude-code");
     expect(plan.pluginInstallCommand).toContain("claude plugin install");
     expect(plan.mcpRegistrationCommand).toBe(
-      "claude mcp add lexa -- npx -y https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz mcp --vault '/tmp/My Vault'",
+      "claude mcp add lexa -- npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz mcp --vault '/tmp/My Vault'",
     );
     expect(plan.mcpRuntimeStatus).toBe("read-status-runtime");
   });

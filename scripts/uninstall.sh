@@ -44,13 +44,16 @@ if [ "$EXECUTE" = "1" ]; then
   ARGS+=(--execute)
 fi
 
-if command -v lexa >/dev/null 2>&1; then
+if command -v lxa >/dev/null 2>&1; then
+  lxa "${ARGS[@]}"
+elif command -v lexa >/dev/null 2>&1; then
   lexa "${ARGS[@]}"
 else
-  echo "lexa binary not found; skipping host deregistration." >&2
+  echo "lxa/lexa binary not found; skipping host deregistration." >&2
 fi
 
 if [ "$REMOVE_PACKAGE" = "1" ] && command -v npm >/dev/null 2>&1; then
+  npm uninstall -g lxa-vault || true
   npm uninstall -g @goberomsu/lexa || true
 fi
 

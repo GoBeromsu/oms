@@ -1,6 +1,6 @@
 # Lexa Hermes Adapter
 
-Installed by `lexa install --runtime hermes` into:
+Installed by `lxa install --runtime hermes` into:
 
 - `~/.hermes/skills/knowledge-management/lexa/`
 - `~/.hermes/config.yaml` as `mcp_servers.lexa`

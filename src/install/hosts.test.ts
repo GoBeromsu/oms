@@ -24,7 +24,7 @@ describe("host installer/uninstaller", () => {
     const installed = await readFile(path.join(codexDir, "config.toml"), "utf-8");
     expect(installed).toContain("# BEGIN LEXA MANAGED MCP");
     expect(installed).toContain("[mcp_servers.lexa]");
-    expect(installed).toContain("lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz");
+    expect(installed).toContain("lxa-v0.1.3/lxa-vault-0.1.3.tgz");
     expect(installed).toContain("[other]");
     expect(existsSync(path.join(codexDir, "plugins", "lexa", "AGENTS.md"))).toBe(true);
     expect(existsSync(path.join(codexDir, "rules", "lexa.md"))).toBe(true);

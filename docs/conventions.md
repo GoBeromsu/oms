@@ -118,7 +118,7 @@ Each frontmatter key is an independent unit of convention and a retrieval axis. 
 1. Open the concept file in `vault/.lexa/concepts/<concept>.yaml`.
 2. Append a new entry under `fields:`.
 3. Provide at minimum `name`, `type`, and `intent`. Set `required: true` only for keys that every note in that folder must have.
-4. Run `lexa doctor` — it will report any existing notes that are now missing the new required field (as warnings, never blocking).
+4. Run `lxa doctor` — it will report any existing notes that are now missing the new required field (as warnings, never blocking).
 
 You never need to add all fields upfront. Start with the two or three that matter for your current retrieval use case and grow the convention over time. Good capture is measured by future retrieval quality: if a field helps you find and reuse notes later, it is a strong candidate axis.
 
@@ -136,7 +136,7 @@ Example: a `synthesis` retrieval view can show citation fields needed for writin
 
 ## taxonomy.yaml
 
-The taxonomy binds folders to concepts and gives each folder a declared `intent`. `lexa setup` generates this file by scanning your vault's existing top-level folders — it never imposes a folder structure.
+The taxonomy binds folders to concepts and gives each folder a declared `intent`. `lxa setup` generates this file by scanning your vault's existing top-level folders — it never imposes a folder structure.
 
 ```yaml
 # vault/.lexa/taxonomy.yaml
@@ -173,11 +173,11 @@ A folder with `concept: null` is still meaningful: its `intent` tells agents wha
 
 ### `onViolation: warn` (non-blocking in v0)
 
-When `validateFrontmatter` finds a violation it returns a `ValidationResult { valid, violations[] }` and **never throws**. The `lexa doctor` command prints a violation summary and always exits 0. This means:
+When `validateFrontmatter` finds a violation it returns a `ValidationResult { valid, violations[] }` and **never throws**. The `lxa doctor` command prints a violation summary and always exits 0. This means:
 
 - A missing required field is surfaced as a warning, not an error.
 - Agent workflows are never blocked by a convention mismatch.
-- You can run `lexa doctor` at any time with zero risk of breaking a build.
+- You can run `lxa doctor` at any time with zero risk of breaking a build.
 
 ### `additionalProperties: preserve`
 
@@ -189,10 +189,10 @@ A field may be declared `immutable: true`. In v0 this is recorded in the schema 
 
 ## User Ownership
 
-Lexa ships default concepts in `core/ontology/` (inside the npm package). Running `lexa setup` copies them into `vault/.lexa/concepts/` — from that point on, **you own those files**. Lexa enforces whatever you declare; it does not pull updates over the files you have edited.
+Lexa ships default concepts in `core/ontology/` (inside the npm package). Running `lxa setup` copies them into `vault/.lexa/concepts/` — from that point on, **you own those files**. Lexa enforces whatever you declare; it does not pull updates over the files you have edited.
 
 The separation is:
 - `core/ontology/` — Lexa's shipped defaults (read-only from your perspective).
 - `vault/.lexa/` — your live convention (user-owned, edited freely, never overwritten by Lexa after setup).
 
-To reset a concept to the shipped default, delete the file in `vault/.lexa/concepts/` and re-run `lexa setup`.
+To reset a concept to the shipped default, delete the file in `vault/.lexa/concepts/` and re-run `lxa setup`.

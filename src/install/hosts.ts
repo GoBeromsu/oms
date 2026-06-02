@@ -35,7 +35,7 @@ const HOSTS: HostRuntime[] = ["claude", "codex", "hermes"];
 const MANAGED_CODEX_START = "# BEGIN LEXA MANAGED MCP";
 const MANAGED_CODEX_END = "# END LEXA MANAGED MCP";
 const DEFAULT_PACKAGE_SPEC =
-  "https://github.com/GoBeromsu/lexa/releases/download/lexa-v0.1.2/goberomsu-lexa-0.1.2.tgz";
+  "https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz";
 const CODEX_SKILL_PREFIX = "lexa-";
 const CODEX_RULE_FILENAME = "lexa.md";
 const HERMES_SKILL_CATEGORY = "knowledge-management";
@@ -242,7 +242,7 @@ function codexManagedBlock(options: HostOperationOptions): string {
   const args = mcpArgs(options).map(jsonString).join(", ");
   return [
     MANAGED_CODEX_START,
-    "# Lexa MCP hookup for Codex CLI. Managed by `lexa install/uninstall`.",
+    "# Lexa MCP hookup for Codex CLI. Managed by `lxa install/uninstall`.",
     "# Codex-native rules live in ~/.codex/rules/lexa.md; skills live in ~/.codex/skills/lexa-*.",
     "[mcp_servers.lexa]",
     'command = "npx"',
