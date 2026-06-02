@@ -1,17 +1,17 @@
 ---
 name: setup
-description: Adopt an existing Obsidian vault into the OMS convention (REAL today).
+description: Adopt an existing Obsidian vault into the Oh My Second Brain convention (REAL today).
 ---
 
 # Skill: setup
 
-Adopt your existing vault into the OMS convention.
+Adopt your existing vault into the Oh My Second Brain convention.
 This skill is **REAL in v0** — the CLI command is fully implemented.
 
 ## Shell-out
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz setup [--vault <path>] [--yes]
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz setup [--vault <path>] [--yes]
 ```
 
 - `--vault <path>` — path to your Obsidian vault root (default: current directory).
@@ -26,8 +26,8 @@ npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.t
 5. Writes `vault/.oms/taxonomy.yaml` (with `version: 0`).
 6. Copies the shipped default concepts into `vault/.oms/concepts/`.
 
-After setup, the vault is governed by OMS conventions.
-Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor` at any time to validate existing notes.
+After setup, the vault is governed by Oh My Second Brain conventions.
+Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor` at any time to validate existing notes.
 
 ## What setup does NOT do
 
@@ -40,5 +40,5 @@ Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.
 Run the `doctor` skill to check your notes against the convention:
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor [--vault <path>]
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor [--vault <path>]
 ```

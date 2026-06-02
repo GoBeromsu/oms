@@ -1,6 +1,6 @@
 ---
 name: oms-doctor
-description: Validate vault notes against the OMS convention by running npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor.
+description: Validate vault notes against the Oh My Second Brain convention by running npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor.
 ---
 
 # Skill: oms-doctor (Claude Code)
@@ -19,7 +19,7 @@ This skill is **REAL in v0** — it shells out to the fully-implemented CLI.
 Shells out to:
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor [--vault <path>]
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor [--vault <path>]
 ```
 
 The CLI will:
@@ -39,7 +39,7 @@ The CLI will:
 ## Example
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor --vault ~/Documents/MyVault
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor --vault ~/Documents/MyVault
 ```
 
 ## Sample output

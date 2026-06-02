@@ -1,6 +1,6 @@
-# OMS Conventions Guide
+# Oh My Second Brain Conventions Guide
 
-A OMS convention is **declarative data you own**. It lives in your vault under `vault/.oms/` and tells host agents what your frontmatter means, not just what keys exist. This guide covers the format, how to grow it, and what OMS enforces.
+An Oh My Second Brain convention is **declarative data you own**. It lives in your vault under `vault/.oms/` and tells host agents what your frontmatter means, not just what keys exist. This guide covers the format, how to grow it, and what Oh My Second Brain enforces.
 
 ## The Convention Format
 
@@ -11,7 +11,7 @@ The convention is a semantic ontology with four interlocking pieces:
 - **Retrieval view** — a named output shape that selects which fields matter for a specific retrieval purpose. In YAML this is still stored under the backward-compatible `lenses` key.
 - **Taxonomy** — binds folders to concepts and declares a per-folder `intent` ("the folder itself is information").
 
-OMS's heavier harness architecture treats folders, frontmatter fields, frontmatter values, and wikilinks as the intentional graph surface for retrieval. The note body remains user payload: OMS can lazy-load it after retrieval narrowing, but it does not judge or generate the body content.
+Oh My Second Brain's heavier harness architecture treats folders, frontmatter fields, frontmatter values, and wikilinks as the intentional graph surface for retrieval. The note body remains user payload: Oh My Second Brain can lazy-load it after retrieval narrowing, but it does not judge or generate the body content.
 
 ## Worked Example: the `literature` Concept
 
@@ -86,7 +86,7 @@ my-rating: 5
 Body of the note...
 ```
 
-`my-rating` is not declared in the concept. OMS leaves it untouched (`additionalProperties: preserve`).
+`my-rating` is not declared in the concept. Oh My Second Brain leaves it untouched (`additionalProperties: preserve`).
 
 ## Field Types
 
@@ -124,12 +124,12 @@ You never need to add all fields upfront. Start with the two or three that matte
 
 ## Retrieval Views (`lenses`)
 
-Concept files keep the `lenses` key for compatibility. In prose, OMS calls these **retrieval views**.
+Concept files keep the `lenses` key for compatibility. In prose, Oh My Second Brain calls these **retrieval views**.
 
 A retrieval view is not the graph itself and does not replace frontmatter axes. It shapes the result after retrieval:
 
-1. OMS narrows candidate notes through folder/concept/property/wikilink axes.
-2. OMS may optionally rank candidates with lexical/vector/hybrid search once that derived search layer exists.
+1. Oh My Second Brain narrows candidate notes through folder/concept/property/wikilink axes.
+2. Oh My Second Brain may optionally rank candidates with lexical/vector/hybrid search once that derived search layer exists.
 3. The retrieval view selects which fields or excerpts should be shown for the current purpose.
 
 Example: a `synthesis` retrieval view can show citation fields needed for writing, while an `audit` retrieval view can show status/completeness fields. Both views reuse the same underlying frontmatter axes.
@@ -181,18 +181,18 @@ When `validateFrontmatter` finds a violation it returns a `ValidationResult { va
 
 ### `additionalProperties: preserve`
 
-Frontmatter keys that are not declared in the concept's `fields` array are left completely untouched. OMS does not emit a violation for them and does not remove them. Your existing Obsidian plugins, templates, and personal keys coexist safely with the declared convention.
+Frontmatter keys that are not declared in the concept's `fields` array are left completely untouched. Oh My Second Brain does not emit a violation for them and does not remove them. Your existing Obsidian plugins, templates, and personal keys coexist safely with the declared convention.
 
 ### `immutable` (v0 no-op, forward-compatible)
 
-A field may be declared `immutable: true`. In v0 this is recorded in the schema but **never enforced** — no violation is emitted for an immutable field that has changed, because OMS does not maintain a baseline snapshot to compare against. The union member is kept so that v1 can begin enforcing without a breaking schema change.
+A field may be declared `immutable: true`. In v0 this is recorded in the schema but **never enforced** — no violation is emitted for an immutable field that has changed, because Oh My Second Brain does not maintain a baseline snapshot to compare against. The union member is kept so that v1 can begin enforcing without a breaking schema change.
 
 ## User Ownership
 
-OMS ships default concepts in `core/ontology/` (inside the npm package). Running `oms setup` copies them into `vault/.oms/concepts/` — from that point on, **you own those files**. OMS enforces whatever you declare; it does not pull updates over the files you have edited.
+Oh My Second Brain ships default concepts in `core/ontology/` (inside the npm package). Running `oms setup` copies them into `vault/.oms/concepts/` — from that point on, **you own those files**. Oh My Second Brain enforces whatever you declare; it does not pull updates over the files you have edited.
 
 The separation is:
-- `core/ontology/` — OMS's shipped defaults (read-only from your perspective).
-- `vault/.oms/` — your live convention (user-owned, edited freely, never overwritten by OMS after setup).
+- `core/ontology/` — Oh My Second Brain's shipped defaults (read-only from your perspective).
+- `vault/.oms/` — your live convention (user-owned, edited freely, never overwritten by Oh My Second Brain after setup).
 
 To reset a concept to the shipped default, delete the file in `vault/.oms/concepts/` and re-run `oms setup`.

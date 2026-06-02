@@ -129,9 +129,9 @@ function conceptSummary(concept: Concept): Record<string, unknown> {
 export const omsMcpTools: Tool[] = [
   {
     name: "oms_graph_status",
-    title: "OMS graph/status",
+    title: "Oh My Second Brain graph/status",
     description:
-      "Read-only status for the active OMS ontology, graph/search cache phase, and gated write-tool posture.",
+      "Read-only status for the active Oh My Second Brain ontology, graph/search cache phase, and gated write-tool posture.",
     inputSchema: {
       type: "object",
       properties: {},
@@ -145,7 +145,7 @@ export const omsMcpTools: Tool[] = [
   },
   {
     name: "oms_graph_build",
-    title: "OMS graph build",
+    title: "Oh My Second Brain graph build",
     description:
       "Build the derived graph/search cache from markdown, frontmatter, folders, and wikilinks.",
     inputSchema: {
@@ -161,7 +161,7 @@ export const omsMcpTools: Tool[] = [
   },
   {
     name: "oms_list_concepts",
-    title: "OMS list concepts",
+    title: "Oh My Second Brain list concepts",
     description:
       "Read the active ontology concepts, frontmatter axes, folder bindings, and retrieval views.",
     inputSchema: {
@@ -177,7 +177,7 @@ export const omsMcpTools: Tool[] = [
   },
   {
     name: "oms_retrieve_by_axis",
-    title: "OMS retrieve by axis",
+    title: "Oh My Second Brain retrieve by axis",
     description:
       "Axis-first retrieval over the derived cache; optional lexical query only ranks inside the narrowed candidate set.",
     inputSchema: {
@@ -201,7 +201,7 @@ export const omsMcpTools: Tool[] = [
   },
   {
     name: "oms_lazy_load_note",
-    title: "OMS lazy-load note body",
+    title: "Oh My Second Brain lazy-load note body",
     description:
       "Load a selected note body only after axis/search narrowing has selected the note.",
     inputSchema: {
@@ -223,7 +223,7 @@ export const omsMcpTools: Tool[] = [
   },
   {
     name: "oms_validate_contract",
-    title: "OMS validate contract",
+    title: "Oh My Second Brain validate contract",
     description:
       "Read one vault note and validate its frontmatter against the active folder/concept contract.",
     inputSchema: {
@@ -245,7 +245,7 @@ export const omsMcpTools: Tool[] = [
   },
   {
     name: "oms_capture_prepare",
-    title: "OMS capture prepare",
+    title: "Oh My Second Brain capture prepare",
     description:
       "Plan a safe capture: choose folder/concept, surface missing fields, or route ambiguous input to inbox without writing.",
     inputSchema: {
@@ -266,7 +266,7 @@ export const omsMcpTools: Tool[] = [
   },
   {
     name: "oms_capture_commit",
-    title: "OMS capture commit",
+    title: "Oh My Second Brain capture commit",
     description:
       "Write or append a note only after vault path confinement and contract validation pass.",
     inputSchema: {
@@ -299,7 +299,7 @@ export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
     {
       capabilities: { tools: {} },
       instructions:
-        "OMS exposes ontology/status/cache/retrieval tools and safe capture tools. Capture commit is gated by vault confinement and contract validation.",
+        "Oh My Second Brain exposes ontology/status/cache/retrieval tools and safe capture tools. Capture commit is gated by vault confinement and contract validation.",
     },
   );
 
@@ -501,9 +501,9 @@ export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
       }
     }
 
-    return errorText(`Unknown OMS tool: ${request.params.name}`);
+    return errorText(`Unknown Oh My Second Brain tool: ${request.params.name}`);
     } catch (error) {
-      return errorText(`OMS MCP error: ${error instanceof Error ? error.message : String(error)}`);
+      return errorText(`Oh My Second Brain MCP error: ${error instanceof Error ? error.message : String(error)}`);
     }
   });
 

@@ -1,6 +1,6 @@
 ---
 name: retrieve
-description: Retrieve knowledge from the vault through declared OMS lenses (인출).
+description: Retrieve knowledge from the vault through declared Oh My Second Brain lenses (인출).
 ---
 
 # Skill: retrieve

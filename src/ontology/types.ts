@@ -1,8 +1,8 @@
 /**
- * OMS convention format — the semantic ontology, adapted from ouroboros.
+ * Oh My Second Brain convention format — the semantic ontology, adapted from ouroboros.
  *
  * A vault's convention is declarative data the user owns (lives in `vault/.oms/`).
- * OMS ships defaults in `core/ontology/` and enforces whatever the user declares.
+ * Oh My Second Brain ships defaults in `core/ontology/` and enforces whatever the user declares.
  *
  * The format is deliberately semantic, not structural: every concept and folder
  * carries a declared `intent` so a host agent reads *why* knowledge lives somewhere,

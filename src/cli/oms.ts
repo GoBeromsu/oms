@@ -18,7 +18,7 @@ import {
 import type { Taxonomy, FolderBinding } from "../ontology/types.js";
 
 const DEFAULT_RELEASE_PACKAGE_SPEC =
-  "https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz";
+  "https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz";
 
 // ---------------------------------------------------------------------------
 // Path helpers
@@ -174,7 +174,7 @@ export async function runSetup(opts: {
     const conceptNames = Array.from(ontology.concepts.keys());
 
     try {
-      console.log("\nOMS Setup — adopting existing vault folders.\n");
+      console.log("\nOh My Second Brain Setup — adopting existing vault folders.\n");
       console.log(`Available shipped concepts: ${conceptNames.join(", ") || "(none)"}\n`);
 
       for (const folder of folders) {
@@ -248,12 +248,12 @@ export async function runSetup(opts: {
   }
 
   // Summary
-  console.log(`\nOMS setup complete.`);
+  console.log(`\nOh My Second Brain setup complete.`);
   console.log(`  Vault:    ${vault}`);
   console.log(`  Written:  ${path.join(omsDir, "taxonomy.yaml")}`);
   console.log(`  Concepts: ${copiedFiles.join(", ") || "(none)"}`);
   console.log(`  Folders:  ${Object.keys(folderBindings).join(", ") || "(none)"}`);
-  console.log(`\nRun "npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor" to validate existing notes.\n`);
+  console.log(`\nRun "npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor" to validate existing notes.\n`);
 
   if (installClaude) {
     printClaudeInstallPlan(buildClaudeInstallPlan({ vault }));
@@ -319,7 +319,7 @@ export async function runDoctor(opts: { vault: string }): Promise<number> {
     }
 
     console.log(
-      `\nOMS doctor: ${totalNotes} notes checked, ${notesWithViolations} with violations, ${totalViolations} total violations.`,
+      `\nOh My Second Brain doctor: ${totalNotes} notes checked, ${notesWithViolations} with violations, ${totalViolations} total violations.`,
     );
     console.log("All violations are warnings (onViolation: warn). Exit 0.\n");
   } catch (err) {
@@ -336,7 +336,7 @@ export async function runDoctor(opts: { vault: string }): Promise<number> {
 
 function printUsage(): void {
   console.log(`
-oms — OMS convention layer for Obsidian vaults
+oms — Oh My Second Brain convention layer for Obsidian vaults
 
 Usage:
   oms setup [--vault <path>] [--yes] [--install-claude]
@@ -346,9 +346,9 @@ Usage:
   oms mcp [--vault <path>]
 
 Commands:
-  setup    Adopt an existing vault into the OMS convention.
-  install  Install OMS host adapters and MCP registration.
-  uninstall Remove OMS host adapters and MCP registration.
+  setup    Adopt an existing vault into the Oh My Second Brain convention.
+  install  Install Oh My Second Brain host adapters and MCP registration.
+  uninstall Remove Oh My Second Brain host adapters and MCP registration.
   doctor   Validate vault notes against the active ontology.
   mcp      Start the read/status MCP stdio server.
 

@@ -24,7 +24,7 @@ describe("host installer/uninstaller", () => {
     const installed = await readFile(path.join(codexDir, "config.toml"), "utf-8");
     expect(installed).toContain("# BEGIN OMS MANAGED MCP");
     expect(installed).toContain("[mcp_servers.oms]");
-    expect(installed).toContain("oms-v0.1.4/oms-0.1.4.tgz");
+    expect(installed).toContain("oms-v0.1.5/oms-0.1.5.tgz");
     expect(installed).toContain("[other]");
     expect(existsSync(path.join(codexDir, "plugins", "oms", "AGENTS.md"))).toBe(true);
     expect(existsSync(path.join(codexDir, "rules", "oms.md"))).toBe(true);

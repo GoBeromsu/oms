@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# OMS uninstaller — removes host adapter registrations and optionally the package.
+# Oh My Second Brain uninstaller — removes host adapter registrations and optionally the package.
 # Usage: curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/uninstall.sh | bash
 set -euo pipefail
 
@@ -24,10 +24,10 @@ done
 
 if [ "$YES" != "1" ]; then
   if [ -t 0 ]; then
-    printf 'Remove OMS host registrations for runtime=%s? (y/N) ' "$RUNTIME"
+    printf 'Remove Oh My Second Brain host registrations for runtime=%s? (y/N) ' "$RUNTIME"
     read -r REPLY
   elif [ -c /dev/tty ]; then
-    printf 'Remove OMS host registrations for runtime=%s? (y/N) ' "$RUNTIME" >&2
+    printf 'Remove Oh My Second Brain host registrations for runtime=%s? (y/N) ' "$RUNTIME" >&2
     read -r REPLY < /dev/tty
   else
     echo "Non-interactive uninstall requires --yes or OMS_UNINSTALL_CONFIRM=1." >&2
@@ -46,15 +46,12 @@ fi
 
 if command -v oms >/dev/null 2>&1; then
   oms "${ARGS[@]}"
-elif command -v oms >/dev/null 2>&1; then
-  oms "${ARGS[@]}"
 else
-  echo "oms/oms binary not found; skipping host deregistration." >&2
+  echo "oms binary not found; skipping host deregistration." >&2
 fi
 
 if [ "$REMOVE_PACKAGE" = "1" ] && command -v npm >/dev/null 2>&1; then
   npm uninstall -g oms || true
-  npm uninstall -g oms || true
 fi
 
-echo "OMS uninstall complete. Vault content was not removed."
+echo "Oh My Second Brain uninstall complete. Vault content was not removed."

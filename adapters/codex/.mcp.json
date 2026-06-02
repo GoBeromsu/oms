@@ -4,7 +4,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz",
+        "https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz",
         "mcp",
         "--vault",
         "."

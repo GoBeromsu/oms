@@ -1,11 +1,11 @@
 ---
 name: oms-setup
-description: Adopt an existing Obsidian vault into the OMS convention by running npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz setup.
+description: Adopt an existing Obsidian vault into the Oh My Second Brain convention by running npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz setup.
 ---
 
 # Skill: oms-setup (Claude Code)
 
-Adopt your Obsidian vault into the OMS convention.
+Adopt your Obsidian vault into the Oh My Second Brain convention.
 This skill is **REAL in v0** — it shells out to the fully-implemented CLI.
 
 ## Invocation
@@ -19,8 +19,8 @@ This skill is **REAL in v0** — it shells out to the fully-implemented CLI.
 Shells out to:
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz setup [--vault <path>] [--yes] [--install-claude]
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz install [--runtime <auto|all|claude|codex|hermes>] [--vault <path>] [--dry-run] [--execute] [--yes]
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz setup [--vault <path>] [--yes] [--install-claude]
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz install [--runtime <auto|all|claude|codex|hermes>] [--vault <path>] [--dry-run] [--execute] [--yes]
 ```
 
 The CLI will:
@@ -43,19 +43,19 @@ The CLI will:
 
 ```bash
 # Interactive (recommended first run):
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz setup --vault ~/Documents/MyVault
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz setup --vault ~/Documents/MyVault
 
 # Non-interactive (CI / scripted):
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz setup --vault ~/Documents/MyVault --yes
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz setup --vault ~/Documents/MyVault --yes
 
 # Preview all host adapter installs:
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz install --runtime all --vault ~/Documents/MyVault --dry-run
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz install --runtime all --vault ~/Documents/MyVault --dry-run
 
 # Install all host adapter/MCP registrations:
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz install --runtime all --vault ~/Documents/MyVault --yes
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz install --runtime all --vault ~/Documents/MyVault --yes
 
 # Also run external host CLIs where available:
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz install --runtime claude --vault ~/Documents/MyVault --yes --execute
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz install --runtime claude --vault ~/Documents/MyVault --yes --execute
 ```
 
 ## After setup

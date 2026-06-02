@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-OMS's v0 enforcement model is `onViolation: warn` — convention mismatches are informational, not blocking. The `validateFrontmatter` function is the central enforcement point: it receives a note's parsed frontmatter and a `Concept` definition and decides whether the frontmatter satisfies the declared field schema.
+Oh My Second Brain's v0 enforcement model is `onViolation: warn` — convention mismatches are informational, not blocking. The `validateFrontmatter` function is the central enforcement point: it receives a note's parsed frontmatter and a `Concept` definition and decides whether the frontmatter satisfies the declared field schema.
 
 Two implementation shapes were considered:
 
@@ -74,6 +74,6 @@ A throwing implementation would align with the fail-fast style common in parsers
 
 This was rejected because:
 
-1. OMS's declared enforcement policy is `onViolation: warn`. An exception-throwing function implements `onViolation: error` at the API level and forces every caller to add try/catch boilerplate to recover the non-blocking behavior promised by the policy.
+1. Oh My Second Brain's declared enforcement policy is `onViolation: warn`. An exception-throwing function implements `onViolation: error` at the API level and forces every caller to add try/catch boilerplate to recover the non-blocking behavior promised by the policy.
 2. `oms doctor` needs to validate an entire vault and report a summary. A throwing validator would require either catching and continuing in a loop (awkward) or a separate "collect" wrapper on top of the throwing function (duplication).
 3. Host agents invoking validation inside a larger workflow must not be aborted by a missing frontmatter field. The convention layer must be transparent to the host's own error handling.

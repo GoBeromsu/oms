@@ -5,14 +5,14 @@ description: Grow the vault convention by adding or editing a metadata field on 
 
 # Skill: define
 
-Extend your OMS convention field-by-field.
+Extend your Oh My Second Brain convention field-by-field.
 Each frontmatter key is a **unit of convention**: it carries a declared `intent`,
 type, and optional rules (`required`, `normalize`, `immutable`).
 
 ## Entry point
 
 ```bash
-npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz define
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz define
 ```
 
 This is the intended user-facing command (roadmap: interactive runtime not built yet).
@@ -27,7 +27,7 @@ Use `define` as **agent-guided convention editing** until the interactive runtim
 4. Ask: **type** (`string` | `string[]` | `date` | `url` | `boolean`), **required** (yes/no).
 5. Optionally ask: `normalize` (e.g. `lowercase`), `immutable` (lock after creation).
 6. Open `vault/.oms/concepts/<concept>.yaml` and append the new field entry.
-7. Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor` to validate existing notes against the updated schema (exits 0).
+7. Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor` to validate existing notes against the updated schema (exits 0).
 
 ## Convention YAML shape (one field entry)
 
@@ -55,5 +55,5 @@ vault/.oms/
   taxonomy.yaml
 ```
 
-OMS ships defaults (from `core/ontology/`); `oms setup` copies them into the vault.
-The user then edits them at will — OMS only enforces, never overwrites.
+Oh My Second Brain ships defaults (from `core/ontology/`); `oms setup` copies them into the vault.
+The user then edits them at will — Oh My Second Brain only enforces, never overwrites.

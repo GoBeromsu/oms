@@ -2,7 +2,7 @@
 
 ## Principle
 
-OMS's **core** (ontology loading, convention validation, graph/search runtime targets, and MCP server once implemented) is written once.
+Oh My Second Brain's **core** (ontology loading, convention validation, graph/search runtime targets, and MCP server once implemented) is written once.
 Each **adapter** absorbs exactly one host's structural differences — manifest schema,
 hook format, invocation sigil, and convention-file name — so adding a new host
 means adding one new adapter directory, not touching core.
@@ -43,7 +43,7 @@ adapters/<host>/
 
 ### claude-code (REAL installable v0)
 
-Release contract: the npm tarball must include `adapters/claude-code/` because `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz setup --install-claude` prints a packaged adapter path for `claude plugin install`.
+Release contract: the npm tarball must include `adapters/claude-code/` because `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz setup --install-claude` prints a packaged adapter path for `claude plugin install`.
 
 - **Manifest**: `.claude-plugin/plugin.json`
   - Schema: `{ name, version, description, author, license, keywords, skills: string[] }`
@@ -84,7 +84,7 @@ The MCP server currently exposes status/read/cache/capture tools:
 `oms_graph_status`, `oms_graph_build`, `oms_list_concepts`,
 `oms_retrieve_by_axis`, `oms_lazy_load_note`, `oms_validate_contract`,
 `oms_capture_prepare`, and `oms_capture_commit`.
-Capture commit is gated by path-safety, vault-confinement, and contract validation. The CLI (`npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz setup`, `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz install`, `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz uninstall`, `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor`) remains the real surface for lifecycle commands.
+Capture commit is gated by path-safety, vault-confinement, and contract validation. The CLI (`npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz setup`, `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz install`, `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz uninstall`, `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz doctor`) remains the real surface for lifecycle commands.
 
 ---
 
@@ -93,6 +93,6 @@ Capture commit is gated by path-safety, vault-confinement, and contract validati
 1. Create `adapters/<host>/`.
 2. Write the host-specific manifest in the correct subdirectory and schema.
 3. Write the convention-file shim (`CLAUDE.md` / `AGENTS.md` / `SOUL.md` / whatever the host uses).
-4. Write skill wrappers that shell out to `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz <verb>` (for lifecycle) or call the MCP server (for capture/retrieve).
+4. Write skill wrappers that shell out to `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.5/oms-0.1.5.tgz <verb>` (for lifecycle) or call the MCP server (for capture/retrieve).
 5. Document the host's structural differences in this table.
 6. Do **not** modify `core/` or add host-specific logic to shared code.
