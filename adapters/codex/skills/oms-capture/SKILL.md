@@ -1,5 +1,5 @@
 ---
-name: capture
+name: oms-capture
 description: Capture knowledge into the vault through OMS's folder/frontmatter contract.
 ---
 

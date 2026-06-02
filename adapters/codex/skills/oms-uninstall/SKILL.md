@@ -1,5 +1,5 @@
 ---
-name: uninstall
+name: oms-uninstall
 description: Remove OMS host adapter files and MCP registration without deleting vault notes or vault ontology.
 ---
 

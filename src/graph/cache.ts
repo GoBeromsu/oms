@@ -51,7 +51,7 @@ export interface SourceSignatures {
   notes: Record<string, NoteSignature>;
 }
 
-export interface LexaGraphCache {
+export interface OMSGraphCache {
   version: 1;
   generatedAt: string;
   sourceOfTruth: string[];
@@ -105,7 +105,7 @@ export interface RetrieveHit {
 const CACHE_VERSION = 1;
 
 export function graphCachePath(vault: string): string {
-  return path.join(vault, ".lexa", "cache", "graph.json");
+  return path.join(vault, ".oms", "cache", "graph.json");
 }
 
 function hash(value: string): string {
@@ -121,7 +121,7 @@ async function* walkMarkdown(dir: string, base: string): AsyncGenerator<string> 
   }
 
   for (const entry of entries) {
-    if (entry.name === ".lexa" || entry.name === "node_modules" || entry.name.startsWith(".")) {
+    if (entry.name === ".oms" || entry.name === "node_modules" || entry.name.startsWith(".")) {
       continue;
     }
     const full = path.join(dir, entry.name);
@@ -293,7 +293,7 @@ export async function buildGraphCache(opts: {
   vault: string;
   ontology: Ontology;
   write?: boolean;
-}): Promise<LexaGraphCache> {
+}): Promise<OMSGraphCache> {
   const vault = path.resolve(opts.vault);
   const notes: GraphNote[] = [];
   const edges: GraphEdge[] = [];
@@ -307,10 +307,10 @@ export async function buildGraphCache(opts: {
     search.push(built.search);
   }
 
-  const cache: LexaGraphCache = {
+  const cache: OMSGraphCache = {
     version: CACHE_VERSION,
     generatedAt: new Date().toISOString(),
-    sourceOfTruth: ["markdown notes", ".lexa/taxonomy.yaml", ".lexa/concepts/*.yaml"],
+    sourceOfTruth: ["markdown notes", ".oms/taxonomy.yaml", ".oms/concepts/*.yaml"],
     signatures: await buildSourceSignatures(vault, opts.ontology),
     notes: notes.sort((a, b) => a.path.localeCompare(b.path)),
     edges: edges.sort((a, b) => `${a.type}:${a.from}:${a.to}`.localeCompare(`${b.type}:${b.from}:${b.to}`)),
@@ -326,10 +326,10 @@ export async function buildGraphCache(opts: {
   return cache;
 }
 
-export async function readGraphCache(vault: string): Promise<LexaGraphCache | null> {
+export async function readGraphCache(vault: string): Promise<OMSGraphCache | null> {
   try {
     const raw = await readFile(graphCachePath(vault), "utf-8");
-    const parsed = JSON.parse(raw) as LexaGraphCache;
+    const parsed = JSON.parse(raw) as OMSGraphCache;
     return parsed.version === CACHE_VERSION ? parsed : null;
   } catch {
     return null;

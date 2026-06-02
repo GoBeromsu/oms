@@ -16,8 +16,8 @@ jobs:
   publish-npm:
     runs-on: ubuntu-latest
     env:
-      LEXA_REQUIRE_PLUGIN_VALIDATION: "1"
-      LEXA_PLUGIN_VALIDATION_ATTESTATION: ${{ inputs.plugin_validation_attestation }}
+      OMS_REQUIRE_PLUGIN_VALIDATION: "1"
+      OMS_PLUGIN_VALIDATION_ATTESTATION: ${{ inputs.plugin_validation_attestation }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

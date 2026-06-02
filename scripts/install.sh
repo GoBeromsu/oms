@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Lexa installer — installs the package and registers host adapters.
-# Usage: curl -fsSL https://raw.githubusercontent.com/GoBeromsu/lexa/main/scripts/install.sh | bash
+# OMS installer — installs the package and registers host adapters.
+# Usage: curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/install.sh | bash
 set -euo pipefail
 
-PACKAGE_SPEC="${LEXA_PACKAGE_SPEC:-https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz}"
-RUNTIME="${LEXA_INSTALL_RUNTIME:-auto}"
-VAULT="${LEXA_VAULT:-$PWD}"
-EXECUTE="${LEXA_EXECUTE_EXTERNAL:-0}"
+PACKAGE_SPEC="${OMS_PACKAGE_SPEC:-https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz}"
+RUNTIME="${OMS_INSTALL_RUNTIME:-auto}"
+VAULT="${OMS_VAULT:-$PWD}"
+EXECUTE="${OMS_EXECUTE_EXTERNAL:-0}"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -22,11 +22,11 @@ while [ "$#" -gt 0 ]; do
 done
 
 if ! command -v npm >/dev/null 2>&1; then
-  echo "Error: npm is required to install Lexa." >&2
+  echo "Error: npm is required to install OMS." >&2
   exit 1
 fi
 
-echo "Lexa Installer"
+echo "OMS Installer"
 echo "  package: $PACKAGE_SPEC"
 echo "  runtime: $RUNTIME"
 echo "  vault:   $VAULT"
@@ -39,11 +39,11 @@ if [ "$EXECUTE" = "1" ]; then
   ARGS+=(--execute)
 fi
 
-if command -v lxa >/dev/null 2>&1; then
-  lxa "${ARGS[@]}"
+if command -v oms >/dev/null 2>&1; then
+  oms "${ARGS[@]}"
 else
-  lexa "${ARGS[@]}"
+  oms "${ARGS[@]}"
 fi
 
 echo
-echo "Lexa install complete. Run: lxa doctor --vault \"$VAULT\""
+echo "OMS install complete. Run: oms doctor --vault \"$VAULT\""

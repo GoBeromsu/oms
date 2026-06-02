@@ -1,33 +1,33 @@
-# Lexa Harness Architecture
+# OMS Harness Architecture
 
-Lexa is an **axis graph harness** for an Obsidian markdown vault. Its purpose is not to generate note content for the user. Its purpose is to give host agents a deterministic contract for where knowledge belongs, which frontmatter axes describe it, how it links to other notes, and how it should be retrieved later.
+OMS is an **axis graph harness** for an Obsidian markdown vault. Its purpose is not to generate note content for the user. Its purpose is to give host agents a deterministic contract for where knowledge belongs, which frontmatter axes describe it, how it links to other notes, and how it should be retrieved later.
 
 The architecture is docs-first because the core product claim is semantic: capture is only good when it makes future retrieval and reuse easier.
 
 ## 1. Retrieval and reuse are the telos
 
-Lexa treats note making as a retrieval problem. A new note is successful when it can be found and reused later through the user's own knowledge axes.
+OMS treats note making as a retrieval problem. A new note is successful when it can be found and reused later through the user's own knowledge axes.
 
 That means capture and retrieval are separate flows over the same substrate:
 
 - **Capture**: place the note under the right folder/concept, fill the frontmatter axes, preserve user body content, and validate contract conformity.
 - **Retrieval**: narrow by folder/concept/frontmatter/wikilink axes first, optionally rank by search, then lazy-load the selected note bodies as payload.
 
-Lexa therefore optimizes for future reuse, not for the shortest possible write path.
+OMS therefore optimizes for future reuse, not for the shortest possible write path.
 
 ## 2. User-owned ontology
 
 The ontology is owned by the vault:
 
-- `vault/.lexa/taxonomy.yaml` declares folder intent and folder-to-concept bindings.
-- `vault/.lexa/concepts/*.yaml` declares concepts, frontmatter fields, and retrieval views.
+- `vault/.oms/taxonomy.yaml` declares folder intent and folder-to-concept bindings.
+- `vault/.oms/concepts/*.yaml` declares concepts, frontmatter fields, and retrieval views.
 - Markdown notes remain ordinary Obsidian notes.
 
-Lexa ships defaults, but setup copies them into the vault. After that, the live ontology is the user's editable contract. Lexa must not impose a fixed taxonomy or silently overwrite user convention files.
+OMS ships defaults, but setup copies them into the vault. After that, the live ontology is the user's editable contract. OMS must not impose a fixed taxonomy or silently overwrite user convention files.
 
 ## 3. Axes: frontmatter, folders, and wikilinks
 
-Lexa's intentional graph is built from user-authored structure:
+OMS's intentional graph is built from user-authored structure:
 
 | Primitive | Meaning |
 |---|---|
@@ -46,7 +46,7 @@ A note has two operational layers:
 1. **Graph surface**: path, folder, frontmatter, and wikilinks. This layer is used to validate the contract and build the intentional ontology graph.
 2. **Body payload**: prose, excerpts, evidence, and free-form markdown. This layer is loaded lazily after axis/search narrowing.
 
-Lexa does not judge whether the body is true, complete, or high quality. Body content belongs to the user. Lexa only checks whether the note conforms to the declared retrieval contract.
+OMS does not judge whether the body is true, complete, or high quality. Body content belongs to the user. OMS only checks whether the note conforms to the declared retrieval contract.
 
 ## 5. Capture flow
 
@@ -84,7 +84,7 @@ This is the main difference from generic search. Search is useful, but it is not
 
 ## 7. Retrieval views, not "lens projection"
 
-Existing concept files may contain `lenses`. Lexa keeps this schema for compatibility, but user-facing docs should call them **retrieval views**.
+Existing concept files may contain `lenses`. OMS keeps this schema for compatibility, but user-facing docs should call them **retrieval views**.
 
 A retrieval view is not the graph itself. It is an output shape applied after candidate notes have been selected by axis graph narrowing and optional search. For example, a `synthesis` retrieval view may choose to show `title`, `source-url`, and `author`, while an `audit` view may show `status` and `date-read`.
 
@@ -98,7 +98,7 @@ Avoid the phrase "lens projection" unless a document defines it locally. Prefer 
 
 ## 8. Contract-conformity gates
 
-Lexa gates structural conformity, not content quality.
+OMS gates structural conformity, not content quality.
 
 Contract checks include:
 
@@ -112,7 +112,7 @@ Default enforcement remains non-blocking warning behavior unless a future explic
 
 ## 9. Derived graph cache and search cache
 
-Markdown notes and `.lexa/` convention files are canonical. Everything under a cache/index layer is derived and rebuildable.
+Markdown notes and `.oms/` convention files are canonical. Everything under a cache/index layer is derived and rebuildable.
 
 Recommended derived slices:
 
@@ -129,8 +129,8 @@ Invalidation rules:
 
 | Change | Invalidates |
 |---|---|
-| `.lexa/taxonomy.yaml` folder binding/intent | graph schema, folder-concept edges, retrieval route cache |
-| `.lexa/concepts/*.yaml` fields/views/intent | graph schema, property-axis nodes, retrieval view cache, validation plan |
+| `.oms/taxonomy.yaml` folder binding/intent | graph schema, folder-concept edges, retrieval route cache |
+| `.oms/concepts/*.yaml` fields/views/intent | graph schema, property-axis nodes, retrieval view cache, validation plan |
 | note path/folder move | that note's folder edge, graph membership, search collection metadata |
 | note frontmatter key/value change | that note's property edges, validation result, graph slice |
 | note body wikilink change | that note's wikilink edges and graph slice |
@@ -141,7 +141,7 @@ Graph status should report stale slices separately: schema stale, graph stale, s
 
 ## 10. Claude Code skill/MCP installation surface
 
-The first installable target is Claude Code. The harness surface should make Lexa usable where the user is already working:
+The first installable target is Claude Code. The harness surface should make OMS usable where the user is already working:
 
 - skills for setup, doctor, capture, retrieve, and graph/status operations
 - CLI commands for deterministic local actions
@@ -152,8 +152,8 @@ Current-vs-target boundary:
 | Phase | Status | Scope |
 |---|---|---|
 | Phase 0 | docs/plan | This architecture and terminology lock. |
-| Phase 1 | install shell | Claude Code skills, `lxa setup`, and dry-run MCP registration guidance. |
-| Phase 2 | runtime | Real stdio MCP read/status tools: `lexa_graph_status`, `lexa_list_concepts`, and `lexa_validate_contract`. Write tools remain gated. |
+| Phase 1 | install shell | Claude Code skills, `oms setup`, and dry-run MCP registration guidance. |
+| Phase 2 | runtime | Real stdio MCP read/status tools: `oms_graph_status`, `oms_list_concepts`, and `oms_validate_contract`. Write tools remain gated. |
 | Phase 3 | derived cache | Ontology graph/search cache, invalidation slices, axis-first retrieval, and qmd-style lazy body access. |
 | Phase 4 | safe writes | Capture prepare/commit tools after path-safety and vault-confinement tests. |
 
@@ -162,12 +162,12 @@ Docs must not describe MCP write/capture runtime as present tense until the serv
 The Phase 1 command surface is intentionally dry-run for Claude runtime registration:
 
 ```bash
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz setup --vault /path/to/vault --yes --install-claude
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz setup --vault /path/to/vault --yes --install-claude
 ```
 
-This initializes `.lexa/` and prints a Claude Code plugin install command plus a `claude mcp add ...` command. It does not mutate Claude config. Capture/write tools are only available through the gated safe-write path.
+This initializes `.oms/` and prints a Claude Code plugin install command plus a `claude mcp add ...` command. It does not mutate Claude config. Capture/write tools are only available through the gated safe-write path.
 
-Phase 3 adds a derived cache at `vault/.lexa/cache/graph.json`. This file is not canonical. It can be rebuilt from markdown plus `.lexa/` and contains:
+Phase 3 adds a derived cache at `vault/.oms/cache/graph.json`. This file is not canonical. It can be rebuilt from markdown plus `.oms/` and contains:
 
 - note graph slices for folder-concept, property-axis/value, and wikilink edges
 - lexical search terms and body previews for search-second ranking
@@ -176,25 +176,25 @@ Phase 3 adds a derived cache at `vault/.lexa/cache/graph.json`. This file is not
 
 The MCP tools for this layer are:
 
-- `lexa_graph_build`
-- `lexa_retrieve_by_axis`
-- `lexa_lazy_load_note`
+- `oms_graph_build`
+- `oms_retrieve_by_axis`
+- `oms_lazy_load_note`
 
-`lexa_retrieve_by_axis` returns candidate notes and previews; `lexa_lazy_load_note` reads full body payload only after a note has been selected.
+`oms_retrieve_by_axis` returns candidate notes and previews; `oms_lazy_load_note` reads full body payload only after a note has been selected.
 
 Phase 4 adds safe capture tools:
 
-- `lexa_capture_prepare` plans placement, asks for missing required frontmatter fields, or routes ambiguous captures to inbox.
-- `lexa_capture_commit` creates or appends a markdown note only after vault-relative path checks and concept contract validation pass.
+- `oms_capture_prepare` plans placement, asks for missing required frontmatter fields, or routes ambiguous captures to inbox.
+- `oms_capture_commit` creates or appends a markdown note only after vault-relative path checks and concept contract validation pass.
 
-The write path rejects absolute paths, `..` escapes, non-markdown targets, `.lexa/` internals, and frontmatter that violates the resolved concept contract.
+The write path rejects absolute paths, `..` escapes, non-markdown targets, `.oms/` internals, and frontmatter that violates the resolved concept contract.
 
 ## 11. External inspiration boundaries
 
-Lexa borrows patterns, not product identity:
+OMS borrows patterns, not product identity:
 
 - **QMD**: anywhere access to a local markdown knowledge base through CLI/MCP/skills; qmd-like lexical/vector search is a derived support layer.
-- **Graphify**: graph effect as a useful retrieval affordance; Lexa's graph is grounded in intentional frontmatter/folder/wikilink axes instead of inferred body concepts by default.
-- **Ouroboros**: installable harness posture, stateful MCP/skill surfaces, and deterministic gates; Lexa is not an OS-above host orchestrator.
+- **Graphify**: graph effect as a useful retrieval affordance; OMS's graph is grounded in intentional frontmatter/folder/wikilink axes instead of inferred body concepts by default.
+- **Ouroboros**: installable harness posture, stateful MCP/skill surfaces, and deterministic gates; OMS is not an OS-above host orchestrator.
 
-The boundary matters: Lexa is a user-owned ontology harness for Obsidian markdown folders, not a generic search engine, automatic graph extractor, or content generator.
+The boundary matters: OMS is a user-owned ontology harness for Obsidian markdown folders, not a generic search engine, automatic graph extractor, or content generator.

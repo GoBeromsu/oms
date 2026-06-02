@@ -1,6 +1,6 @@
-# Lexa Conventions Guide
+# OMS Conventions Guide
 
-A Lexa convention is **declarative data you own**. It lives in your vault under `vault/.lexa/` and tells host agents what your frontmatter means, not just what keys exist. This guide covers the format, how to grow it, and what Lexa enforces.
+A OMS convention is **declarative data you own**. It lives in your vault under `vault/.oms/` and tells host agents what your frontmatter means, not just what keys exist. This guide covers the format, how to grow it, and what OMS enforces.
 
 ## The Convention Format
 
@@ -11,12 +11,12 @@ The convention is a semantic ontology with four interlocking pieces:
 - **Retrieval view** — a named output shape that selects which fields matter for a specific retrieval purpose. In YAML this is still stored under the backward-compatible `lenses` key.
 - **Taxonomy** — binds folders to concepts and declares a per-folder `intent` ("the folder itself is information").
 
-Lexa's heavier harness architecture treats folders, frontmatter fields, frontmatter values, and wikilinks as the intentional graph surface for retrieval. The note body remains user payload: Lexa can lazy-load it after retrieval narrowing, but it does not judge or generate the body content.
+OMS's heavier harness architecture treats folders, frontmatter fields, frontmatter values, and wikilinks as the intentional graph surface for retrieval. The note body remains user payload: OMS can lazy-load it after retrieval narrowing, but it does not judge or generate the body content.
 
 ## Worked Example: the `literature` Concept
 
 ```yaml
-# vault/.lexa/concepts/literature.yaml
+# vault/.oms/concepts/literature.yaml
 concept: literature
 intent: >
   Permanent notes on external sources — books, papers, articles.
@@ -86,7 +86,7 @@ my-rating: 5
 Body of the note...
 ```
 
-`my-rating` is not declared in the concept. Lexa leaves it untouched (`additionalProperties: preserve`).
+`my-rating` is not declared in the concept. OMS leaves it untouched (`additionalProperties: preserve`).
 
 ## Field Types
 
@@ -115,31 +115,31 @@ Normalization in v0 is documented intent, not an automatic transform. `validateF
 
 Each frontmatter key is an independent unit of convention and a retrieval axis. To add one:
 
-1. Open the concept file in `vault/.lexa/concepts/<concept>.yaml`.
+1. Open the concept file in `vault/.oms/concepts/<concept>.yaml`.
 2. Append a new entry under `fields:`.
 3. Provide at minimum `name`, `type`, and `intent`. Set `required: true` only for keys that every note in that folder must have.
-4. Run `lxa doctor` — it will report any existing notes that are now missing the new required field (as warnings, never blocking).
+4. Run `oms doctor` — it will report any existing notes that are now missing the new required field (as warnings, never blocking).
 
 You never need to add all fields upfront. Start with the two or three that matter for your current retrieval use case and grow the convention over time. Good capture is measured by future retrieval quality: if a field helps you find and reuse notes later, it is a strong candidate axis.
 
 ## Retrieval Views (`lenses`)
 
-Concept files keep the `lenses` key for compatibility. In prose, Lexa calls these **retrieval views**.
+Concept files keep the `lenses` key for compatibility. In prose, OMS calls these **retrieval views**.
 
 A retrieval view is not the graph itself and does not replace frontmatter axes. It shapes the result after retrieval:
 
-1. Lexa narrows candidate notes through folder/concept/property/wikilink axes.
-2. Lexa may optionally rank candidates with lexical/vector/hybrid search once that derived search layer exists.
+1. OMS narrows candidate notes through folder/concept/property/wikilink axes.
+2. OMS may optionally rank candidates with lexical/vector/hybrid search once that derived search layer exists.
 3. The retrieval view selects which fields or excerpts should be shown for the current purpose.
 
 Example: a `synthesis` retrieval view can show citation fields needed for writing, while an `audit` retrieval view can show status/completeness fields. Both views reuse the same underlying frontmatter axes.
 
 ## taxonomy.yaml
 
-The taxonomy binds folders to concepts and gives each folder a declared `intent`. `lxa setup` generates this file by scanning your vault's existing top-level folders — it never imposes a folder structure.
+The taxonomy binds folders to concepts and gives each folder a declared `intent`. `oms setup` generates this file by scanning your vault's existing top-level folders — it never imposes a folder structure.
 
 ```yaml
-# vault/.lexa/taxonomy.yaml
+# vault/.oms/taxonomy.yaml
 version: 0
 
 folders:
@@ -173,26 +173,26 @@ A folder with `concept: null` is still meaningful: its `intent` tells agents wha
 
 ### `onViolation: warn` (non-blocking in v0)
 
-When `validateFrontmatter` finds a violation it returns a `ValidationResult { valid, violations[] }` and **never throws**. The `lxa doctor` command prints a violation summary and always exits 0. This means:
+When `validateFrontmatter` finds a violation it returns a `ValidationResult { valid, violations[] }` and **never throws**. The `oms doctor` command prints a violation summary and always exits 0. This means:
 
 - A missing required field is surfaced as a warning, not an error.
 - Agent workflows are never blocked by a convention mismatch.
-- You can run `lxa doctor` at any time with zero risk of breaking a build.
+- You can run `oms doctor` at any time with zero risk of breaking a build.
 
 ### `additionalProperties: preserve`
 
-Frontmatter keys that are not declared in the concept's `fields` array are left completely untouched. Lexa does not emit a violation for them and does not remove them. Your existing Obsidian plugins, templates, and personal keys coexist safely with the declared convention.
+Frontmatter keys that are not declared in the concept's `fields` array are left completely untouched. OMS does not emit a violation for them and does not remove them. Your existing Obsidian plugins, templates, and personal keys coexist safely with the declared convention.
 
 ### `immutable` (v0 no-op, forward-compatible)
 
-A field may be declared `immutable: true`. In v0 this is recorded in the schema but **never enforced** — no violation is emitted for an immutable field that has changed, because Lexa does not maintain a baseline snapshot to compare against. The union member is kept so that v1 can begin enforcing without a breaking schema change.
+A field may be declared `immutable: true`. In v0 this is recorded in the schema but **never enforced** — no violation is emitted for an immutable field that has changed, because OMS does not maintain a baseline snapshot to compare against. The union member is kept so that v1 can begin enforcing without a breaking schema change.
 
 ## User Ownership
 
-Lexa ships default concepts in `core/ontology/` (inside the npm package). Running `lxa setup` copies them into `vault/.lexa/concepts/` — from that point on, **you own those files**. Lexa enforces whatever you declare; it does not pull updates over the files you have edited.
+OMS ships default concepts in `core/ontology/` (inside the npm package). Running `oms setup` copies them into `vault/.oms/concepts/` — from that point on, **you own those files**. OMS enforces whatever you declare; it does not pull updates over the files you have edited.
 
 The separation is:
-- `core/ontology/` — Lexa's shipped defaults (read-only from your perspective).
-- `vault/.lexa/` — your live convention (user-owned, edited freely, never overwritten by Lexa after setup).
+- `core/ontology/` — OMS's shipped defaults (read-only from your perspective).
+- `vault/.oms/` — your live convention (user-owned, edited freely, never overwritten by OMS after setup).
 
-To reset a concept to the shipped default, delete the file in `vault/.lexa/concepts/` and re-run `lxa setup`.
+To reset a concept to the shipped default, delete the file in `vault/.oms/concepts/` and re-run `oms setup`.

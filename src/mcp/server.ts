@@ -37,13 +37,13 @@ function bundledOntologyDir(): string {
 }
 
 async function activeOntology(vault: string): Promise<{ ontology: Ontology; source: string }> {
-  const localOntologyDir = path.join(vault, ".lexa");
-  const lexaKind = await pathKind(localOntologyDir);
-  if (lexaKind === "missing") {
+  const localOntologyDir = path.join(vault, ".oms");
+  const omsKind = await pathKind(localOntologyDir);
+  if (omsKind === "missing") {
     return { ontology: await loadOntology(bundledOntologyDir()), source: "bundled" };
   }
-  if (lexaKind !== "directory") {
-    throw new Error("Local .lexa exists but is not a directory.");
+  if (omsKind !== "directory") {
+    throw new Error("Local .oms exists but is not a directory.");
   }
 
   const taxonomyKind = await pathKind(path.join(localOntologyDir, "taxonomy.yaml"));
@@ -54,7 +54,7 @@ async function activeOntology(vault: string): Promise<{ ontology: Ontology; sour
   }
   if (taxonomyKind !== "file" || conceptsKind !== "directory") {
     throw new Error(
-      "Local .lexa ontology is incomplete; expected .lexa/taxonomy.yaml and .lexa/concepts/.",
+      "Local .oms ontology is incomplete; expected .oms/taxonomy.yaml and .oms/concepts/.",
     );
   }
 
@@ -126,12 +126,12 @@ function conceptSummary(concept: Concept): Record<string, unknown> {
   };
 }
 
-export const lexaMcpTools: Tool[] = [
+export const omsMcpTools: Tool[] = [
   {
-    name: "lexa_graph_status",
-    title: "Lexa graph/status",
+    name: "oms_graph_status",
+    title: "OMS graph/status",
     description:
-      "Read-only status for the active Lexa ontology, graph/search cache phase, and gated write-tool posture.",
+      "Read-only status for the active OMS ontology, graph/search cache phase, and gated write-tool posture.",
     inputSchema: {
       type: "object",
       properties: {},
@@ -144,8 +144,8 @@ export const lexaMcpTools: Tool[] = [
     },
   },
   {
-    name: "lexa_graph_build",
-    title: "Lexa graph build",
+    name: "oms_graph_build",
+    title: "OMS graph build",
     description:
       "Build the derived graph/search cache from markdown, frontmatter, folders, and wikilinks.",
     inputSchema: {
@@ -160,8 +160,8 @@ export const lexaMcpTools: Tool[] = [
     },
   },
   {
-    name: "lexa_list_concepts",
-    title: "Lexa list concepts",
+    name: "oms_list_concepts",
+    title: "OMS list concepts",
     description:
       "Read the active ontology concepts, frontmatter axes, folder bindings, and retrieval views.",
     inputSchema: {
@@ -176,8 +176,8 @@ export const lexaMcpTools: Tool[] = [
     },
   },
   {
-    name: "lexa_retrieve_by_axis",
-    title: "Lexa retrieve by axis",
+    name: "oms_retrieve_by_axis",
+    title: "OMS retrieve by axis",
     description:
       "Axis-first retrieval over the derived cache; optional lexical query only ranks inside the narrowed candidate set.",
     inputSchema: {
@@ -200,8 +200,8 @@ export const lexaMcpTools: Tool[] = [
     },
   },
   {
-    name: "lexa_lazy_load_note",
-    title: "Lexa lazy-load note body",
+    name: "oms_lazy_load_note",
+    title: "OMS lazy-load note body",
     description:
       "Load a selected note body only after axis/search narrowing has selected the note.",
     inputSchema: {
@@ -222,8 +222,8 @@ export const lexaMcpTools: Tool[] = [
     },
   },
   {
-    name: "lexa_validate_contract",
-    title: "Lexa validate contract",
+    name: "oms_validate_contract",
+    title: "OMS validate contract",
     description:
       "Read one vault note and validate its frontmatter against the active folder/concept contract.",
     inputSchema: {
@@ -244,8 +244,8 @@ export const lexaMcpTools: Tool[] = [
     },
   },
   {
-    name: "lexa_capture_prepare",
-    title: "Lexa capture prepare",
+    name: "oms_capture_prepare",
+    title: "OMS capture prepare",
     description:
       "Plan a safe capture: choose folder/concept, surface missing fields, or route ambiguous input to inbox without writing.",
     inputSchema: {
@@ -265,8 +265,8 @@ export const lexaMcpTools: Tool[] = [
     },
   },
   {
-    name: "lexa_capture_commit",
-    title: "Lexa capture commit",
+    name: "oms_capture_commit",
+    title: "OMS capture commit",
     description:
       "Write or append a note only after vault path confinement and contract validation pass.",
     inputSchema: {
@@ -288,49 +288,49 @@ export const lexaMcpTools: Tool[] = [
   },
 ];
 
-export interface LexaMcpServerOptions {
+export interface OMSMcpServerOptions {
   vault: string;
 }
 
-export function createLexaMcpServer(opts: LexaMcpServerOptions): Server {
+export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
   const vault = path.resolve(opts.vault);
   const server = new Server(
-    { name: "lexa", version: SERVER_VERSION },
+    { name: "oms", version: SERVER_VERSION },
     {
       capabilities: { tools: {} },
       instructions:
-        "Lexa exposes ontology/status/cache/retrieval tools and safe capture tools. Capture commit is gated by vault confinement and contract validation.",
+        "OMS exposes ontology/status/cache/retrieval tools and safe capture tools. Capture commit is gated by vault confinement and contract validation.",
     },
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: lexaMcpTools,
+    tools: omsMcpTools,
   }));
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const args = isRecord(request.params.arguments) ? request.params.arguments : undefined;
 
-    if (request.params.name === "lexa_graph_status") {
+    if (request.params.name === "oms_graph_status") {
       try {
         const { ontology, source } = await activeOntology(vault);
         const cacheStatus = await graphCacheStatus(vault, ontology);
         return jsonText({
           vault,
           ontologySource: source,
-          sourceOfTruth: ["markdown notes", ".lexa/taxonomy.yaml", ".lexa/concepts/*.yaml"],
+          sourceOfTruth: ["markdown notes", ".oms/taxonomy.yaml", ".oms/concepts/*.yaml"],
           counts: {
             concepts: ontology.concepts.size,
             folders: Object.keys(ontology.taxonomy.folders).length,
           },
           derivedState: cacheStatus,
           writeTools: "capture-commit-gated-by-vault-confinement-and-contract-validation",
-          readTools: lexaMcpTools.map((tool) => tool.name),
+          readTools: omsMcpTools.map((tool) => tool.name),
         });
       } catch (error) {
         return jsonText({
           vault,
           ontologySource: "vault-invalid",
-          sourceOfTruth: ["markdown notes", ".lexa/taxonomy.yaml", ".lexa/concepts/*.yaml"],
+          sourceOfTruth: ["markdown notes", ".oms/taxonomy.yaml", ".oms/concepts/*.yaml"],
           error: error instanceof Error ? error.message : String(error),
           counts: null,
           derivedState: {
@@ -341,17 +341,17 @@ export function createLexaMcpServer(opts: LexaMcpServerOptions): Server {
               searchStale: true,
               embeddingStale: "not-configured",
               validationStale: true,
-              reasons: ["local .lexa exists but could not be loaded"],
+              reasons: ["local .oms exists but could not be loaded"],
             },
           },
           writeTools: "disabled-invalid-ontology",
-          readTools: ["lexa_graph_status"],
+          readTools: ["oms_graph_status"],
         });
       }
     }
 
     try {
-    if (request.params.name === "lexa_graph_build") {
+    if (request.params.name === "oms_graph_build") {
       const { ontology, source } = await activeOntology(vault);
       const cache = await buildGraphCache({ vault, ontology, write: true });
       return jsonText({
@@ -366,7 +366,7 @@ export function createLexaMcpServer(opts: LexaMcpServerOptions): Server {
       });
     }
 
-    if (request.params.name === "lexa_list_concepts") {
+    if (request.params.name === "oms_list_concepts") {
       const { ontology, source } = await activeOntology(vault);
       return jsonText({
         vault,
@@ -376,7 +376,7 @@ export function createLexaMcpServer(opts: LexaMcpServerOptions): Server {
       });
     }
 
-    if (request.params.name === "lexa_retrieve_by_axis") {
+    if (request.params.name === "oms_retrieve_by_axis") {
       const { ontology, source } = await activeOntology(vault);
       const limitValue = args?.["limit"];
       const hits = await retrieveByAxis({
@@ -399,7 +399,7 @@ export function createLexaMcpServer(opts: LexaMcpServerOptions): Server {
       });
     }
 
-    if (request.params.name === "lexa_lazy_load_note") {
+    if (request.params.name === "oms_lazy_load_note") {
       const notePath = stringArg(args, "notePath");
       if (!notePath) {
         return errorText('Missing required string argument "notePath".');
@@ -407,7 +407,7 @@ export function createLexaMcpServer(opts: LexaMcpServerOptions): Server {
       return jsonText(await lazyLoadNoteBody(vault, notePath));
     }
 
-    if (request.params.name === "lexa_validate_contract") {
+    if (request.params.name === "oms_validate_contract") {
       const notePath = stringArg(args, "notePath");
       if (!notePath) {
         return errorText('Missing required string argument "notePath".');
@@ -454,7 +454,7 @@ export function createLexaMcpServer(opts: LexaMcpServerOptions): Server {
       });
     }
 
-    if (request.params.name === "lexa_capture_prepare") {
+    if (request.params.name === "oms_capture_prepare") {
       const { ontology, source } = await activeOntology(vault);
       const frontmatterArg = args?.["frontmatter"];
       const frontmatter = isRecord(frontmatterArg) ? frontmatterArg : {};
@@ -472,7 +472,7 @@ export function createLexaMcpServer(opts: LexaMcpServerOptions): Server {
       });
     }
 
-    if (request.params.name === "lexa_capture_commit") {
+    if (request.params.name === "oms_capture_commit") {
       const { ontology, source } = await activeOntology(vault);
       const notePath = stringArg(args, "notePath");
       const body = stringArg(args, "body");
@@ -501,17 +501,17 @@ export function createLexaMcpServer(opts: LexaMcpServerOptions): Server {
       }
     }
 
-    return errorText(`Unknown Lexa tool: ${request.params.name}`);
+    return errorText(`Unknown OMS tool: ${request.params.name}`);
     } catch (error) {
-      return errorText(`Lexa MCP error: ${error instanceof Error ? error.message : String(error)}`);
+      return errorText(`OMS MCP error: ${error instanceof Error ? error.message : String(error)}`);
     }
   });
 
   return server;
 }
 
-export async function runMcpServer(opts: LexaMcpServerOptions): Promise<void> {
-  const server = createLexaMcpServer(opts);
+export async function runMcpServer(opts: OMSMcpServerOptions): Promise<void> {
+  const server = createOMSMcpServer(opts);
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }

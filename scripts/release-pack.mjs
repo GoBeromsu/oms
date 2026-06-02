@@ -37,7 +37,7 @@ if (!pack || !Array.isArray(pack.files)) {
 const files = pack.files;
 const required = [
   "package.json",
-  "dist/cli/lexa.js",
+  "dist/cli/oms.js",
   "dist/mcp/server.js",
   "core/ontology/taxonomy.yaml",
   "core/ontology/concepts",
@@ -50,10 +50,10 @@ const required = [
   "adapters/claude-code/skills/uninstall/SKILL.md",
   "adapters/codex/.codex-plugin/plugin.json",
   "adapters/codex/.mcp.json",
-  "adapters/codex/rules/lexa.md",
-  "adapters/codex/skills/lexa-setup/SKILL.md",
-  "adapters/codex/skills/lexa-capture/SKILL.md",
-  "adapters/codex/skills/lexa-retrieve/SKILL.md",
+  "adapters/codex/rules/oms.md",
+  "adapters/codex/skills/oms-setup/SKILL.md",
+  "adapters/codex/skills/oms-capture/SKILL.md",
+  "adapters/codex/skills/oms-retrieve/SKILL.md",
   "adapters/hermes/manifest.json",
   "adapters/hermes/skills/setup/SKILL.md",
   "adapters/hermes/skills/capture/SKILL.md",

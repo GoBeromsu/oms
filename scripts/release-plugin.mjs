@@ -21,13 +21,13 @@ function commandExists(command) {
 }
 
 function readAttestation() {
-  const raw = process.env.LEXA_PLUGIN_VALIDATION_ATTESTATION;
+  const raw = process.env.OMS_PLUGIN_VALIDATION_ATTESTATION;
   if (!raw) return null;
   const text = existsSync(raw) ? readFileSync(raw, "utf-8") : raw;
   try {
     return JSON.parse(text);
   } catch (error) {
-    fail(`invalid LEXA_PLUGIN_VALIDATION_ATTESTATION JSON: ${error instanceof Error ? error.message : String(error)}`);
+    fail(`invalid OMS_PLUGIN_VALIDATION_ATTESTATION JSON: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -60,8 +60,8 @@ if (attestation) {
   process.exit(0);
 }
 
-if (process.env.LEXA_REQUIRE_PLUGIN_VALIDATION === "1") {
-  fail("Claude CLI unavailable and no valid LEXA_PLUGIN_VALIDATION_ATTESTATION was provided; publish is blocked.");
+if (process.env.OMS_REQUIRE_PLUGIN_VALIDATION === "1") {
+  fail("Claude CLI unavailable and no valid OMS_PLUGIN_VALIDATION_ATTESTATION was provided; publish is blocked.");
 }
 
-console.warn("[release:plugin] warning: Claude CLI unavailable; skipped local plugin validation. Publish workflows must set LEXA_REQUIRE_PLUGIN_VALIDATION=1 or provide attestation.");
+console.warn("[release:plugin] warning: Claude CLI unavailable; skipped local plugin validation. Publish workflows must set OMS_REQUIRE_PLUGIN_VALIDATION=1 or provide attestation.");

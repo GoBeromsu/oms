@@ -1,6 +1,6 @@
 ---
 name: doctor
-description: Validate vault notes against the Lexa convention and report violations (REAL today).
+description: Validate vault notes against the OMS convention and report violations (REAL today).
 ---
 
 # Skill: doctor
@@ -11,7 +11,7 @@ This skill is **REAL in v0** — the CLI command is fully implemented.
 ## Shell-out
 
 ```bash
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor [--vault <path>]
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor [--vault <path>]
 ```
 
 - `--vault <path>` — path to your Obsidian vault root (default: current directory).
@@ -19,7 +19,7 @@ npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-
 
 ## What the command does
 
-1. Loads `vault/.lexa/` and `vault/.lexa/taxonomy.yaml`.
+1. Loads `vault/.oms/` and `vault/.oms/taxonomy.yaml`.
 2. Walks every `.md` note in the vault.
 3. For each note, resolves its **concept** from the taxonomy folder binding.
 4. Calls `validateFrontmatter(frontmatter, concept)` and collects `Violation[]`.
@@ -40,10 +40,10 @@ Undeclared frontmatter fields are **never** reported as violations
 
 ## Recommended usage
 
-Run `npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor` after:
-- Any `lxa setup` run
-- Adding a new field via `lxa define`
+Run `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor` after:
+- Any `oms setup` run
+- Adding a new field via `oms define`
 - Bulk-editing notes
 
-Integrate into CI by adding `npx lxa doctor --vault ./vault` to your workflow.
+Integrate into CI by adding `npx oms doctor --vault ./vault` to your workflow.
 It will never fail the build in v0.

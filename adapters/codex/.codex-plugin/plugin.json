@@ -1,8 +1,8 @@
 {
-  "name": "lexa",
-  "version": "0.1.3",
-  "description": "Lexa convention layer for Obsidian vaults \u2014 Codex native rules, skills, and MCP adapter.",
-  "_note": "lxa install writes Codex MCP config, installs ~/.codex/rules/lexa.md, and installs ~/.codex/skills/lexa-*.",
+  "name": "oms",
+  "version": "0.1.4",
+  "description": "OMS convention layer for Obsidian vaults \u2014 Codex native rules, skills, and MCP adapter.",
+  "_note": "oms install writes Codex MCP config, installs ~/.codex/rules/oms.md, and installs ~/.codex/skills/oms-*.",
   "skills": "./skills/",
   "mcpServers": "./.mcp.json"
 }

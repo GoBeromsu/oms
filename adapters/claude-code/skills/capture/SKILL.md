@@ -1,33 +1,33 @@
 ---
-name: lexa-capture
-description: Capture knowledge into the vault under the Lexa convention using gated MCP prepare/commit tools.
+name: oms-capture
+description: Capture knowledge into the vault under the OMS convention using gated MCP prepare/commit tools.
 ---
 
-# Skill: lexa-capture (Claude Code)
+# Skill: oms-capture (Claude Code)
 
 Place a piece of knowledge into the vault with correct frontmatter and folder placement.
 
 ## Invocation
 
 ```
-/lexa-capture
+/oms-capture
 ```
 
 ## What this skill does
 
-Uses MCP `lexa_capture_prepare` first. Only call MCP `lexa_capture_commit`
+Uses MCP `oms_capture_prepare` first. Only call MCP `oms_capture_commit`
 after prepare returns `ready` or the user has supplied missing fields.
 
 ## Agent-guided steps (v0)
 
-1. Identify the **concept** that fits the incoming knowledge (check `vault/.lexa/concepts/`).
-2. Resolve the **target folder** from `vault/.lexa/taxonomy.yaml`.
+1. Identify the **concept** that fits the incoming knowledge (check `vault/.oms/concepts/`).
+2. Resolve the **target folder** from `vault/.oms/taxonomy.yaml`.
 3. Generate a filename: `YYYY-MM-DD-<slug>.md`.
 4. Construct frontmatter — fill `required: true` fields; preserve any extra fields.
 5. If required fields are missing, ask for them; do not write.
 6. If placement is ambiguous, route to inbox.
-7. Commit only through `lexa_capture_commit` (`create` or `append`).
-8. Shell out: `npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor` (non-blocking, exits 0) to confirm the note is clean.
+7. Commit only through `oms_capture_commit` (`create` or `append`).
+8. Shell out: `npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor` (non-blocking, exits 0) to confirm the note is clean.
 
 ## Example
 
@@ -45,6 +45,6 @@ Input: "Attention Is All You Need", https://arxiv.org/abs/1706.03762
 
 ## Runtime
 
-`lexa_capture_prepare` preserves route-to-inbox and ask-missing-fields behavior.
-`lexa_capture_commit` refuses unsafe paths, `.lexa/` internals, non-markdown
+`oms_capture_prepare` preserves route-to-inbox and ask-missing-fields behavior.
+`oms_capture_commit` refuses unsafe paths, `.oms/` internals, non-markdown
 targets, and frontmatter that violates the resolved concept contract.

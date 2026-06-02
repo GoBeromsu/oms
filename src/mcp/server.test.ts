@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "../../");
 const fixtureVault = path.join(repoRoot, "test", "fixtures", "vault");
-const distCli = path.join(repoRoot, "dist", "cli", "lexa.js");
+const distCli = path.join(repoRoot, "dist", "cli", "oms.js");
 
 function textPayload(result: Awaited<ReturnType<Client["callTool"]>>): Record<string, unknown> {
   const block = result.content[0];
@@ -18,7 +18,7 @@ function textPayload(result: Awaited<ReturnType<Client["callTool"]>>): Record<st
   return JSON.parse(block.type === "text" ? block.text : "{}") as Record<string, unknown>;
 }
 
-describe("Lexa MCP stdio server", () => {
+describe("OMS MCP stdio server", () => {
   it("exposes read/status tools and validates a fixture note", async () => {
     const transport = new StdioClientTransport({
       command: process.execPath,
@@ -26,7 +26,7 @@ describe("Lexa MCP stdio server", () => {
       cwd: repoRoot,
       stderr: "pipe",
     });
-    const client = new Client({ name: "lexa-test-client", version: "0.0.0" });
+    const client = new Client({ name: "oms-test-client", version: "0.0.0" });
 
     try {
       await client.connect(transport);
@@ -34,20 +34,20 @@ describe("Lexa MCP stdio server", () => {
       const tools = await client.listTools();
       const names = tools.tools.map((tool) => tool.name);
       expect(names).toEqual([
-        "lexa_graph_status",
-        "lexa_graph_build",
-        "lexa_list_concepts",
-        "lexa_retrieve_by_axis",
-        "lexa_lazy_load_note",
-        "lexa_validate_contract",
-        "lexa_capture_prepare",
-        "lexa_capture_commit",
+        "oms_graph_status",
+        "oms_graph_build",
+        "oms_list_concepts",
+        "oms_retrieve_by_axis",
+        "oms_lazy_load_note",
+        "oms_validate_contract",
+        "oms_capture_prepare",
+        "oms_capture_commit",
       ]);
-      const commitTool = tools.tools.find((tool) => tool.name === "lexa_capture_commit");
+      const commitTool = tools.tools.find((tool) => tool.name === "oms_capture_commit");
       expect(commitTool?.annotations?.readOnlyHint).toBe(false);
       expect(commitTool?.annotations?.destructiveHint).toBe(false);
 
-      const status = await client.callTool({ name: "lexa_graph_status", arguments: {} });
+      const status = await client.callTool({ name: "oms_graph_status", arguments: {} });
       const parsedStatus = textPayload(status);
       expect(parsedStatus.writeTools).toBe(
         "capture-commit-gated-by-vault-confinement-and-contract-validation",
@@ -58,7 +58,7 @@ describe("Lexa MCP stdio server", () => {
       expect(staleness.graphStale).toBe(true);
 
       const validation = await client.callTool({
-        name: "lexa_validate_contract",
+        name: "oms_validate_contract",
         arguments: { notePath: "references/clean-architecture.md" },
       });
       const parsedValidation = textPayload(validation);
@@ -69,10 +69,10 @@ describe("Lexa MCP stdio server", () => {
     }
   });
 
-  it("reports invalid local .lexa instead of falling back to bundled defaults", async () => {
-    const tmpVault = await mkdtemp(path.join(tmpdir(), "lexa-invalid-"));
-    await mkdir(path.join(tmpVault, ".lexa", "concepts"), { recursive: true });
-    await writeFile(path.join(tmpVault, ".lexa", "taxonomy.yaml"), "not: [valid", "utf-8");
+  it("reports invalid local .oms instead of falling back to bundled defaults", async () => {
+    const tmpVault = await mkdtemp(path.join(tmpdir(), "oms-invalid-"));
+    await mkdir(path.join(tmpVault, ".oms", "concepts"), { recursive: true });
+    await writeFile(path.join(tmpVault, ".oms", "taxonomy.yaml"), "not: [valid", "utf-8");
 
     const transport = new StdioClientTransport({
       command: process.execPath,
@@ -80,17 +80,17 @@ describe("Lexa MCP stdio server", () => {
       cwd: repoRoot,
       stderr: "pipe",
     });
-    const client = new Client({ name: "lexa-test-client", version: "0.0.0" });
+    const client = new Client({ name: "oms-test-client", version: "0.0.0" });
 
     try {
       await client.connect(transport);
 
-      const status = textPayload(await client.callTool({ name: "lexa_graph_status", arguments: {} }));
+      const status = textPayload(await client.callTool({ name: "oms_graph_status", arguments: {} }));
       expect(status.ontologySource).toBe("vault-invalid");
       expect(status.writeTools).toBe("disabled-invalid-ontology");
 
       const commit = await client.callTool({
-        name: "lexa_capture_commit",
+        name: "oms_capture_commit",
         arguments: {
           notePath: "references/unsafe.md",
           frontmatter: {
@@ -103,7 +103,7 @@ describe("Lexa MCP stdio server", () => {
       });
       expect(commit.isError).toBe(true);
       expect(commit.content[0]?.type === "text" ? commit.content[0].text : "").toContain(
-        "Lexa MCP error",
+        "OMS MCP error",
       );
     } finally {
       await client.close();
@@ -111,25 +111,25 @@ describe("Lexa MCP stdio server", () => {
     }
   });
 
-  it("does not treat cache-only .lexa as a broken local ontology", async () => {
-    const tmpVault = await mkdtemp(path.join(tmpdir(), "lexa-cache-only-"));
+  it("does not treat cache-only .oms as a broken local ontology", async () => {
+    const tmpVault = await mkdtemp(path.join(tmpdir(), "oms-cache-only-"));
     const transport = new StdioClientTransport({
       command: process.execPath,
       args: [distCli, "mcp", "--vault", tmpVault],
       cwd: repoRoot,
       stderr: "pipe",
     });
-    const client = new Client({ name: "lexa-test-client", version: "0.0.0" });
+    const client = new Client({ name: "oms-test-client", version: "0.0.0" });
 
     try {
       await client.connect(transport);
-      expect(textPayload(await client.callTool({ name: "lexa_graph_status", arguments: {} })).ontologySource).toBe(
+      expect(textPayload(await client.callTool({ name: "oms_graph_status", arguments: {} })).ontologySource).toBe(
         "bundled",
       );
 
-      await client.callTool({ name: "lexa_graph_build", arguments: {} });
+      await client.callTool({ name: "oms_graph_build", arguments: {} });
 
-      expect(textPayload(await client.callTool({ name: "lexa_graph_status", arguments: {} })).ontologySource).toBe(
+      expect(textPayload(await client.callTool({ name: "oms_graph_status", arguments: {} })).ontologySource).toBe(
         "bundled",
       );
     } finally {
@@ -138,9 +138,9 @@ describe("Lexa MCP stdio server", () => {
     }
   });
 
-  it("treats a non-directory .lexa path as invalid instead of using bundled defaults", async () => {
-    const tmpVault = await mkdtemp(path.join(tmpdir(), "lexa-file-"));
-    await writeFile(path.join(tmpVault, ".lexa"), "not a directory", "utf-8");
+  it("treats a non-directory .oms path as invalid instead of using bundled defaults", async () => {
+    const tmpVault = await mkdtemp(path.join(tmpdir(), "oms-file-"));
+    await writeFile(path.join(tmpVault, ".oms"), "not a directory", "utf-8");
 
     const transport = new StdioClientTransport({
       command: process.execPath,
@@ -148,17 +148,17 @@ describe("Lexa MCP stdio server", () => {
       cwd: repoRoot,
       stderr: "pipe",
     });
-    const client = new Client({ name: "lexa-test-client", version: "0.0.0" });
+    const client = new Client({ name: "oms-test-client", version: "0.0.0" });
 
     try {
       await client.connect(transport);
 
-      const status = textPayload(await client.callTool({ name: "lexa_graph_status", arguments: {} }));
+      const status = textPayload(await client.callTool({ name: "oms_graph_status", arguments: {} }));
       expect(status.ontologySource).toBe("vault-invalid");
       expect(status.writeTools).toBe("disabled-invalid-ontology");
 
       const commit = await client.callTool({
-        name: "lexa_capture_commit",
+        name: "oms_capture_commit",
         arguments: {
           notePath: "references/unsafe.md",
           frontmatter: {

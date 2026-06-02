@@ -22,10 +22,10 @@ afterEach(async () => {
 });
 
 describe("safe capture", () => {
-  it("rejects paths outside the vault and internal Lexa folders", () => {
+  it("rejects paths outside the vault and internal OMS folders", () => {
     expect(() => safeVaultNotePath("/tmp/vault", "../escape.md")).toThrow(/unsafe|inside/);
     expect(() => safeVaultNotePath("/tmp/vault", "/tmp/vault/note.md")).toThrow(/relative/);
-    expect(() => safeVaultNotePath("/tmp/vault", ".lexa/cache/bad.md")).toThrow(/internal/);
+    expect(() => safeVaultNotePath("/tmp/vault", ".oms/cache/bad.md")).toThrow(/internal/);
     expect(() => safeVaultNotePath("/tmp/vault", "references/no-extension")).toThrow(/\.md/);
   });
 
@@ -85,7 +85,7 @@ describe("safe capture", () => {
   });
 
   it("creates and appends only inside the vault after contract validation", async () => {
-    tmpVault = await mkdtemp(path.join(tmpdir(), "lexa-capture-"));
+    tmpVault = await mkdtemp(path.join(tmpdir(), "oms-capture-"));
     await cp(fixtureVault, tmpVault, { recursive: true });
     const ontology = await loadOntology(ontologyDir);
     const notePath = "references/new-book.md";

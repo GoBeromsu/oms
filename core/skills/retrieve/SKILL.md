@@ -1,6 +1,6 @@
 ---
 name: retrieve
-description: Retrieve knowledge from the vault through declared Lexa lenses (인출).
+description: Retrieve knowledge from the vault through declared OMS lenses (인출).
 ---
 
 # Skill: retrieve
@@ -30,7 +30,7 @@ lenses:
     fields: [title, source-url, captured-at]
 ```
 
-The retrieval skill reads these declarations from `vault/.lexa/concepts/*.yaml`.
+The retrieval skill reads these declarations from `vault/.oms/concepts/*.yaml`.
 
 ## Conceptual shell-out (roadmap — NOT wired in v0)
 

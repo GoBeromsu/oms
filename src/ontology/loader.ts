@@ -4,7 +4,7 @@ import { parse as parseYaml } from "yaml";
 import type { Concept, Ontology, Taxonomy } from "./types.js";
 
 /**
- * Load a Lexa ontology from a directory that contains:
+ * Load a OMS ontology from a directory that contains:
  *   <ontologyDir>/taxonomy.yaml
  *   <ontologyDir>/concepts/*.yaml
  *
@@ -67,7 +67,7 @@ export async function loadOntology(ontologyDir: string): Promise<Ontology> {
     for (const name of names) {
       if (!concepts.has(name)) {
         console.warn(
-          `[lexa] taxonomy folder "${folder}" references unknown concept "${name}" — skipping.`,
+          `[oms] taxonomy folder "${folder}" references unknown concept "${name}" — skipping.`,
         );
       }
     }

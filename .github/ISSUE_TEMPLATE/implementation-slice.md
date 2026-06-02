@@ -1,6 +1,6 @@
 ---
 name: Implementation slice
-about: Plan one focused Lexa implementation issue
+about: Plan one focused OMS implementation issue
 ---
 
 ## Goal
