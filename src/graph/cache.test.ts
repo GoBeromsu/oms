@@ -28,7 +28,7 @@ afterEach(async () => {
 
 describe("derived graph cache", () => {
   it("builds folder/property/search slices and supports axis-first retrieval", async () => {
-    tmpVault = await mkdtemp(path.join(tmpdir(), "lexa-graph-"));
+    tmpVault = await mkdtemp(path.join(tmpdir(), "oms-graph-"));
     await cp(fixtureVault, tmpVault, { recursive: true });
     const ontology = await loadOntology(ontologyDir);
 
@@ -62,7 +62,7 @@ describe("derived graph cache", () => {
 
     const body = await lazyLoadNoteBody(tmpVault, "references/clean-architecture.md");
     expect(body.body).toContain("Dependency Rule");
-    await expect(lazyLoadNoteBody(tmpVault, ".lexa/taxonomy.yaml")).rejects.toThrow(
+    await expect(lazyLoadNoteBody(tmpVault, ".oms/taxonomy.yaml")).rejects.toThrow(
       /hidden|internal|dependency|\.md/,
     );
     await expect(lazyLoadNoteBody(tmpVault, "references/not-markdown.txt")).rejects.toThrow(
@@ -71,7 +71,7 @@ describe("derived graph cache", () => {
   });
 
   it("reports search-only staleness for body text changes without frontmatter changes", async () => {
-    tmpVault = await mkdtemp(path.join(tmpdir(), "lexa-graph-"));
+    tmpVault = await mkdtemp(path.join(tmpdir(), "oms-graph-"));
     await cp(fixtureVault, tmpVault, { recursive: true });
     const ontology = await loadOntology(ontologyDir);
     await buildGraphCache({ vault: tmpVault, ontology, write: true });
@@ -91,7 +91,7 @@ describe("derived graph cache", () => {
   });
 
   it("marks graph and search stale when frontmatter changes because axes feed search terms", async () => {
-    tmpVault = await mkdtemp(path.join(tmpdir(), "lexa-graph-"));
+    tmpVault = await mkdtemp(path.join(tmpdir(), "oms-graph-"));
     await cp(fixtureVault, tmpVault, { recursive: true });
     const ontology = await loadOntology(ontologyDir);
     await buildGraphCache({ vault: tmpVault, ontology, write: true });

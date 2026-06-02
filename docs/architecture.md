@@ -1,21 +1,21 @@
-# Lexa Architecture
+# OMS Architecture
 
 > Canonical product architecture lives in [`docs/harness-architecture.md`](./harness-architecture.md).
 > This file summarizes the host/runtime posture and current repository reality.
 
 ## Posture: Axis Graph Harness Inside the Host
 
-Lexa lives *inside* each host agent and operates beneath it. The control direction is:
+OMS lives *inside* each host agent and operates beneath it. The control direction is:
 
 ```
 Host agent (Claude Code / Codex / Hermes)
-  └── invokes Lexa
+  └── invokes OMS
         └── reads/writes Obsidian vault (plain markdown)
 ```
 
-This is the opposite of an OS-above orchestrator (e.g., ouroboros in its orchestrator mode), which drives host agents top-down. Lexa borrows the installable harness idea — skills, deterministic gates, and eventually MCP state/runtime surfaces — but it is not in charge of the host agent.
+This is the opposite of an OS-above orchestrator (e.g., ouroboros in its orchestrator mode), which drives host agents top-down. OMS borrows the installable harness idea — skills, deterministic gates, and eventually MCP state/runtime surfaces — but it is not in charge of the host agent.
 
-Lexa's product posture is an **axis graph harness**:
+OMS's product posture is an **axis graph harness**:
 
 - frontmatter fields are user-owned retrieval axes,
 - folders create physical folder-to-concept placement edges,
@@ -23,11 +23,11 @@ Lexa's product posture is an **axis graph harness**:
 - note bodies are payload loaded after axis/search narrowing,
 - capture and retrieval are separate flows over the same ontology contract.
 
-The full terminology lock is in the harness architecture doc. In short: Lexa helps the user operate their own knowledge system so notes can be retrieved and reused later; it does not fill the body content for them.
+The full terminology lock is in the harness architecture doc. In short: OMS helps the user operate their own knowledge system so notes can be retrieved and reused later; it does not fill the body content for them.
 
 ## The 3-Host Handshake: Shared CORE + Host ADAPTERS
 
-All knowledge logic (validation, ontology loading, folder resolution, graph/cache retrieval, and gated capture) is written **once** inside the shared CORE and exposed via the `lexa` CLI plus the shared MCP server. Host differences (manifest schema, skill layout, invocation sigil, convention-file name) are absorbed by per-host ADAPTERS. Adding a fourth host means writing one more adapter, not touching the core.
+All knowledge logic (validation, ontology loading, folder resolution, graph/cache retrieval, and gated capture) is written **once** inside the shared CORE and exposed via the `oms` CLI plus the shared MCP server. Host differences (manifest schema, skill layout, invocation sigil, convention-file name) are absorbed by per-host ADAPTERS. Adding a fourth host means writing one more adapter, not touching the core.
 
 | | Claude Code | Codex | Hermes |
 |---|---|---|---|
@@ -36,7 +36,7 @@ All knowledge logic (validation, ontology loading, folder resolution, graph/cach
 | Convention file | `CLAUDE.md` / `AGENTS.md` | `AGENTS.md` | `SOUL.md` + context files |
 | Local vault access | yes | yes | yes |
 
-`adapters/claude-code/`, `adapters/codex/`, and `adapters/hermes/` all ship installable v0 host surfaces. `lxa install` copies host assets, installs Codex/Hermes skills or rules where the host expects them, and writes host MCP registration.
+`adapters/claude-code/`, `adapters/codex/`, and `adapters/hermes/` all ship installable v0 host surfaces. `oms install` copies host assets, installs Codex/Hermes skills or rules where the host expects them, and writes host MCP registration.
 
 ## Flow Diagram
 
@@ -47,14 +47,14 @@ All knowledge logic (validation, ontology loading, folder resolution, graph/cach
 │                                                                  │
 │  host ADAPTER                                                    │
 │  ├─ plugin.json / rule+skill bundle / SOUL.md fragment              │
-│  └─ shells out to: npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz setup | lxa doctor | lxa define    │
+│  └─ shells out to: npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz setup | oms doctor | oms define    │
 └───────────────────────────┬──────────────────────────────────────┘
                             │ invokes
                             ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│  Lexa convention layer  (src/ — TypeScript, Node ≥18)            │
+│  OMS convention layer  (src/ — TypeScript, Node ≥18)            │
 │                                                                  │
-│  src/cli/lexa.ts          CLI verbs: setup / doctor / define     │
+│  src/cli/oms.ts          CLI verbs: setup / doctor / define     │
 │  src/ontology/loader.ts   load concepts/*.yaml + taxonomy.yaml   │
 │  src/ontology/resolver.ts resolve note path → Concept            │
 │  src/conventions/         validateFrontmatter → ValidationResult │
@@ -66,7 +66,7 @@ All knowledge logic (validation, ontology loading, folder resolution, graph/cach
 ┌──────────────────────────────────────────────────────────────────┐
 │  Obsidian vault  (any plain-markdown folder)                     │
 │                                                                  │
-│  vault/.lexa/                                                    │
+│  vault/.oms/                                                    │
 │  ├─ taxonomy.yaml          folder ↔ concept + per-folder intent  │
 │  └─ ontology/concepts/     user-owned concept YAML files         │
 │                                                                  │
@@ -77,13 +77,13 @@ All knowledge logic (validation, ontology loading, folder resolution, graph/cach
 
 ## MCP Backbone — Current Boundary and Roadmap
 
-MCP is the shared cross-host transport for retrieve, graph/status, validation, cache, and safe capture operations. In the current repository, `src/mcp/server.ts` starts a real stdio MCP server through `lxa mcp`.
+MCP is the shared cross-host transport for retrieve, graph/status, validation, cache, and safe capture operations. In the current repository, `src/mcp/server.ts` starts a real stdio MCP server through `oms mcp`.
 
 The correct runtime framing is:
 
 1. **Now**: CLI setup/doctor and convention engine are real; Claude Code skills exist as installable/guided surfaces.
-2. **Next**: install shell can print exact dry-run Claude plugin and MCP registration commands (`lxa setup --install-claude`) without claiming a live runtime.
-3. **Now in Phase 2**: real stdio MCP read/status tools are available through `lxa mcp`.
+2. **Next**: install shell can print exact dry-run Claude plugin and MCP registration commands (`oms setup --install-claude`) without claiming a live runtime.
+3. **Now in Phase 2**: real stdio MCP read/status tools are available through `oms mcp`.
 4. **Now in Phase 3**: derived graph/search cache tools are available for axis-first retrieval and lazy body load.
 5. **Now in Phase 4**: safe capture prepare/commit tools are available after path-safety and vault-confinement tests.
 
@@ -96,5 +96,5 @@ Existing concept YAML may use `lenses`. Keep that key backward-compatible, but e
 - **TypeScript** (`module: NodeNext`, Node ≥ 18) — runtime for the CLI, convention engine, and adapter interfaces.
 - **Markdown** — conventions, skills, agents, and adapter documentation.
 - **YAML** — ontology data files (`concepts/*.yaml`, `taxonomy.yaml`); parsed by the `yaml` npm package (the only runtime dependency in v0).
-- **No Obsidian app dependency** — a vault is just a folder of markdown files. Lexa reads and writes it directly via the filesystem.
+- **No Obsidian app dependency** — a vault is just a folder of markdown files. OMS reads and writes it directly via the filesystem.
 - **No new heavy dependencies** — any additional dep requires explicit approval (spec constraint).

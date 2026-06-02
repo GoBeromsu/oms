@@ -1,5 +1,5 @@
 ---
-name: setup
+name: oms-setup
 description: Adopt an Obsidian markdown vault into the OMS convention and optionally install host MCP integration.
 ---
 

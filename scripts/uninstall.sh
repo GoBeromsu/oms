@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Lexa uninstaller — removes host adapter registrations and optionally the package.
-# Usage: curl -fsSL https://raw.githubusercontent.com/GoBeromsu/lexa/main/scripts/uninstall.sh | bash
+# OMS uninstaller — removes host adapter registrations and optionally the package.
+# Usage: curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/uninstall.sh | bash
 set -euo pipefail
 
-RUNTIME="${LEXA_UNINSTALL_RUNTIME:-all}"
-VAULT="${LEXA_VAULT:-$PWD}"
-REMOVE_PACKAGE="${LEXA_REMOVE_PACKAGE:-1}"
-EXECUTE="${LEXA_EXECUTE_EXTERNAL:-0}"
-YES="${LEXA_UNINSTALL_CONFIRM:-0}"
+RUNTIME="${OMS_UNINSTALL_RUNTIME:-all}"
+VAULT="${OMS_VAULT:-$PWD}"
+REMOVE_PACKAGE="${OMS_REMOVE_PACKAGE:-1}"
+EXECUTE="${OMS_EXECUTE_EXTERNAL:-0}"
+YES="${OMS_UNINSTALL_CONFIRM:-0}"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -24,13 +24,13 @@ done
 
 if [ "$YES" != "1" ]; then
   if [ -t 0 ]; then
-    printf 'Remove Lexa host registrations for runtime=%s? (y/N) ' "$RUNTIME"
+    printf 'Remove OMS host registrations for runtime=%s? (y/N) ' "$RUNTIME"
     read -r REPLY
   elif [ -c /dev/tty ]; then
-    printf 'Remove Lexa host registrations for runtime=%s? (y/N) ' "$RUNTIME" >&2
+    printf 'Remove OMS host registrations for runtime=%s? (y/N) ' "$RUNTIME" >&2
     read -r REPLY < /dev/tty
   else
-    echo "Non-interactive uninstall requires --yes or LEXA_UNINSTALL_CONFIRM=1." >&2
+    echo "Non-interactive uninstall requires --yes or OMS_UNINSTALL_CONFIRM=1." >&2
     exit 1
   fi
   case "$REPLY" in
@@ -44,17 +44,17 @@ if [ "$EXECUTE" = "1" ]; then
   ARGS+=(--execute)
 fi
 
-if command -v lxa >/dev/null 2>&1; then
-  lxa "${ARGS[@]}"
-elif command -v lexa >/dev/null 2>&1; then
-  lexa "${ARGS[@]}"
+if command -v oms >/dev/null 2>&1; then
+  oms "${ARGS[@]}"
+elif command -v oms >/dev/null 2>&1; then
+  oms "${ARGS[@]}"
 else
-  echo "lxa/lexa binary not found; skipping host deregistration." >&2
+  echo "oms/oms binary not found; skipping host deregistration." >&2
 fi
 
 if [ "$REMOVE_PACKAGE" = "1" ] && command -v npm >/dev/null 2>&1; then
-  npm uninstall -g lxa-vault || true
-  npm uninstall -g @goberomsu/lexa || true
+  npm uninstall -g oms || true
+  npm uninstall -g oms || true
 fi
 
-echo "Lexa uninstall complete. Vault content was not removed."
+echo "OMS uninstall complete. Vault content was not removed."

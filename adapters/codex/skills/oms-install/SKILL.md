@@ -1,5 +1,5 @@
 ---
-name: install
+name: oms-install
 description: Install OMS Codex/Hermes/Claude host adapters and MCP registration.
 ---
 

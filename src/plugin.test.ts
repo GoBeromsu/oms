@@ -50,11 +50,11 @@ describe("claude-code plugin DoD", () => {
     }
   });
 
-  it("the setup skill SKILL.md mentions 'npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz'", async () => {
+  it("the setup skill SKILL.md mentions 'npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz'", async () => {
     // The setup skill entry is "./skills/setup/" relative to the plugin root.
     const setupSkillPath = path.resolve(pluginRoot, "./skills/setup/SKILL.md");
     const content = await readFile(setupSkillPath, "utf-8");
-    expect(content).toContain("npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz");
+    expect(content).toContain("npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz");
   });
 });
 
@@ -67,9 +67,9 @@ describe("codex and hermes adapter DoD", () => {
     expect(plugin["skills"]).toBe("./skills/");
     expect(plugin["mcpServers"]).toBe("./.mcp.json");
     await expect(access(path.join(codexRoot, ".mcp.json"))).resolves.toBeUndefined();
-    await expect(access(path.join(codexRoot, "rules", "lexa.md"))).resolves.toBeUndefined();
+    await expect(access(path.join(codexRoot, "rules", "oms.md"))).resolves.toBeUndefined();
 
-    for (const name of ["lexa-setup", "lexa-install", "lexa-uninstall", "lexa-doctor", "lexa-capture", "lexa-retrieve"]) {
+    for (const name of ["oms-setup", "oms-install", "oms-uninstall", "oms-doctor", "oms-capture", "oms-retrieve"]) {
       await expect(access(path.join(codexRoot, "skills", name, "SKILL.md"))).resolves.toBeUndefined();
     }
   });

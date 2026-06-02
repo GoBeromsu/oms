@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { mkdtemp, rm, cp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { parse as yamlParse } from "yaml";
-import { buildClaudeInstallPlan, runSetup, runDoctor } from "./cli/lexa.js";
+import { buildClaudeInstallPlan, runSetup, runDoctor } from "./cli/oms.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,9 +20,9 @@ afterAll(async () => {
 });
 
 describe("runSetup --yes E2E", () => {
-  it("creates .lexa/taxonomy.yaml with version:0 and a 'references' folder binding", async () => {
+  it("creates .oms/taxonomy.yaml with version:0 and a 'references' folder binding", async () => {
     // Create a fresh temp dir and copy the fixture vault into it.
-    tmpVault = await mkdtemp(path.join(tmpdir(), "lexa-test-"));
+    tmpVault = await mkdtemp(path.join(tmpdir(), "oms-test-"));
     // Copy references/ and notes/ from the fixture vault.
     await cp(fixtureVault, tmpVault, { recursive: true });
 
@@ -30,7 +30,7 @@ describe("runSetup --yes E2E", () => {
     await expect(runSetup({ vault: tmpVault, yes: true })).resolves.toBeUndefined();
 
     // Read the written taxonomy.yaml.
-    const taxonomyPath = path.join(tmpVault, ".lexa", "taxonomy.yaml");
+    const taxonomyPath = path.join(tmpVault, ".oms", "taxonomy.yaml");
     const raw = await readFile(taxonomyPath, "utf-8");
     const parsed = yamlParse(raw) as Record<string, unknown>;
 
@@ -41,15 +41,15 @@ describe("runSetup --yes E2E", () => {
     expect(folders).toHaveProperty("references");
 
     // The vault-local ontology must be loadable by doctor: setup writes
-    // `.lexa/concepts/` (mirroring core/ontology/), so the shipped concepts
+    // `.oms/concepts/` (mirroring core/ontology/), so the shipped concepts
     // are copied alongside taxonomy.yaml.
-    const literatureCopy = path.join(tmpVault, ".lexa", "concepts", "literature.yaml");
+    const literatureCopy = path.join(tmpVault, ".oms", "concepts", "literature.yaml");
     await expect(readFile(literatureCopy, "utf-8")).resolves.toContain("concept: literature");
   });
 
   it("doctor runs against the freshly set-up vault and exits 0", async () => {
-    // Regression guard: setup's vault-local layout (.lexa/taxonomy.yaml +
-    // .lexa/concepts/) must be exactly what doctor's loadOntology consumes.
+    // Regression guard: setup's vault-local layout (.oms/taxonomy.yaml +
+    // .oms/concepts/) must be exactly what doctor's loadOntology consumes.
     const code = await runDoctor({ vault: tmpVault });
     expect(code).toBe(0);
   });
@@ -60,7 +60,7 @@ describe("runSetup --yes E2E", () => {
     expect(plan.pluginPath).toContain("adapters/claude-code");
     expect(plan.pluginInstallCommand).toContain("claude plugin install");
     expect(plan.mcpRegistrationCommand).toBe(
-      "claude mcp add lexa -- npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz mcp --vault '/tmp/My Vault'",
+      "claude mcp add oms -- npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz mcp --vault '/tmp/My Vault'",
     );
     expect(plan.mcpRuntimeStatus).toBe("read-status-runtime");
   });

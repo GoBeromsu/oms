@@ -14,4 +14,4 @@
 ## Risks / follow-ups
 
 ## Reference policy check
-- [ ] If OMC was referenced, the PR keeps the attribution explicit and does not broaden Lexa scope wholesale.
+- [ ] If OMC was referenced, the PR keeps the attribution explicit and does not broaden OMS scope wholesale.

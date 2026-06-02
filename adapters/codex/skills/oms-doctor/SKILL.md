@@ -1,5 +1,5 @@
 ---
-name: doctor
+name: oms-doctor
 description: Validate vault notes against the active OMS ontology.
 ---
 

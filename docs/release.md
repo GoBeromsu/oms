@@ -1,12 +1,12 @@
-# Release Lexa
+# Release OMS
 
-Lexa releases are npm-first and Claude Code validated. The release process must prove the published tarball works, not merely the repository checkout.
+OMS releases are npm-first and Claude Code validated. The release process must prove the published tarball works, not merely the repository checkout.
 
 ## Release contract
 
 The npm package root is the runtime asset root. A releasable tarball must include:
 
-- `dist/cli/lexa.js`
+- `dist/cli/oms.js`
 - `dist/mcp/server.js`
 - `core/ontology/taxonomy.yaml`
 - `core/ontology/concepts/`
@@ -47,7 +47,7 @@ Preferred validation:
 claude plugin validate adapters/claude-code
 ```
 
-If a release environment cannot run the Claude CLI, publishing is blocked unless an explicit validation attestation is provided through `LEXA_PLUGIN_VALIDATION_ATTESTATION`.
+If a release environment cannot run the Claude CLI, publishing is blocked unless an explicit validation attestation is provided through `OMS_PLUGIN_VALIDATION_ATTESTATION`.
 
 Required attestation fields:
 
@@ -81,7 +81,7 @@ The v0 release workflow is **manual dispatch only** so the operator must provide
 
 Before the first public release:
 
-1. Verify that the scoped `lxa-vault` npm package name is available to the publisher.
+1. Verify that the scoped `oms` npm package name is available to the publisher.
 2. Bump `package.json` to a real semver release.
 3. Keep `adapters/claude-code/.claude-plugin/plugin.json` version in sync with `package.json` unless a future ADR deliberately splits package/plugin versioning.
 4. Confirm release notes list Codex rules/skills and Hermes skill-bundle install paths, plus the MCP registration files that make capture/retrieve tools available.

@@ -1,9 +1,9 @@
 ---
-name: lexa-doctor
-description: Validate vault notes against the Lexa convention by running npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor.
+name: oms-doctor
+description: Validate vault notes against the OMS convention by running npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor.
 ---
 
-# Skill: lexa-doctor (Claude Code)
+# Skill: oms-doctor (Claude Code)
 
 Check every note in your vault against its declared concept schema.
 This skill is **REAL in v0** — it shells out to the fully-implemented CLI.
@@ -11,7 +11,7 @@ This skill is **REAL in v0** — it shells out to the fully-implemented CLI.
 ## Invocation
 
 ```
-/lexa-doctor
+/oms-doctor
 ```
 
 ## What this skill does
@@ -19,11 +19,11 @@ This skill is **REAL in v0** — it shells out to the fully-implemented CLI.
 Shells out to:
 
 ```bash
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor [--vault <path>]
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor [--vault <path>]
 ```
 
 The CLI will:
-1. Load `vault/.lexa/` and `vault/.lexa/taxonomy.yaml`.
+1. Load `vault/.oms/` and `vault/.oms/taxonomy.yaml`.
 2. Walk every `.md` note in the vault.
 3. Resolve each note's concept from the taxonomy folder binding.
 4. Validate frontmatter fields against the concept schema.
@@ -39,7 +39,7 @@ The CLI will:
 ## Example
 
 ```bash
-npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor --vault ~/Documents/MyVault
+npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor --vault ~/Documents/MyVault
 ```
 
 ## Sample output
@@ -54,5 +54,5 @@ Checked 12 notes. 2 violations found. (exits 0)
 
 ## Roadmap
 
-Doctor is fully real in v0. Run it after any `lxa setup`, `lxa define`,
+Doctor is fully real in v0. Run it after any `oms setup`, `oms define`,
 or bulk note edit to keep your vault clean.

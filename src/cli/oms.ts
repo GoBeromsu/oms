@@ -18,7 +18,7 @@ import {
 import type { Taxonomy, FolderBinding } from "../ontology/types.js";
 
 const DEFAULT_RELEASE_PACKAGE_SPEC =
-  "https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz";
+  "https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz";
 
 // ---------------------------------------------------------------------------
 // Path helpers
@@ -84,7 +84,7 @@ export function buildClaudeInstallPlan(opts: { vault: string }): ClaudeInstallPl
   return {
     pluginPath,
     pluginInstallCommand: `claude plugin install ${shellQuote(pluginPath)}`,
-    mcpRegistrationCommand: `claude mcp add lexa -- npx -y ${shellQuote(DEFAULT_RELEASE_PACKAGE_SPEC)} mcp --vault ${shellQuote(opts.vault)}`,
+    mcpRegistrationCommand: `claude mcp add oms -- npx -y ${shellQuote(DEFAULT_RELEASE_PACKAGE_SPEC)} mcp --vault ${shellQuote(opts.vault)}`,
     mcpRuntimeStatus: "read-status-runtime",
   };
 }
@@ -133,7 +133,7 @@ export async function runSetup(opts: {
   installClaude?: boolean;
 }): Promise<void> {
   const { vault, yes, installClaude = false } = opts;
-  const nonInteractive = yes || process.env["LEXA_NON_INTERACTIVE"] === "1";
+  const nonInteractive = yes || process.env["OMS_NON_INTERACTIVE"] === "1";
 
   const ontologyDir = bundledOntologyDir();
 
@@ -174,7 +174,7 @@ export async function runSetup(opts: {
     const conceptNames = Array.from(ontology.concepts.keys());
 
     try {
-      console.log("\nLexa Setup — adopting existing vault folders.\n");
+      console.log("\nOMS Setup — adopting existing vault folders.\n");
       console.log(`Available shipped concepts: ${conceptNames.join(", ") || "(none)"}\n`);
 
       for (const folder of folders) {
@@ -218,18 +218,18 @@ export async function runSetup(opts: {
 
   const taxonomy: Taxonomy = { version: 0, folders: folderBindings };
 
-  // Write the vault-local ontology. `.lexa/` IS the ontology directory:
-  // `.lexa/taxonomy.yaml` + `.lexa/concepts/*.yaml`, matching loadOntology's
-  // contract so `lxa doctor` can load it directly.
-  const lexaDir = path.join(vault, ".lexa");
-  const conceptsOutDir = path.join(lexaDir, "concepts");
+  // Write the vault-local ontology. ``.oms/` IS the ontology directory:
+  // `.oms/taxonomy.yaml` + `.oms/concepts/*.yaml`, matching loadOntology's
+  // contract so `oms doctor` can load it directly.
+  const omsDir = path.join(vault, ".oms");
+  const conceptsOutDir = path.join(omsDir, "concepts");
   await mkdir(conceptsOutDir, { recursive: true });
 
   await import("node:fs/promises").then(({ writeFile }) =>
-    writeFile(path.join(lexaDir, "taxonomy.yaml"), yamlStringify(taxonomy), "utf-8"),
+    writeFile(path.join(omsDir, "taxonomy.yaml"), yamlStringify(taxonomy), "utf-8"),
   );
 
-  // Copy shipped concept yaml files into vault/.lexa/concepts/
+  // Copy shipped concept yaml files into vault/.oms/concepts/
   const conceptsSourceDir = path.join(ontologyDir, "concepts");
   let copiedFiles: string[] = [];
   try {
@@ -244,16 +244,16 @@ export async function runSetup(opts: {
       }
     }
   } catch (err) {
-    console.warn("[lexa] Could not copy concept files:", err);
+    console.warn("[oms] Could not copy concept files:", err);
   }
 
   // Summary
-  console.log(`\nLexa setup complete.`);
+  console.log(`\nOMS setup complete.`);
   console.log(`  Vault:    ${vault}`);
-  console.log(`  Written:  ${path.join(lexaDir, "taxonomy.yaml")}`);
+  console.log(`  Written:  ${path.join(omsDir, "taxonomy.yaml")}`);
   console.log(`  Concepts: ${copiedFiles.join(", ") || "(none)"}`);
   console.log(`  Folders:  ${Object.keys(folderBindings).join(", ") || "(none)"}`);
-  console.log(`\nRun "npx -y https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz doctor" to validate existing notes.\n`);
+  console.log(`\nRun "npx -y https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz doctor" to validate existing notes.\n`);
 
   if (installClaude) {
     printClaudeInstallPlan(buildClaudeInstallPlan({ vault }));
@@ -272,10 +272,10 @@ export async function runDoctor(opts: { vault: string }): Promise<number> {
   // even if the ontology is missing or unparseable — wrap the whole body so a
   // failure surfaces as a warning, never a non-zero exit.
   try {
-    // Load ontology: prefer the vault-local `.lexa/` ontology, fall back to the
-    // bundled defaults. The vault-local layout is `.lexa/taxonomy.yaml` +
-    // `.lexa/concepts/`, so `.lexa/` itself is the ontology dir.
-    const localOntologyDir = path.join(vault, ".lexa");
+    // Load ontology: prefer the vault-local `.oms/` ontology, fall back to the
+    // bundled defaults. The vault-local layout is `.oms/taxonomy.yaml` +
+    // `.oms/concepts/`, so `.oms/` itself is the ontology dir.
+    const localOntologyDir = path.join(vault, ".oms");
     let ontologyDir: string;
     try {
       await readdir(path.join(localOntologyDir, "concepts"));
@@ -301,7 +301,7 @@ export async function runDoctor(opts: { vault: string }): Promise<number> {
       try {
         raw = await readFile(fullPath, "utf-8");
       } catch {
-        console.warn(`[lexa] Could not read ${relPath}`);
+        console.warn(`[oms] Could not read ${relPath}`);
         continue;
       }
 
@@ -319,11 +319,11 @@ export async function runDoctor(opts: { vault: string }): Promise<number> {
     }
 
     console.log(
-      `\nLexa doctor: ${totalNotes} notes checked, ${notesWithViolations} with violations, ${totalViolations} total violations.`,
+      `\nOMS doctor: ${totalNotes} notes checked, ${notesWithViolations} with violations, ${totalViolations} total violations.`,
     );
     console.log("All violations are warnings (onViolation: warn). Exit 0.\n");
   } catch (err) {
-    console.warn("[lexa] doctor could not complete:", err);
+    console.warn("[oms] doctor could not complete:", err);
   }
 
   // Always exit 0 in v0 (non-blocking, onViolation: warn).
@@ -336,19 +336,19 @@ export async function runDoctor(opts: { vault: string }): Promise<number> {
 
 function printUsage(): void {
   console.log(`
-lxa — Lexa convention layer for Obsidian vaults
+oms — OMS convention layer for Obsidian vaults
 
 Usage:
-  lxa setup [--vault <path>] [--yes] [--install-claude]
-  lxa install [--vault <path>] [--runtime <auto|all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
-  lxa uninstall [--runtime <all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
-  lxa doctor [--vault <path>]
-  lxa mcp [--vault <path>]
+  oms setup [--vault <path>] [--yes] [--install-claude]
+  oms install [--vault <path>] [--runtime <auto|all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
+  oms uninstall [--runtime <all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
+  oms doctor [--vault <path>]
+  oms mcp [--vault <path>]
 
 Commands:
-  setup    Adopt an existing vault into the Lexa convention.
-  install  Install Lexa host adapters and MCP registration.
-  uninstall Remove Lexa host adapters and MCP registration.
+  setup    Adopt an existing vault into the OMS convention.
+  install  Install OMS host adapters and MCP registration.
+  uninstall Remove OMS host adapters and MCP registration.
   doctor   Validate vault notes against the active ontology.
   mcp      Start the read/status MCP stdio server.
 
@@ -393,7 +393,7 @@ async function main(): Promise<void> {
       ) {
         runtime = rawRuntime;
       } else {
-        console.error(`[lexa] Unsupported runtime: ${rawRuntime}`);
+        console.error(`[oms] Unsupported runtime: ${rawRuntime}`);
         process.exitCode = 1;
         return;
       }
@@ -409,8 +409,8 @@ async function main(): Promise<void> {
     await runSetup({ vault, yes, installClaude });
   } else if (command === "install" || command === "uninstall") {
     const selectedRuntime = runtime ?? (command === "install" ? "auto" : "all");
-    if (command === "uninstall" && !yes && !dryRun && process.env["LEXA_NON_INTERACTIVE"] !== "1") {
-      console.error("[lexa] Refusing uninstall without --yes or --dry-run.");
+    if (command === "uninstall" && !yes && !dryRun && process.env["OMS_NON_INTERACTIVE"] !== "1") {
+      console.error("[oms] Refusing uninstall without --yes or --dry-run.");
       process.exitCode = 1;
       return;
     }
@@ -435,7 +435,7 @@ async function main(): Promise<void> {
 }
 
 // Guard: only run main() when this file is the entry point.
-// Works for both source (`src/cli/lexa.ts`) and built (`dist/cli/lexa.js`) paths.
+// Works for both source (`src/cli/oms.ts`) and built (`dist/cli/oms.js`) paths.
 const __filename = fileURLToPath(import.meta.url);
 
 function sameEntrypoint(left: string, right: string): boolean {
@@ -456,7 +456,7 @@ const isMain =
 
 if (isMain) {
   main().catch((err: unknown) => {
-    console.error("[lexa] Fatal error:", err);
+    console.error("[oms] Fatal error:", err);
     process.exitCode = 1;
   });
 }

@@ -1,6 +1,6 @@
 {
-  "name": "lexa",
-  "version": "0.1.3",
+  "name": "oms",
+  "version": "0.1.4",
   "description": "Host-agnostic convention layer for Obsidian vaults \u2014 capture, retrieve, and validate knowledge under a declared semantic convention.",
   "author": {
     "name": "gobeumsu"

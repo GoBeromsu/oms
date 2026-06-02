@@ -32,14 +32,14 @@ export interface HostOperationResult {
 }
 
 const HOSTS: HostRuntime[] = ["claude", "codex", "hermes"];
-const MANAGED_CODEX_START = "# BEGIN LEXA MANAGED MCP";
-const MANAGED_CODEX_END = "# END LEXA MANAGED MCP";
+const MANAGED_CODEX_START = "# BEGIN OMS MANAGED MCP";
+const MANAGED_CODEX_END = "# END OMS MANAGED MCP";
 const DEFAULT_PACKAGE_SPEC =
-  "https://github.com/GoBeromsu/lexa/releases/download/lxa-v0.1.3/lxa-vault-0.1.3.tgz";
-const CODEX_SKILL_PREFIX = "lexa-";
-const CODEX_RULE_FILENAME = "lexa.md";
+  "https://github.com/GoBeromsu/oms/releases/download/oms-v0.1.4/oms-0.1.4.tgz";
+const CODEX_SKILL_PREFIX = "oms-";
+const CODEX_RULE_FILENAME = "oms.md";
 const HERMES_SKILL_CATEGORY = "knowledge-management";
-const HERMES_SKILL_NAME = "lexa";
+const HERMES_SKILL_NAME = "oms";
 
 function commandExists(command: string): boolean {
   const result = spawnSync(process.platform === "win32" ? "where" : "command", process.platform === "win32" ? [command] : ["-v", command], {
@@ -128,7 +128,7 @@ function mcpServerEntry(options: HostOperationOptions): Record<string, unknown> 
 function refuseSymlinkedLeaf(target: string): void {
   if (!existsSync(target)) return;
   if (lstatSync(target).isSymbolicLink()) {
-    throw new Error(`Refusing to replace symlinked Lexa install target: ${target}`);
+    throw new Error(`Refusing to replace symlinked OMS install target: ${target}`);
   }
 }
 
@@ -146,7 +146,7 @@ async function upsertClaudeMcp(options: HostOperationOptions, claudeDir: string)
   const data = await readJsonObject(mcpPath);
   const existingServers = data["mcpServers"];
   const mcpServers = isRecord(existingServers) ? existingServers : {};
-  mcpServers["lexa"] = mcpServerEntry(options);
+  mcpServers["oms"] = mcpServerEntry(options);
   data["mcpServers"] = mcpServers;
   return writeJsonObject(mcpPath, data, Boolean(options.dryRun));
 }
@@ -155,8 +155,8 @@ async function removeClaudeMcp(options: HostOperationOptions, claudeDir: string)
   const mcpPath = path.join(claudeDir, "mcp.json");
   const data = await readJsonObject(mcpPath);
   const existingServers = data["mcpServers"];
-  if (!isRecord(existingServers) || !("lexa" in existingServers)) return false;
-  delete existingServers["lexa"];
+  if (!isRecord(existingServers) || !("oms" in existingServers)) return false;
+  delete existingServers["oms"];
   data["mcpServers"] = existingServers;
   return writeJsonObject(mcpPath, data, Boolean(options.dryRun));
 }
@@ -170,11 +170,11 @@ function runExternal(command: string, args: string[]): { ok: boolean; message: s
 }
 
 async function installClaude(options: HostOperationOptions): Promise<HostOperationResult> {
-  const claudeDir = hostHome(options.homeDir, ".claude", "LEXA_CLAUDE_HOME");
+  const claudeDir = hostHome(options.homeDir, ".claude", "OMS_CLAUDE_HOME");
   const pluginPath = path.join(options.adapterRoot, "claude-code");
   const commands = [
     `claude plugin install ${pluginPath}`,
-    `claude mcp add lexa -- npx ${mcpArgs(options).join(" ")}`,
+    `claude mcp add oms -- npx ${mcpArgs(options).join(" ")}`,
   ];
   const messages = ["Claude Code adapter is installed through Claude's plugin/MCP surfaces."];
   let changed = false;
@@ -185,7 +185,7 @@ async function installClaude(options: HostOperationOptions): Promise<HostOperati
     } else if (!options.dryRun) {
       const externalCommands: [string, ...string[]][] = [
         ["claude", "plugin", "install", pluginPath],
-        ["claude", "mcp", "add", "lexa", "--", "npx", ...mcpArgs(options)],
+        ["claude", "mcp", "add", "oms", "--", "npx", ...mcpArgs(options)],
       ];
       for (const [command, ...args] of externalCommands) {
         const result = runExternal(command, args);
@@ -210,15 +210,15 @@ async function installClaude(options: HostOperationOptions): Promise<HostOperati
 }
 
 async function uninstallClaude(options: HostOperationOptions): Promise<HostOperationResult> {
-  const claudeDir = hostHome(options.homeDir, ".claude", "LEXA_CLAUDE_HOME");
-  const commands = ["claude mcp remove lexa", "claude plugin uninstall lexa"];
-  const messages = ["Claude Code uninstall removes the Lexa MCP entry and, when requested, asks Claude CLI to uninstall the plugin."];
+  const claudeDir = hostHome(options.homeDir, ".claude", "OMS_CLAUDE_HOME");
+  const commands = ["claude mcp remove oms", "claude plugin uninstall oms"];
+  const messages = ["Claude Code uninstall removes the OMS MCP entry and, when requested, asks Claude CLI to uninstall the plugin."];
   let changed = await removeClaudeMcp(options, claudeDir);
 
   if (options.executeExternal && commandExists("claude") && !options.dryRun) {
     const externalCommands: [string, ...string[]][] = [
-      ["claude", "mcp", "remove", "lexa"],
-      ["claude", "plugin", "uninstall", "lexa"],
+      ["claude", "mcp", "remove", "oms"],
+      ["claude", "plugin", "uninstall", "oms"],
     ];
     for (const [command, ...args] of externalCommands) {
       const result = runExternal(command, args);
@@ -242,21 +242,21 @@ function codexManagedBlock(options: HostOperationOptions): string {
   const args = mcpArgs(options).map(jsonString).join(", ");
   return [
     MANAGED_CODEX_START,
-    "# Lexa MCP hookup for Codex CLI. Managed by `lxa install/uninstall`.",
-    "# Codex-native rules live in ~/.codex/rules/lexa.md; skills live in ~/.codex/skills/lexa-*.",
-    "[mcp_servers.lexa]",
+    "# OMS MCP hookup for Codex CLI. Managed by `oms install/uninstall`.",
+    "# Codex-native rules live in ~/.codex/rules/oms.md; skills live in ~/.codex/skills/oms-*.",
+    "[mcp_servers.oms]",
     'command = "npx"',
     `args = [${args}]`,
     "",
-    "[mcp_servers.lexa.env]",
-    'LEXA_AGENT_RUNTIME = "codex"',
+    "[mcp_servers.oms.env]",
+    'OMS_AGENT_RUNTIME = "codex"',
     MANAGED_CODEX_END,
     "",
   ].join("\n");
 }
 
-function isCodexLexaTable(line: string): boolean {
-  return line === "[mcp_servers.lexa]" || line.startsWith("[mcp_servers.lexa.");
+function isCodexOMSTable(line: string): boolean {
+  return line === "[mcp_servers.oms]" || line.startsWith("[mcp_servers.oms.");
 }
 
 function removeManagedCodexBlock(content: string): { content: string; removed: boolean } {
@@ -269,13 +269,13 @@ function removeManagedCodexBlock(content: string): { content: string; removed: b
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i] ?? "";
     const trimmed = line.trim();
-    if (isCodexLexaTable(trimmed)) {
+    if (isCodexOMSTable(trimmed)) {
       removedLegacy = true;
       i++;
       while (i < lines.length) {
         const next = (lines[i] ?? "").trim();
         const isTable = /^\[[^\]]+\]$/.test(next);
-        if (isTable && !isCodexLexaTable(next)) {
+        if (isTable && !isCodexOMSTable(next)) {
           i--;
           break;
         }
@@ -283,7 +283,7 @@ function removeManagedCodexBlock(content: string): { content: string; removed: b
       }
       continue;
     }
-    if (line.includes("Lexa MCP hookup for Codex CLI")) {
+    if (line.includes("OMS MCP hookup for Codex CLI")) {
       removedLegacy = true;
       continue;
     }
@@ -328,9 +328,9 @@ async function installCodexNativeArtifacts(codexDir: string, options: HostOperat
 }
 
 async function installCodex(options: HostOperationOptions): Promise<HostOperationResult> {
-  const codexDir = hostHome(options.homeDir, ".codex", "LEXA_CODEX_HOME");
+  const codexDir = hostHome(options.homeDir, ".codex", "OMS_CODEX_HOME");
   const pluginSource = path.join(options.adapterRoot, "codex");
-  const pluginTarget = path.join(codexDir, "plugins", "lexa");
+  const pluginTarget = path.join(codexDir, "plugins", "oms");
   const configPath = path.join(codexDir, "config.toml");
   const original = existsSync(configPath) ? await readFile(configPath, "utf-8") : "";
   const stripped = removeManagedCodexBlock(original).content;
@@ -354,13 +354,13 @@ async function installCodex(options: HostOperationOptions): Promise<HostOperatio
     skipped: false,
     paths: [configPath, pluginTarget, ...nativePaths],
     commands: [`Codex MCP config: ${configPath}`],
-    messages: ["Installed Codex-native Lexa rules, namespaced skills, plugin assets, and managed MCP/env config."],
+    messages: ["Installed Codex-native OMS rules, namespaced skills, plugin assets, and managed MCP/env config."],
   };
 }
 
 async function uninstallCodex(options: HostOperationOptions): Promise<HostOperationResult> {
-  const codexDir = hostHome(options.homeDir, ".codex", "LEXA_CODEX_HOME");
-  const pluginTarget = path.join(codexDir, "plugins", "lexa");
+  const codexDir = hostHome(options.homeDir, ".codex", "OMS_CODEX_HOME");
+  const pluginTarget = path.join(codexDir, "plugins", "oms");
   const configPath = path.join(codexDir, "config.toml");
   const ruleTarget = path.join(codexDir, "rules", CODEX_RULE_FILENAME);
   const skillsRoot = path.join(codexDir, "skills");
@@ -393,7 +393,7 @@ async function uninstallCodex(options: HostOperationOptions): Promise<HostOperat
     skipped: !changed,
     paths: [configPath, pluginTarget, ruleTarget, path.join(skillsRoot, `${CODEX_SKILL_PREFIX}*`)],
     commands: [],
-    messages: ["Removed Codex managed MCP block, Lexa rule, namespaced Lexa skills, and plugin assets."],
+    messages: ["Removed Codex managed MCP block, OMS rule, namespaced OMS skills, and plugin assets."],
   };
 }
 
@@ -401,7 +401,7 @@ async function upsertHermesMcp(options: HostOperationOptions, hermesConfig: stri
   const data = await readYamlObject(hermesConfig);
   const rawServers = data["mcp_servers"];
   const servers = isRecord(rawServers) ? rawServers : {};
-  servers["lexa"] = { ...mcpServerEntry(options), enabled: true };
+  servers["oms"] = { ...mcpServerEntry(options), enabled: true };
   data["mcp_servers"] = servers;
   return writeYamlObject(hermesConfig, data, Boolean(options.dryRun));
 }
@@ -409,21 +409,21 @@ async function upsertHermesMcp(options: HostOperationOptions, hermesConfig: stri
 async function removeHermesMcp(options: HostOperationOptions, hermesConfig: string): Promise<boolean> {
   const data = await readYamlObject(hermesConfig);
   const rawServers = data["mcp_servers"];
-  if (!isRecord(rawServers) || !("lexa" in rawServers)) return false;
-  delete rawServers["lexa"];
+  if (!isRecord(rawServers) || !("oms" in rawServers)) return false;
+  delete rawServers["oms"];
   data["mcp_servers"] = rawServers;
   return writeYamlObject(hermesConfig, data, Boolean(options.dryRun));
 }
 
 async function installHermes(options: HostOperationOptions): Promise<HostOperationResult> {
-  const hermesDir = hostHome(options.homeDir, ".hermes", "LEXA_HERMES_HOME");
+  const hermesDir = hostHome(options.homeDir, ".hermes", "OMS_HERMES_HOME");
   const pluginSource = path.join(options.adapterRoot, "hermes");
-  const legacyPluginTarget = path.join(hermesDir, "plugins", "lexa");
-  const legacyMcpPath = path.join(hermesDir, "mcp", "lexa.json");
+  const legacyPluginTarget = path.join(hermesDir, "plugins", "oms");
+  const legacyMcpPath = path.join(hermesDir, "mcp", "oms.json");
   const skillSource = path.join(options.adapterRoot, "hermes", "skills");
   const skillTarget = path.join(hermesDir, "skills", HERMES_SKILL_CATEGORY, HERMES_SKILL_NAME);
   const configPath = path.join(hermesDir, "config.yaml");
-  const adapterTarget = path.join(hermesDir, "adapters", "lexa");
+  const adapterTarget = path.join(hermesDir, "adapters", "oms");
   if (!options.dryRun) {
     await rm(legacyPluginTarget, { recursive: true, force: true });
     await rm(legacyMcpPath, { force: true });
@@ -438,16 +438,16 @@ async function installHermes(options: HostOperationOptions): Promise<HostOperati
     skipped: false,
     paths: [adapterTarget, skillTarget, configPath],
     commands: [`Hermes MCP config: ${configPath}`],
-    messages: ["Installed Hermes-native Lexa skill bundle and registered mcp_servers.lexa in ~/.hermes/config.yaml."],
+    messages: ["Installed Hermes-native OMS skill bundle and registered mcp_servers.oms in ~/.hermes/config.yaml."],
   };
 }
 
 async function uninstallHermes(options: HostOperationOptions): Promise<HostOperationResult> {
-  const hermesDir = hostHome(options.homeDir, ".hermes", "LEXA_HERMES_HOME");
-  const adapterTarget = path.join(hermesDir, "adapters", "lexa");
+  const hermesDir = hostHome(options.homeDir, ".hermes", "OMS_HERMES_HOME");
+  const adapterTarget = path.join(hermesDir, "adapters", "oms");
   const skillTarget = path.join(hermesDir, "skills", HERMES_SKILL_CATEGORY, HERMES_SKILL_NAME);
-  const legacyPluginTarget = path.join(hermesDir, "plugins", "lexa");
-  const legacyMcpPath = path.join(hermesDir, "mcp", "lexa.json");
+  const legacyPluginTarget = path.join(hermesDir, "plugins", "oms");
+  const legacyMcpPath = path.join(hermesDir, "mcp", "oms.json");
   const configPath = path.join(hermesDir, "config.yaml");
   let changed = false;
   if (existsSync(configPath)) changed = (await removeHermesMcp(options, configPath)) || changed;
@@ -464,7 +464,7 @@ async function uninstallHermes(options: HostOperationOptions): Promise<HostOpera
     skipped: !changed,
     paths: [adapterTarget, skillTarget, configPath],
     commands: [],
-    messages: ["Removed Hermes Lexa skill bundle, adapter copy, legacy descriptor files, and mcp_servers.lexa."],
+    messages: ["Removed Hermes OMS skill bundle, adapter copy, legacy descriptor files, and mcp_servers.oms."],
   };
 }
 
@@ -487,7 +487,7 @@ export async function runHostOperation(options: HostOperationOptions): Promise<H
 
 export function formatHostOperationResults(results: HostOperationResult[], dryRun: boolean): string {
   const lines: string[] = [];
-  lines.push(dryRun ? "Lexa host operation plan (dry-run)." : "Lexa host operation complete.");
+  lines.push(dryRun ? "OMS host operation plan (dry-run)." : "OMS host operation complete.");
   for (const result of results) {
     lines.push(`- ${result.runtime} ${result.action}: ${result.skipped ? "skipped" : result.changed || dryRun ? "ok" : "no changes"}`);
     for (const message of result.messages) lines.push(`  ${message}`);
