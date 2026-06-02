@@ -13,3 +13,7 @@ coverage/
 .DS_Store
 .vscode/
 .idea/
+# Local secrets
+.env
+.env.*
+.npmrc
