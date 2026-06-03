@@ -11,7 +11,7 @@ Oh My Second Brain v0 is distributed as one npm/GitHub-release package that cont
 
 ## One-line install
 
-The installer uses the published npm package (`oh-my-second-brain@0.1.6`) by default:
+The installer uses the published npm package (`oh-my-second-brain@0.1.7`) by default:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oh-my-second-brain/main/scripts/install.sh | bash
@@ -44,7 +44,7 @@ Environment knobs:
 From npm or a checkout:
 
 ```bash
-npm install -g oh-my-second-brain@0.1.6
+npm install -g oh-my-second-brain@0.1.7
 oh-my-second-brain install --runtime all --vault /path/to/vault --dry-run
 oh-my-second-brain install --runtime all --vault /path/to/vault --yes
 ```
