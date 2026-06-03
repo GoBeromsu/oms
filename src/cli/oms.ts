@@ -250,7 +250,7 @@ export async function runSetup(opts: {
   console.log(`  Written:  ${path.join(omsDir, "taxonomy.yaml")}`);
   console.log(`  Concepts: ${copiedFiles.join(", ") || "(none)"}`);
   console.log(`  Folders:  ${Object.keys(folderBindings).join(", ") || "(none)"}`);
-  console.log(`\nRun "oms doctor" to validate existing notes.\n`);
+  console.log(`\nRun "oh-my-second-brain doctor" to validate existing notes.\n`);
 
   if (installClaude) {
     printClaudeInstallPlan(buildClaudeInstallPlan({ vault }));
@@ -333,14 +333,16 @@ export async function runDoctor(opts: { vault: string }): Promise<number> {
 
 function printUsage(): void {
   console.log(`
-oms — Oh My Second Brain convention layer for Obsidian vaults
+oh-my-second-brain — Oh My Second Brain convention layer for Obsidian vaults
 
 Usage:
-  oms setup [--vault <path>] [--yes] [--install-claude]
-  oms install [--vault <path>] [--runtime <auto|all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
-  oms uninstall [--runtime <all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
-  oms doctor [--vault <path>]
-  oms mcp [--vault <path>]
+  oh-my-second-brain setup [--vault <path>] [--yes] [--install-claude]
+  oh-my-second-brain install [--vault <path>] [--runtime <auto|all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
+  oh-my-second-brain uninstall [--runtime <all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
+  oh-my-second-brain doctor [--vault <path>]
+  oh-my-second-brain mcp [--vault <path>]
+
+Compatibility alias: oms <command>
 
 Commands:
   setup    Adopt an existing vault into the Oh My Second Brain convention.

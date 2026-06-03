@@ -1,6 +1,10 @@
 # Wiki Index
 
-> 1 pages | Last updated: 2026-06-03T06:05:20.952Z
+> 2 pages | Last updated: 2026-06-03T10:49:33.815Z
+
+## convention
+
+- [Frontmatter contract extraction learnings](frontmatter-contract-extraction-learnings.md) — # Frontmatter contract extraction learnings
 
 ## decision
 

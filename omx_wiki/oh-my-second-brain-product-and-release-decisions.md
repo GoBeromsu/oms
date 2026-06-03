@@ -14,7 +14,7 @@ schemaVersion: 1
 
 ## Summary
 
-Oh My Second Brain is the human-facing project name. `oms` remains the compact technical slug for the CLI command, MCP server/config key, skill namespace, adapter paths, and GitHub repository slug. The npm package name is `oh-my-second-brain` because the unscoped npm name `oms` is owned by another account/unpublished package and cannot be published by us.
+Oh My Second Brain is the human-facing project name. `oh-my-second-brain` is the canonical repo/package/install name. `oms` remains a backward-compatible compact runtime alias for existing CLI/MCP/skill IDs. The npm package name is `oh-my-second-brain` because the unscoped npm name `oms` is owned by another account/unpublished package and cannot be published by us.
 
 ## Product intent
 
@@ -66,27 +66,27 @@ The current installable surfaces are Claude Code, Codex, and Hermes. All share t
 Current technical contract:
 
 - npm package: `oh-my-second-brain`
-- CLI command: `oms`
-- MCP server/config key: `oms`
+- CLI command: `oh-my-second-brain` (canonical), `oms` (compatibility alias)
+- MCP server/config key: `oms` (compatibility runtime ID)
 - vault ontology directory: `.oms/`
 - Codex skills namespace: `oms-*`
-- GitHub repo slug: `GoBeromsu/oms`
+- GitHub repo slug: `GoBeromsu/oh-my-second-brain`
 
 ## Release decisions
 
-`oms` could not be published to npm because `npm owner ls oms` showed an existing owner and the package name is unavailable. We published under `oh-my-second-brain` while preserving `oms` as the CLI.
+`oms` could not be published to npm because `npm owner ls oms` showed an existing owner and the package name is unavailable. We publish under `oh-my-second-brain` and expose `oh-my-second-brain` as the canonical CLI command while preserving `oms` as a compatibility alias.
 
 Published versions:
 
 - `oh-my-second-brain@0.1.5`: first npm publish after using a recovery code.
-- `oh-my-second-brain@0.1.6`: current/latest; fixes docs/runtime command surfaces to prefer the published npm package and installed `oms` binary instead of stale GitHub-release `npx` tarball URLs.
+- `oh-my-second-brain@0.1.6`: current/latest; fixes docs/runtime command surfaces to prefer the published npm package and installed `oh-my-second-brain` binary instead of stale GitHub-release `npx` tarball URLs.
 
 Install command:
 
 ```bash
 npm install -g oh-my-second-brain@0.1.6
-oms --help
-oms install --runtime all --vault /path/to/vault --dry-run
+oh-my-second-brain --help
+oh-my-second-brain install --runtime all --vault /path/to/vault --dry-run
 ```
 
 GitHub release `oms-v0.1.6` includes `oh-my-second-brain-0.1.6.tgz`.
@@ -98,8 +98,8 @@ Before release/publish we verified:
 - `npm run release:check`
 - npm registry publish and `npm view oh-my-second-brain@0.1.6`
 - temporary `npm install oh-my-second-brain@0.1.6`
-- `./node_modules/.bin/oms --help`
-- `./node_modules/.bin/oms install --runtime all --vault /tmp/Vault --dry-run`
+- `./node_modules/.bin/oh-my-second-brain --help`
+- `./node_modules/.bin/oh-my-second-brain install --runtime all --vault /tmp/Vault --dry-run`
 - GitHub release asset download and CLI execution from the tarball
 
 ## Security note
@@ -108,4 +108,4 @@ Do not store npm recovery codes in `.env`; they are single-use emergency codes. 
 
 ## Forward directive
 
-Future changes should keep the identity split stable: use **Oh My Second Brain** for the display/product name, `oh-my-second-brain` for npm package installation, and `oms` for the CLI/MCP/runtime slug.
+Future changes should keep **Oh My Second Brain** as the display/product name and `oh-my-second-brain` as the GitHub repository, npm package, and canonical installed command. Keep `oms` only as a backward-compatible runtime alias unless a migration removes it deliberately.

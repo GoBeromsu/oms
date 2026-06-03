@@ -1,25 +1,25 @@
-# AGENTS.md — Lexa Contributor Rules
+# AGENTS.md — Oh My Second Brain Contributor Rules
 
-> This file contains **contributor / developer rules** for the Lexa repository.
+> This file contains **contributor / developer rules** for the Oh My Second Brain repository.
 > It is NOT the vault-convention SSOT for end users — that lives in `core/AGENTS.md`
 > (owned by a separate lane; do not create or modify it here).
 
 ---
 
-## What is Lexa?
+## What is Oh My Second Brain?
 
-Lexa is a host-agnostic, user-owned convention layer for Obsidian markdown vaults. It ships a
+Oh My Second Brain is a host-agnostic, user-owned convention layer for Obsidian markdown vaults. It ships a
 TypeScript runtime and a set of markdown conventions that keep vault notes consistently structured,
-linked, and reusable. Lexa is invoked from inside AI coding environments (Claude Code, Codex,
+linked, and reusable. Oh My Second Brain is invoked from inside AI coding environments (Claude Code, Codex,
 Hermes) and enforces — or warns about — frontmatter, naming, and linking rules that the user
-defines in their own vault configuration (`vault/.lexa/`).
+defines in their own vault configuration (`vault/.oms/`).
 
 ---
 
 ## Repo Layout
 
 ```
-lexa/
+oh-my-second-brain/
 ├── core/                        # Ontology defaults, skills, agents
 │   ├── AGENTS.md                # Vault-convention SSOT for end users (NOT this file)
 │   └── ontology/                # Default schemas and rule definitions
@@ -28,9 +28,9 @@ lexa/
 │   ├── codex/                   # OpenAI Codex adapter
 │   └── hermes/                  # Hermes adapter
 ├── src/                         # TypeScript source
-│   ├── cli/lexa.ts              # CLI entry point
+│   ├── cli/oms.ts               # CLI entry point
 │   ├── ontology/
-│   │   ├── loader.ts            # Load vault/.lexa/ config + core defaults
+│   │   ├── loader.ts            # Load vault/.oms/ config + core defaults
 │   │   └── resolver.ts          # Merge and resolve final ontology
 │   ├── conventions/
 │   │   ├── frontmatter.ts       # Frontmatter rule definitions
@@ -77,8 +77,8 @@ after editing imports.
 
 ## Convention-as-Data
 
-- The active convention is **user-owned**: resolved from `vault/.lexa/` at runtime.
-- Lexa ships read-only **defaults** in `core/ontology/`.
+- The active convention is **user-owned**: resolved from `vault/.oms/` at runtime.
+- Oh My Second Brain ships read-only **defaults** in `core/ontology/`.
 - Enforcement policy: `onViolation: warn` — violations are non-blocking by default.
 - Schema policy: `additionalProperties: preserve` — unknown fields are kept, not rejected.
 - Never change these defaults to blocking/error without an explicit product decision.
@@ -101,7 +101,7 @@ after editing imports.
 
 | File | Purpose | Owner |
 |------|---------|-------|
-| `/AGENTS.md` (this file) | Contributor rules for the Lexa repo | Dev lane |
+| `/AGENTS.md` (this file) | Contributor rules for the Oh My Second Brain repo | Dev lane |
 | `/core/AGENTS.md` | Vault-convention SSOT for end users | Separate lane |
 
 Do not conflate them. Do not create or modify `core/AGENTS.md` from this lane.

@@ -5,6 +5,7 @@
   "type": "module",
   "license": "MIT",
   "bin": {
+    "oh-my-second-brain": "dist/cli/oms.js",
     "oms": "dist/cli/oms.js"
   },
   "main": "dist/index.js",
@@ -44,11 +45,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/GoBeromsu/oms.git"
+    "url": "git+https://github.com/GoBeromsu/oh-my-second-brain.git"
   },
-  "homepage": "https://github.com/GoBeromsu/oms#readme",
+  "homepage": "https://github.com/GoBeromsu/oh-my-second-brain#readme",
   "bugs": {
-    "url": "https://github.com/GoBeromsu/oms/issues"
+    "url": "https://github.com/GoBeromsu/oh-my-second-brain/issues"
   },
   "keywords": [
     "obsidian",

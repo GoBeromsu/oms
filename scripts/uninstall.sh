@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Oh My Second Brain uninstaller — removes host adapter registrations and optionally the package.
-# Usage: curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/uninstall.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oh-my-second-brain/main/scripts/uninstall.sh | bash
 set -euo pipefail
 
 RUNTIME="${OMS_UNINSTALL_RUNTIME:-all}"
@@ -44,13 +44,16 @@ if [ "$EXECUTE" = "1" ]; then
   ARGS+=(--execute)
 fi
 
-if command -v oms >/dev/null 2>&1; then
+if command -v oh-my-second-brain >/dev/null 2>&1; then
+  oh-my-second-brain "${ARGS[@]}"
+elif command -v oms >/dev/null 2>&1; then
   oms "${ARGS[@]}"
 else
-  echo "oms binary not found; skipping host deregistration." >&2
+  echo "Oh My Second Brain binary not found; skipping host deregistration." >&2
 fi
 
 if [ "$REMOVE_PACKAGE" = "1" ] && command -v npm >/dev/null 2>&1; then
+  npm uninstall -g oh-my-second-brain || true
   npm uninstall -g oms || true
 fi
 

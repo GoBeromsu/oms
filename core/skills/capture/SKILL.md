@@ -20,12 +20,14 @@ The librarian persona governs this action.
 5. Write the note body after the frontmatter block.
 6. Run `oms doctor` (non-blocking, exits 0) to confirm the new note passes field validation.
 
-## Conceptual shell-out (roadmap — NOT wired in v0)
+## Engine
 
-The runtime automation described above is **agent-guidance only in v0**.
-No capture engine exists yet; the agent follows these steps manually.
-When the MCP server is wired (`src/mcp/server.ts` → real), `capture` will call
-the `capture` MCP tool directly.
+The capture engine is implemented in `src/capture/safe.ts` and exposed via two MCP tools:
+
+- **`oms_capture_prepare`** — resolves the target path and constructs the proposed frontmatter/body without writing anything. Call this first to let the agent review the proposed note before committing.
+- **`oms_capture_commit`** — writes the file to disk. Gated by vault confinement: rejects writes that are outside the vault, to non-`.md` files, or into the `.oms/` config directory. Frontmatter violations are warn-only and do not block the commit.
+
+The recommended agent flow is to call `oms_capture_prepare`, review the result, then call `oms_capture_commit` to finalize.
 
 ## Example agent steps
 

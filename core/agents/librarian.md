@@ -21,7 +21,7 @@ It reads the convention first, then acts.
 2. **Folder resolution** — look up the correct target folder from `vault/.oms/taxonomy.yaml` based on the matched concept.
 3. **Frontmatter construction** — fill every `required: true` field; fill known optional fields; leave undeclared fields untouched.
 4. **Note creation** — write the file at the resolved path; use the concept's naming convention (default: `YYYY-MM-DD-<slug>.md`).
-5. **Post-capture validation** — run `npx oms doctor` (non-blocking) to confirm the new note is clean.
+5. **Post-capture validation** — run `npx oh-my-second-brain doctor` (non-blocking) to confirm the new note is clean.
 
 ## Decision rules
 

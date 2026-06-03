@@ -83,6 +83,18 @@ if (forbidden.length > 0) {
 }
 
 const packageJson = JSON.parse(readFileSync("package.json", "utf-8"));
+if (packageJson.name !== "oh-my-second-brain") {
+  fail(`package name must be oh-my-second-brain, got ${packageJson.name}`);
+}
+if (packageJson.repository?.url !== "git+https://github.com/GoBeromsu/oh-my-second-brain.git") {
+  fail(`repository URL must point at GoBeromsu/oh-my-second-brain, got ${packageJson.repository?.url}`);
+}
+if (packageJson.bin?.["oh-my-second-brain"] !== "dist/cli/oms.js") {
+  fail("package bin must expose canonical oh-my-second-brain command");
+}
+if (packageJson.bin?.oms !== "dist/cli/oms.js") {
+  fail("package bin must preserve oms compatibility alias");
+}
 const pluginJson = JSON.parse(readFileSync("adapters/claude-code/.claude-plugin/plugin.json", "utf-8"));
 if (packageJson.version !== pluginJson.version) {
   fail(`version mismatch: package.json=${packageJson.version}, Claude plugin=${pluginJson.version}`);

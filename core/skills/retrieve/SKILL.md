@@ -32,12 +32,14 @@ lenses:
 
 The retrieval skill reads these declarations from `vault/.oms/concepts/*.yaml`.
 
-## Conceptual shell-out (roadmap — NOT wired in v0)
+## Engine
 
-The runtime automation described above is **agent-guidance only in v0**.
-No retrieval engine exists yet; the agent follows these steps manually.
-When the MCP server is wired (`src/mcp/server.ts` → real), `retrieve` will call
-the `retrieve` MCP tool directly.
+The retrieval engine is implemented in `src/graph/cache.ts` and exposed via two MCP tools:
+
+- **`oms_retrieve_by_axis`** — filters notes by concept, folder, property, value, or wikilink; ranks results using a lexical BM25-like algorithm; returns up to 50 results.
+- **`oms_lazy_load_note`** — fetches the full body of a single note on demand, avoiding loading all note bodies upfront.
+
+There is no vector/embedding layer; retrieval is lexical only. Call `oms_retrieve_by_axis` with the appropriate axis and lens, then use `oms_lazy_load_note` to expand individual results as needed.
 
 ## Example agent steps
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Oh My Second Brain installer — installs the package and registers host adapters.
-# Usage: curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oh-my-second-brain/main/scripts/install.sh | bash
 set -euo pipefail
 
 PACKAGE_SPEC="${OMS_PACKAGE_SPEC:-oh-my-second-brain@0.1.6}"
@@ -39,11 +39,14 @@ if [ "$EXECUTE" = "1" ]; then
   ARGS+=(--execute)
 fi
 
-if command -v oms >/dev/null 2>&1; then
+if command -v oh-my-second-brain >/dev/null 2>&1; then
+  oh-my-second-brain "${ARGS[@]}"
+elif command -v oms >/dev/null 2>&1; then
   oms "${ARGS[@]}"
 else
-  oms "${ARGS[@]}"
+  echo "Oh My Second Brain binary not found after npm install." >&2
+  exit 1
 fi
 
 echo
-echo "Oh My Second Brain install complete. Run: oms doctor --vault \"$VAULT\""
+echo "Oh My Second Brain install complete. Run: oh-my-second-brain doctor --vault \"$VAULT\""

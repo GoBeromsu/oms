@@ -27,7 +27,7 @@ The full terminology lock is in the harness architecture doc. In short: Oh My Se
 
 ## The 3-Host Handshake: Shared CORE + Host ADAPTERS
 
-All knowledge logic (validation, ontology loading, folder resolution, graph/cache retrieval, and gated capture) is written **once** inside the shared CORE and exposed via the `oms` CLI plus the shared MCP server. Host differences (manifest schema, skill layout, invocation sigil, convention-file name) are absorbed by per-host ADAPTERS. Adding a fourth host means writing one more adapter, not touching the core.
+All knowledge logic (validation, ontology loading, folder resolution, graph/cache retrieval, and gated capture) is written **once** inside the shared CORE and exposed via the canonical `oh-my-second-brain` CLI (`oms` compatibility alias) plus the shared MCP server. Host differences (manifest schema, skill layout, invocation sigil, convention-file name) are absorbed by per-host ADAPTERS. Adding a fourth host means writing one more adapter, not touching the core.
 
 | | Claude Code | Codex | Hermes |
 |---|---|---|---|
@@ -36,7 +36,7 @@ All knowledge logic (validation, ontology loading, folder resolution, graph/cach
 | Convention file | `CLAUDE.md` / `AGENTS.md` | `AGENTS.md` | `SOUL.md` + context files |
 | Local vault access | yes | yes | yes |
 
-`adapters/claude-code/`, `adapters/codex/`, and `adapters/hermes/` all ship installable v0 host surfaces. `oms install` copies host assets, installs Codex/Hermes skills or rules where the host expects them, and writes host MCP registration.
+`adapters/claude-code/`, `adapters/codex/`, and `adapters/hermes/` all ship installable v0 host surfaces. `oh-my-second-brain install` copies host assets, installs Codex/Hermes skills or rules where the host expects them, and writes host MCP registration.
 
 ## Flow Diagram
 
@@ -47,7 +47,7 @@ All knowledge logic (validation, ontology loading, folder resolution, graph/cach
 │                                                                  │
 │  host ADAPTER                                                    │
 │  ├─ plugin.json / rule+skill bundle / SOUL.md fragment              │
-│  └─ shells out to: oms setup | oms doctor | oms define    │
+│  └─ shells out to: oh-my-second-brain setup | doctor | define │
 └───────────────────────────┬──────────────────────────────────────┘
                             │ invokes
                             ▼
@@ -77,12 +77,12 @@ All knowledge logic (validation, ontology loading, folder resolution, graph/cach
 
 ## MCP Backbone — Current Boundary and Roadmap
 
-MCP is the shared cross-host transport for retrieve, graph/status, validation, cache, and safe capture operations. In the current repository, `src/mcp/server.ts` starts a real stdio MCP server through `oms mcp`.
+MCP is the shared cross-host transport for retrieve, graph/status, validation, cache, and safe capture operations. In the current repository, `src/mcp/server.ts` starts a real stdio MCP server through `oh-my-second-brain mcp` (or `oms mcp`).
 
 The correct runtime framing is:
 
 1. **Now**: CLI setup/doctor and convention engine are real; Claude Code skills exist as installable/guided surfaces.
-2. **Next**: install shell can print exact dry-run Claude plugin and MCP registration commands (`oms setup --install-claude`) without claiming a live runtime.
+2. **Next**: install shell can print exact dry-run Claude plugin and MCP registration commands (`oh-my-second-brain setup --install-claude`) without claiming a live runtime.
 3. **Now in Phase 2**: real stdio MCP read/status tools are available through `oms mcp`.
 4. **Now in Phase 3**: derived graph/search cache tools are available for axis-first retrieval and lazy body load.
 5. **Now in Phase 4**: safe capture prepare/commit tools are available after path-safety and vault-confinement tests.

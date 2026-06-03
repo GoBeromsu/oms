@@ -1,6 +1,6 @@
 # Install Oh My Second Brain
 
-Oh My Second Brain v0 is distributed as one npm/GitHub-release package that contains the CLI/runtime, the default ontology, host adapter assets, host-native skill/rule bundles, and shell installers. Claude Code, Codex, and Hermes all install an `oms` host surface for Oh My Second Brain backed by the same MCP capture/retrieve runtime.
+Oh My Second Brain v0 is distributed as one npm/GitHub-release package that contains the CLI/runtime, the default ontology, host adapter assets, host-native skill/rule bundles, and shell installers. Claude Code, Codex, and Hermes install Oh My Second Brain host surfaces backed by the same MCP capture/retrieve runtime. Legacy runtime IDs remain `oms` for compatibility.
 
 ## Prerequisites
 
@@ -14,20 +14,20 @@ Oh My Second Brain v0 is distributed as one npm/GitHub-release package that cont
 The installer uses the published npm package (`oh-my-second-brain@0.1.6`) by default:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oh-my-second-brain/main/scripts/install.sh | bash
 ```
 
 Useful overrides:
 
 ```bash
 # Pick one host instead of auto-detection.
-curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/install.sh | bash -s -- --runtime claude
+curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oh-my-second-brain/main/scripts/install.sh | bash -s -- --runtime claude
 
 # Install every host adapter and point Oh My Second Brain at a specific vault.
-curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/install.sh | bash -s -- --runtime all --vault /path/to/vault
+curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oh-my-second-brain/main/scripts/install.sh | bash -s -- --runtime all --vault /path/to/vault
 
 # Also execute external host CLIs where available, e.g. claude plugin/mcp commands.
-curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/install.sh | bash -s -- --runtime all --vault /path/to/vault --execute
+curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oh-my-second-brain/main/scripts/install.sh | bash -s -- --runtime all --vault /path/to/vault --execute
 ```
 
 Environment knobs:
@@ -45,8 +45,8 @@ From npm or a checkout:
 
 ```bash
 npm install -g oh-my-second-brain@0.1.6
-oms install --runtime all --vault /path/to/vault --dry-run
-oms install --runtime all --vault /path/to/vault --yes
+oh-my-second-brain install --runtime all --vault /path/to/vault --dry-run
+oh-my-second-brain install --runtime all --vault /path/to/vault --yes
 ```
 
 Runtime selection follows the Ouroboros pattern:
@@ -64,20 +64,20 @@ Runtime selection follows the Ouroboros pattern:
 | Codex | Installs `~/.codex/rules/oms.md`, `~/.codex/skills/oms-*`, copies adapter files to `~/.codex/plugins/oms`, and writes a managed `[mcp_servers.oms]` block plus `OMS_AGENT_RUNTIME=codex` env in `~/.codex/config.toml`. |
 | Hermes | Installs `~/.hermes/skills/knowledge-management/oms/`, copies adapter files to `~/.hermes/adapters/oms`, and writes `mcp_servers.oms` in `~/.hermes/config.yaml`. |
 
-All host writes are namespaced under `oms` and are reversible with `oms uninstall`.
+Host writes keep the legacy `oms` namespace for backward-compatible MCP/skill IDs and are reversible with `oh-my-second-brain uninstall` (or the `oms` alias).
 
 ## Legacy setup flow
 
 `setup` still adopts a vault into the Oh My Second Brain ontology and can print the Claude Code plan:
 
 ```bash
-oms setup --vault /path/to/vault --yes --install-claude
+oh-my-second-brain setup --vault /path/to/vault --yes --install-claude
 ```
 
 Typical printed commands look like:
 
 ```bash
-claude plugin install /path/to/oms/adapters/claude-code
+claude plugin install /path/to/oh-my-second-brain/adapters/claude-code
 claude mcp add oms -- oms mcp --vault /path/to/vault
 ```
 
@@ -86,19 +86,19 @@ claude mcp add oms -- oms mcp --vault /path/to/vault
 Preview first:
 
 ```bash
-oms uninstall --runtime all --dry-run
+oh-my-second-brain uninstall --runtime all --dry-run
 ```
 
 Remove host registrations and adapter files:
 
 ```bash
-oms uninstall --runtime all --yes
+oh-my-second-brain uninstall --runtime all --yes
 ```
 
 One-line uninstall:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oms/main/scripts/uninstall.sh | bash -s -- --yes
+curl -fsSL https://raw.githubusercontent.com/GoBeromsu/oh-my-second-brain/main/scripts/uninstall.sh | bash -s -- --yes
 ```
 
 The uninstaller removes Oh My Second Brain host registrations and adapter files. It does **not** remove vault notes or `vault/.oms/` ontology data. Pass `--keep-package` to the shell uninstaller if you want to keep the globally installed package.
@@ -106,8 +106,8 @@ The uninstaller removes Oh My Second Brain host registrations and adapter files.
 ## Verify the install
 
 ```bash
-oms doctor --vault /path/to/vault
-oms install --runtime all --vault /path/to/vault --dry-run
+oh-my-second-brain doctor --vault /path/to/vault
+oh-my-second-brain install --runtime all --vault /path/to/vault --dry-run
 claude plugin validate adapters/claude-code
 ```
 
