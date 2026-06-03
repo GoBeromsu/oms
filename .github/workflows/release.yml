@@ -29,11 +29,9 @@ jobs:
         run: |
           node -e "const p=require('./package.json'); if (p.version === '0.0.0') { throw new Error('Bump package.json version before publishing'); }"
       - run: npm run release:check
-      - name: Verify npm token is present
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: test -n "$NODE_AUTH_TOKEN"
       - name: Publish to npm with provenance
         env:
+          # Optional: token auth for classic npm publishing. If this secret is absent,
+          # npm can still publish through trusted publishing/OIDC when the package is configured for it.
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --provenance --access public
