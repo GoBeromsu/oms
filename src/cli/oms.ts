@@ -10,6 +10,7 @@ import { resolveConcept } from "../ontology/resolver.js";
 import { parseNote } from "../conventions/frontmatter.js";
 import { validateFrontmatter } from "../conventions/validate.js";
 import { runMcpServer } from "../mcp/server.js";
+import { resolveBundledAssetPaths } from "../runtime/assets.js";
 import {
   formatHostOperationResults,
   runHostOperation,
@@ -21,35 +22,18 @@ import type { Taxonomy, FolderBinding } from "../ontology/types.js";
 // Path helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Resolve the bundled `core/ontology` directory.
- * Both the built path (`dist/cli/`) and the source path (`src/cli/`) are two
- * levels beneath the repo root, so `../../core/ontology` works in both cases.
- */
+const bundledAssets = resolveBundledAssetPaths();
+
 function bundledOntologyDir(): string {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  return path.resolve(__dirname, "../../core/ontology");
+  return bundledAssets.ontologyDir;
 }
 
-/**
- * Resolve the bundled Claude Code adapter directory.
- * Kept parallel to bundledOntologyDir so source and built paths both work.
- */
 function bundledClaudeAdapterDir(): string {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  return path.resolve(__dirname, "../../adapters/claude-code");
+  return bundledAssets.claudeAdapterDir;
 }
 
-/**
- * Resolve the bundled `adapters` root so host installers can copy the
- * runtime-specific adapter assets from either source or dist execution.
- */
 function bundledAdapterRoot(): string {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  return path.resolve(__dirname, "../../adapters");
+  return bundledAssets.adapterRoot;
 }
 
 // ---------------------------------------------------------------------------

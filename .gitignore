@@ -7,6 +7,7 @@ coverage/
 # Local agent-orchestration tooling state (oh-my-claudecode / oh-my-codex)
 .omc/
 .omx/
+.omo/
 
 # Logs & OS / editor noise
 *.log

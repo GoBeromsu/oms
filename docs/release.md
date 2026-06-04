@@ -17,6 +17,10 @@ The npm package root is the runtime asset root. A releasable tarball must includ
 - `scripts/install.sh`
 - `scripts/uninstall.sh`
 
+`src/` is TypeScript source only. Bundled host/ontology assets intentionally stay
+at the package root so the built CLI can read the same package-root layout in
+source checkouts and in published tarballs.
+
 Codex and Hermes adapter files are packaged as host-native skill/rule bundles plus MCP registrations; release notes must describe the exact installed paths and avoid claiming behavior beyond the shipped skills and MCP tools.
 
 ## Local release gate

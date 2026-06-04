@@ -75,7 +75,7 @@ Retrieval is a read-side narrowing flow:
 intent/query
   → resolve relevant concept/folder/property/wikilink axes
   → narrow candidates through the intentional graph
-  → optionally run lexical/vector/hybrid search inside the candidate set
+  → optionally fuse lexical/vector/hybrid search candidates
   → apply a retrieval view
   → lazy-load selected note bodies
 ```
@@ -91,7 +91,7 @@ A retrieval view is not the graph itself. It is an output shape applied after ca
 Order of operations:
 
 1. Axis graph narrowing by folder/property/wikilink/concept.
-2. Optional qmd-like lexical/vector/hybrid search inside the narrowed candidate space.
+2. Optional qmd-like lexical/vector/hybrid search, either globally across the vault for broad semantic recall or restricted to the narrowed graph candidate space.
 3. Retrieval view (`lenses` in YAML) selects the returned fields/excerpts.
 
 Avoid the phrase "lens projection" unless a document defines it locally. Prefer "retrieval view" or "axis view".

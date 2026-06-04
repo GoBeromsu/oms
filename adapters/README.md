@@ -80,10 +80,10 @@ contract validation, retrieve, graph/status, and gated capture tools.
 All three hosts natively support MCP (`.mcp.json` for claude-code and codex; "any MCP server" for Hermes).
 In the current repository, `src/mcp/server.ts` starts a real stdio MCP server via `oms mcp`.
 
-The MCP server currently exposes status/read/cache/capture tools:
+The MCP server currently exposes status/read/cache/retrieve/capture tools:
 `oms_graph_status`, `oms_graph_build`, `oms_list_concepts`,
-`oms_retrieve_by_axis`, `oms_lazy_load_note`, `oms_validate_contract`,
-`oms_capture_prepare`, and `oms_capture_commit`.
+`oms_retrieve_context`, `oms_retrieve_by_axis`, `oms_lazy_load_note`,
+`oms_validate_contract`, `oms_capture_prepare`, and `oms_capture_commit`.
 Capture commit is gated by path-safety, vault-confinement, and contract validation. The CLI (`oms setup`, `oms install`, `oms uninstall`, `oms doctor`) remains the real surface for lifecycle commands.
 
 ---

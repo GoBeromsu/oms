@@ -61,6 +61,15 @@ All knowledge logic (validation, ontology loading, folder resolution, graph/cach
 │  src/adapt/HostAdapter.ts per-host adapter interface             │
 │  src/mcp/server.ts        stdio MCP: status/read/cache/capture   │
 └───────────────────────────┬──────────────────────────────────────┘
+                            │ reads bundled static package assets
+                            ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  Package-root assets  (not TypeScript source)                    │
+│                                                                  │
+│  core/ontology/          shipped default ontology copied to vault │
+│  core/skills/, core/agents/ host-agnostic skill/persona text       │
+│  adapters/*              host-native plugin/rule/skill bundles    │
+└───────────────────────────┬──────────────────────────────────────┘
                             │ reads / writes
                             ▼
 ┌──────────────────────────────────────────────────────────────────┐

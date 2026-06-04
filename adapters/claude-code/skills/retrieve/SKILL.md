@@ -21,18 +21,22 @@ Conceptually shells out to:
 oms retrieve
 ```
 
-**Runtime note:** Retrieval is available through MCP tools (`oms_retrieve_by_axis`
-and `oms_lazy_load_note`). This skill still guides the agent on intent and
-output shaping.
+**Runtime note:** Retrieval is available through MCP tools. Prefer
+`oms_retrieve_context` for live graph + qmd context retrieval, then
+`oms_lazy_load_note` after selecting candidate notes. `oms_retrieve_by_axis`
+remains available for legacy cache-backed axis retrieval.
 
 ## Agent-guided steps (v0)
 
 1. Clarify the user's **retrieval purpose** (synthesize, audit, plan, review, etc.).
 2. Narrow by declared **folder/concept/property/wikilink axes** where possible.
 3. Match the purpose to a declared **retrieval view** (`lenses` in YAML) in `vault/.oms/concepts/*.yaml`.
-4. Scan notes in the candidate concept/folder set.
-5. For each note, return the retrieval-view fields and lazy-load body only when needed.
-6. Return results grouped by concept/folder with retrieval-view frontmatter.
+4. Call MCP `oms_retrieve_context` with the best available axes and query.
+5. Use default `qmdScope: "global"` for broad semantic search; use
+   `qmdScope: "graph"` only when qmd must stay inside the selected graph
+   candidates.
+6. For each note, return the retrieval-view fields and lazy-load body only when needed.
+7. Return results grouped by concept/folder with retrieval-view frontmatter.
 
 ## Example
 
@@ -51,5 +55,6 @@ Purpose: "Synthesize my transformer papers"
 
 ## Runtime
 
-Use MCP `oms_retrieve_by_axis` for axis-first narrowing and optional lexical
-ranking. Use MCP `oms_lazy_load_note` only after selecting candidate notes.
+Use MCP `oms_retrieve_context` for live graph/qmd retrieval. Use MCP
+`oms_retrieve_by_axis` only for legacy axis-first cache retrieval. Use MCP
+`oms_lazy_load_note` only after selecting candidate notes.

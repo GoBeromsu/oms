@@ -34,12 +34,22 @@ The retrieval skill reads these declarations from `vault/.oms/concepts/*.yaml`.
 
 ## Engine
 
-The retrieval engine is implemented in `src/graph/cache.ts` and exposed via two MCP tools:
+Use MCP `oms_retrieve_context` first for natural-language retrieval. It combines:
 
-- **`oms_retrieve_by_axis`** — filters notes by concept, folder, property, value, or wikilink; ranks results using a lexical BM25-like algorithm; returns up to 50 results.
-- **`oms_lazy_load_note`** — fetches the full body of a single note on demand, avoiding loading all note bodies upfront.
+- live folder/frontmatter/wikilink graph exploration without requiring a warm cache
+- taxonomy-axis seeds from concept, folder, property, value, or wikilink inputs
+- graph neighbors through shared frontmatter values, wikilinks, and backlinks
+- optional qmd lexical/vector candidates when the local `qmd` CLI is available
 
-There is no vector/embedding layer; retrieval is lexical only. Call `oms_retrieve_by_axis` with the appropriate axis and lens, then use `oms_lazy_load_note` to expand individual results as needed.
+Use `qmdScope: "global"` for broad semantic search across the vault. Use
+`qmdScope: "graph"` when qmd candidates must stay inside the selected OMS graph
+candidates. The qmd provider is fail-soft: retrieval must still return OMS graph
+hits when qmd is unavailable or disabled.
+
+Use the older MCP tools only for narrower follow-up steps:
+
+- **`oms_retrieve_by_axis`** — legacy cache-backed axis retrieval by concept, folder, property, value, or wikilink.
+- **`oms_lazy_load_note`** — fetches the full body of a single selected note on demand, avoiding loading all note bodies upfront.
 
 ## Example agent steps
 

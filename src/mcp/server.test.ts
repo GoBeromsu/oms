@@ -38,6 +38,7 @@ describe("Oh My Second Brain MCP stdio server", () => {
         "oms_graph_build",
         "oms_list_concepts",
         "oms_retrieve_by_axis",
+        "oms_retrieve_context",
         "oms_lazy_load_note",
         "oms_validate_contract",
         "oms_capture_prepare",
@@ -66,6 +67,80 @@ describe("Oh My Second Brain MCP stdio server", () => {
       expect(parsedValidation.concept).toBe("literature");
     } finally {
       await client.close();
+    }
+  });
+
+  it("retrieves live graph context without requiring a warm cache or qmd", async () => {
+    const tmpVault = await mkdtemp(path.join(tmpdir(), "oms-mcp-retrieve-"));
+    await mkdir(path.join(tmpVault, "references"), { recursive: true });
+    await writeFile(
+      path.join(tmpVault, "references", "Agent Retrieval.md"),
+      `---
+title: Agent Retrieval
+tags:
+  - agent-graph
+---
+Agent retrieval follows [[Graph Index]].
+`,
+      "utf-8",
+    );
+    await writeFile(
+      path.join(tmpVault, "references", "Graph Index.md"),
+      `---
+title: Graph Index
+tags:
+  - agent-graph
+---
+Index note.
+`,
+      "utf-8",
+    );
+    await writeFile(
+      path.join(tmpVault, "references", "Malformed.md"),
+      `---
+title: [broken
+---
+Malformed frontmatter must not block retrieve.
+`,
+      "utf-8",
+    );
+
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: [distCli, "mcp", "--vault", tmpVault],
+      cwd: repoRoot,
+      stderr: "pipe",
+    });
+    const client = new Client({ name: "oms-test-client", version: "0.0.0" });
+
+    try {
+      await client.connect(transport);
+
+      const result = textPayload(
+        await client.callTool({
+          name: "oms_retrieve_context",
+          arguments: {
+            property: "tags",
+            value: "agent-graph",
+            query: "agent retrieval graph",
+            limit: 1,
+            maxNeighbors: 5,
+            useCache: false,
+            qmdEnabled: false,
+          },
+        }),
+      );
+
+      expect(result.mode).toBe("oms-local-graph-qmd-fusion");
+      const providers = result.providers as Record<string, unknown>;
+      expect(providers.graph).toBe("headless-scan");
+      expect(providers.qmd).toEqual({ available: false, reason: "disabled" });
+      const hits = result.hits as Array<Record<string, unknown>>;
+      expect(hits.map((hit) => hit.source)).toEqual(["oms-seed", "oms-neighbor"]);
+      expect(hits.map((hit) => hit.path)).toContain("references/Graph Index.md");
+    } finally {
+      await client.close();
+      await rm(tmpVault, { recursive: true, force: true });
     }
   });
 

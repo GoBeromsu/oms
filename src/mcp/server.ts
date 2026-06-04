@@ -1,6 +1,5 @@
 import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -26,21 +25,21 @@ import {
 } from "../graph/cache.js";
 import { loadOntology } from "../ontology/loader.js";
 import { resolveConcept } from "../ontology/resolver.js";
+import {
+  retrieveMorningContext,
+  type MorningRetrieveOptions,
+} from "../retrieve/morning.js";
+import { resolveBundledAssetPaths } from "../runtime/assets.js";
 import type { Concept, Ontology } from "../ontology/types.js";
 
 const SERVER_VERSION = "0.0.0";
-
-function bundledOntologyDir(): string {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  return path.resolve(__dirname, "../../core/ontology");
-}
+const bundledAssets = resolveBundledAssetPaths();
 
 async function activeOntology(vault: string): Promise<{ ontology: Ontology; source: string }> {
   const localOntologyDir = path.join(vault, ".oms");
   const omsKind = await pathKind(localOntologyDir);
   if (omsKind === "missing") {
-    return { ontology: await loadOntology(bundledOntologyDir()), source: "bundled" };
+    return { ontology: await loadOntology(bundledAssets.ontologyDir), source: "bundled" };
   }
   if (omsKind !== "directory") {
     throw new Error("Local .oms exists but is not a directory.");
@@ -50,7 +49,7 @@ async function activeOntology(vault: string): Promise<{ ontology: Ontology; sour
   const conceptsKind = await pathKind(path.join(localOntologyDir, "concepts"));
 
   if (taxonomyKind === "missing" && conceptsKind === "missing") {
-    return { ontology: await loadOntology(bundledOntologyDir()), source: "bundled" };
+    return { ontology: await loadOntology(bundledAssets.ontologyDir), source: "bundled" };
   }
   if (taxonomyKind !== "file" || conceptsKind !== "directory") {
     throw new Error(
@@ -190,6 +189,36 @@ export const omsMcpTools: Tool[] = [
         wikilink: { type: "string" },
         query: { type: "string" },
         limit: { type: "number" },
+      },
+    },
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  {
+    name: "oms_retrieve_context",
+    title: "Oh My Second Brain retrieve context",
+    description:
+      "Live local graph retrieval with axis seeds, frontmatter/wikilink neighbors, optional qmd lexical/vector candidates, and no warm-cache requirement.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        concept: { type: "string" },
+        folder: { type: "string" },
+        property: { type: "string" },
+        value: { type: "string" },
+        wikilink: { type: "string" },
+        query: { type: "string" },
+        limit: { type: "number" },
+        maxNeighbors: { type: "number" },
+        useCache: { type: "boolean" },
+        qmdEnabled: { type: "boolean" },
+        qmdCollection: { type: "string" },
+        qmdLimit: { type: "number" },
+        qmdScope: { type: "string", enum: ["global", "graph"] },
       },
     },
     annotations: {
@@ -396,6 +425,43 @@ export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
         mode: "axis-first-search-second",
         bodyPolicy: "lazy-load",
         hits,
+      });
+    }
+
+    if (request.params.name === "oms_retrieve_context") {
+      const { ontology, source } = await activeOntology(vault);
+      const limitValue = args?.["limit"];
+      const maxNeighborsValue = args?.["maxNeighbors"];
+      const useCacheValue = args?.["useCache"];
+      const qmdEnabledValue = args?.["qmdEnabled"];
+      const qmdLimitValue = args?.["qmdLimit"];
+      const qmdCollection = stringArg(args, "qmdCollection");
+      const qmdScope = stringArg(args, "qmdScope");
+      const qmd: NonNullable<MorningRetrieveOptions["qmd"]> = {
+        ...(typeof qmdEnabledValue === "boolean" ? { enabled: qmdEnabledValue } : {}),
+        ...(qmdCollection ? { collection: qmdCollection } : {}),
+        ...(typeof qmdLimitValue === "number" ? { limit: qmdLimitValue } : {}),
+        ...(qmdScope === "global" || qmdScope === "graph" ? { scope: qmdScope } : {}),
+      };
+
+      const result = await retrieveMorningContext({
+        vault,
+        ontology,
+        concept: stringArg(args, "concept"),
+        folder: stringArg(args, "folder"),
+        property: stringArg(args, "property"),
+        value: stringArg(args, "value"),
+        wikilink: stringArg(args, "wikilink"),
+        query: stringArg(args, "query"),
+        limit: typeof limitValue === "number" ? limitValue : undefined,
+        maxNeighbors: typeof maxNeighborsValue === "number" ? maxNeighborsValue : undefined,
+        useCache: typeof useCacheValue === "boolean" ? useCacheValue : undefined,
+        qmd,
+      });
+      return jsonText({
+        vault,
+        ontologySource: source,
+        ...result,
       });
     }
 
