@@ -38,6 +38,8 @@ Environment knobs:
 | `OMS_INSTALL_RUNTIME` | `auto`, `all`, `claude`, `codex`, or `hermes` |
 | `OMS_VAULT` | vault path used for MCP registration |
 | `OMS_EXECUTE_EXTERNAL=1` | allow host CLI commands such as `claude plugin install` |
+| `OMS_UPDATE_NOTICE=0` | disable automatic update-available notices on normal CLI commands |
+| `OMS_UPDATE_NOTICE_TIMEOUT_MS` | timeout for the non-blocking update notice check |
 
 ## CLI install
 
@@ -66,6 +68,24 @@ Runtime selection follows the Ouroboros pattern:
 
 Host writes keep the legacy `oms` namespace for backward-compatible MCP/skill IDs and are reversible with `oh-my-second-brain uninstall` (or the `oms` alias).
 
+## Update
+
+Preview the package update and host adapter reconciliation first:
+
+```bash
+oh-my-second-brain update --dry-run --runtime all --vault /path/to/vault
+```
+
+Apply the latest npm package and refresh selected host adapters:
+
+```bash
+oh-my-second-brain update --yes --runtime all --vault /path/to/vault
+```
+
+`update` checks `oh-my-second-brain@latest`, then plans `npm install -g oh-my-second-brain@latest` plus a post-update adapter reconciliation. It does not mutate package or host config unless `--yes` is provided. Use `--execute` only when you want reconciliation to call external host CLIs where available.
+
+Normal CLI commands such as `setup`, `install`, `uninstall`, and `doctor` also print a short stderr notice when a newer npm version is available. Set `OMS_UPDATE_NOTICE=0` to silence that check in CI or release smoke environments.
+
 ## Legacy setup flow
 
 `setup` still adopts a vault into the Oh My Second Brain ontology and can print the Claude Code plan:
@@ -73,6 +93,14 @@ Host writes keep the legacy `oms` namespace for backward-compatible MCP/skill ID
 ```bash
 oh-my-second-brain setup --vault /path/to/vault --yes --install-claude
 ```
+
+Interactive setup now interviews folder axes, concept bindings, optional observed frontmatter fields, and retrieval lenses:
+
+```bash
+oh-my-second-brain setup --vault /path/to/vault --suggest-fields
+```
+
+Setup does not modify vault notes. It writes `.oms/taxonomy.yaml`, preserves existing `.oms/concepts/`, and only adds selected observed fields when `--suggest-fields` is enabled.
 
 Typical printed commands look like:
 

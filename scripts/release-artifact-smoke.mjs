@@ -70,6 +70,7 @@ function setupSmoke(packageRoot, vault) {
   const cli = path.join(packageRoot, "dist/cli/oms.js");
   const result = run(process.execPath, [cli, "setup", "--vault", vault, "--yes", "--install-claude"], {
     cwd: packageRoot,
+    env: { ...process.env, OMS_UPDATE_NOTICE: "0" },
   });
   const output = `${result.stdout}\n${result.stderr}`;
   assertPath(path.join(vault, ".oms/taxonomy.yaml"), "vault taxonomy");
@@ -93,12 +94,30 @@ function hostInstallSmoke(packageRoot, vault) {
   const cli = path.join(packageRoot, "dist/cli/oms.js");
   const result = run(process.execPath, [cli, "install", "--runtime", "all", "--vault", vault, "--dry-run"], {
     cwd: packageRoot,
+    env: { ...process.env, OMS_UPDATE_NOTICE: "0" },
   });
   const output = `${result.stdout}\n${result.stderr}`;
   for (const expected of ["claude install", "codex install", "hermes install", "rules/oms.md", "skills/knowledge-management/oms"]) {
     if (!output.includes(expected)) fail(`host install dry-run did not include ${expected}`);
   }
   console.log("[release:artifact-smoke] ok: host install dry-run works from unpacked package.");
+}
+
+function updateSmoke(packageRoot, vault) {
+  const cli = path.join(packageRoot, "dist/cli/oms.js");
+  const result = run(process.execPath, [cli, "update", "--runtime", "all", "--vault", vault, "--dry-run"], {
+    cwd: packageRoot,
+    env: { ...process.env, OMS_UPDATE_LATEST_VERSION: "999.0.0" },
+  });
+  const output = `${result.stdout}\n${result.stderr}`;
+  for (const expected of [
+    "npm install -g oh-my-second-brain@latest",
+    "update-reconcile --runtime all",
+    "Run `oms update --yes`",
+  ]) {
+    if (!output.includes(expected)) fail(`update dry-run did not include ${expected}`);
+  }
+  console.log("[release:artifact-smoke] ok: update dry-run works from unpacked package.");
 }
 
 async function mcpSmoke(packageRoot, vault) {
@@ -139,9 +158,12 @@ try {
   assertPath(path.join(packageRoot, "dist"), "dist directory");
   assertPath(path.join(packageRoot, "core"), "core directory");
   assertPath(path.join(packageRoot, "adapters/claude-code/.claude-plugin/plugin.json"), "Claude plugin manifest");
+  assertPath(path.join(packageRoot, "adapters/claude-code/skills/update/SKILL.md"), "Claude update skill");
   assertPath(path.join(packageRoot, "adapters/codex/rules/oms.md"), "Codex Oh My Second Brain rule");
   assertPath(path.join(packageRoot, "adapters/codex/skills/oms-capture/SKILL.md"), "Codex Oh My Second Brain capture skill");
+  assertPath(path.join(packageRoot, "adapters/codex/skills/oms-update/SKILL.md"), "Codex Oh My Second Brain update skill");
   assertPath(path.join(packageRoot, "adapters/hermes/skills/capture/SKILL.md"), "Hermes Oh My Second Brain capture skill");
+  assertPath(path.join(packageRoot, "adapters/hermes/skills/update/SKILL.md"), "Hermes Oh My Second Brain update skill");
   assertPath(path.join(packageRoot, "docs/install.md"), "install docs");
   assertPath(path.join(packageRoot, "docs/release.md"), "release docs");
   assertPath(path.join(packageRoot, "scripts/install.sh"), "install shell script");
@@ -151,6 +173,7 @@ try {
   if (runSetup) {
     setupSmoke(packageRoot, vault);
     hostInstallSmoke(packageRoot, vault);
+    updateSmoke(packageRoot, vault);
   }
   if (runMcp) await mcpSmoke(packageRoot, vault);
 } finally {
