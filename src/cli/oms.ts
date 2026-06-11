@@ -731,6 +731,7 @@ async function main(): Promise<void> {
   let executeExternal = false;
   let checkUpdate = false;
   let timeoutMs: number | undefined;
+  let agentVault: string | undefined;
   const unknownFlags: string[] = [];
 
   for (let i = 1; i < argv.length; i++) {
@@ -770,6 +771,9 @@ async function main(): Promise<void> {
         return;
       }
       i++;
+    } else if (argv[i] === "--agent-vault" && argv[i + 1]) {
+      agentVault = path.resolve(argv[i + 1]!);
+      i++;
     } else if (argv[i] === "--dry-run") {
       dryRun = true;
     } else if (argv[i] === "--execute") {
@@ -793,6 +797,7 @@ async function main(): Promise<void> {
       action: command,
       runtime: selectedRuntime,
       vault,
+      agentVault,
       dryRun,
       executeExternal,
       yes,
