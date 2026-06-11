@@ -9,7 +9,10 @@ import { loadOntology } from "../ontology/loader.js";
 import { resolveConcept } from "../ontology/resolver.js";
 import { parseNote } from "../conventions/frontmatter.js";
 import { validateFrontmatter } from "../conventions/validate.js";
+import { detectLinkIssues } from "../conventions/lint.js";
 import { runMcpServer } from "../mcp/server.js";
+import { runPreToolUse } from "../hook/pre-tool-use.js";
+import { runPostToolUse } from "../hook/post-tool-use.js";
 import { resolveBundledAssetPaths } from "../runtime/assets.js";
 import {
   collectObservedFields,
@@ -29,6 +32,7 @@ import {
   runHostOperation,
   type RuntimeSelection,
 } from "../install/hosts.js";
+import { isSemanticCliCommand, runSemanticCli } from "./semantic.js";
 import type { Concept, FieldType, FolderBinding, OntologyField, OntologyLens, Taxonomy } from "../ontology/types.js";
 
 // ---------------------------------------------------------------------------
@@ -633,6 +637,34 @@ export async function runDoctor(opts: { vault: string }): Promise<number> {
       `\nOh My Second Brain doctor: ${totalNotes} notes checked, ${notesWithViolations} with violations, ${totalViolations} total violations.`,
     );
     console.log("All violations are warnings (onViolation: warn). Exit 0.\n");
+
+    // Broken-link and orphan detection (C4 lint port).
+    try {
+      const lintResult = await detectLinkIssues(vault);
+      if (lintResult.brokenLinks.length > 0) {
+        console.log(`\n--- Broken wikilinks (${lintResult.brokenLinks.length}) ---`);
+        for (const { notePath, target } of lintResult.brokenLinks) {
+          console.log(`  [broken-link] ${notePath} -> [[${target}]]`);
+        }
+      } else {
+        console.log("Broken wikilinks: 0");
+      }
+
+      const orphanCount = lintResult.orphanPaths.length;
+      if (orphanCount > 0) {
+        console.log(`\n--- Orphan notes (no incoming links): ${orphanCount} ---`);
+        for (const p of lintResult.orphanPaths.slice(0, 20)) {
+          console.log(`  [orphan] ${p}`);
+        }
+        if (orphanCount > 20) {
+          console.log(`  ... and ${orphanCount - 20} more`);
+        }
+      } else {
+        console.log("Orphan notes: 0");
+      }
+    } catch (lintErr) {
+      console.warn("[oms] lint detection could not complete:", lintErr);
+    }
   } catch (err) {
     console.warn("[oms] doctor could not complete:", err);
   }
@@ -655,7 +687,10 @@ Usage:
   oh-my-second-brain uninstall [--runtime <all|claude|codex|hermes>] [--dry-run] [--execute] [--yes]
   oh-my-second-brain update [--check] [--dry-run] [--yes] [--runtime <auto|all|claude|codex|hermes>] [--vault <path>]
   oh-my-second-brain doctor [--vault <path>]
+  oh-my-second-brain semantic <status|sync|query|search|vsearch|get|multi-get|collection> [options]
   oh-my-second-brain mcp [--vault <path>]
+  oh-my-second-brain hook pre-tool-use [--vault <path>]
+  oh-my-second-brain hook post-tool-use [--vault <path>]
 
 Compatibility alias: oms <command>
 
@@ -664,8 +699,12 @@ Commands:
   install  Install Oh My Second Brain host adapters and MCP registration.
   uninstall Remove Oh My Second Brain host adapters and MCP registration.
   update   Check for or apply an explicit package update, then refresh host adapters.
-  doctor   Validate vault notes against the active ontology.
+  doctor   Validate vault notes against the active ontology (includes broken-link and orphan detection).
+  semantic Native markdown semantic index/search/get commands.
   mcp      Start the read/status MCP stdio server.
+  hook     Vault guard hooks for Claude Code PreToolUse / PostToolUse events.
+             pre-tool-use  Read PreToolUse JSON from stdin; block unregistered folder creation.
+             post-tool-use Read PostToolUse JSON from stdin; audit frontmatter + trigger graph build.
 
 Options:
   --vault <path>   Path to the vault root (default: current directory).
@@ -805,8 +844,25 @@ async function main(): Promise<void> {
   } else if (command === "doctor") {
     process.exitCode = await runDoctor({ vault });
     await maybePrintUpdateNotice();
+  } else if (isSemanticCliCommand(command)) {
+    process.exitCode = await runSemanticCli({
+      argv,
+      vault,
+    });
+    await maybePrintUpdateNotice();
   } else if (command === "mcp") {
     await runMcpServer({ vault });
+  } else if (command === "hook") {
+    const subcommand = argv[1];
+    if (subcommand === "pre-tool-use") {
+      await runPreToolUse({ vault });
+    } else if (subcommand === "post-tool-use") {
+      await runPostToolUse({ vault });
+    } else {
+      console.error(`[oms] Unknown hook subcommand: ${subcommand ?? "(none)"}`);
+      console.error("Usage: oms hook <pre-tool-use|post-tool-use> [--vault <path>]");
+      process.exitCode = 1;
+    }
   } else {
     printUsage();
     process.exitCode = 0;
