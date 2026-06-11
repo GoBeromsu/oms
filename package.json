@@ -26,6 +26,7 @@
   },
   "scripts": {
     "build": "node scripts/clean-dist.mjs && tsc -p tsconfig.json",
+    "postbuild": "chmod +x dist/cli/oms.js",
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "audit": "npm audit --omit=dev",

@@ -15,8 +15,30 @@
  */
 
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const WRITE_TOOLS = new Set(["Write", "write", "Edit", "edit"]);
+
+/**
+ * Resolve how to invoke the oms CLI for the hook.
+ *
+ * Prefer running the co-located dist entry via `node <dist>` so the guard is
+ * immune to the `oms` bin losing its executable bit on a bare `tsc` rebuild
+ * (which silently breaks `spawnSync("oms")` with EACCES and fails the guard
+ * open). Fall back to the `oms` bin on PATH only if dist can't be located.
+ */
+function resolveOmsCommand() {
+  try {
+    const here = dirname(fileURLToPath(import.meta.url));
+    const dist = resolve(here, "../../../dist/cli/oms.js");
+    if (existsSync(dist)) return { cmd: process.execPath, prefix: [dist] };
+  } catch {
+    // fall through to PATH lookup
+  }
+  return { cmd: "oms", prefix: [] };
+}
 
 function allow() {
   process.stdout.write(JSON.stringify({ continue: true, suppressOutput: true }) + "\n");
@@ -83,9 +105,10 @@ async function main() {
 
   // Spawn `oms hook pre-tool-use --vault <vault>` with the raw stdin payload.
   try {
+    const { cmd, prefix } = resolveOmsCommand();
     const result = spawnSync(
-      "oms",
-      ["hook", "pre-tool-use", "--vault", targetVault],
+      cmd,
+      [...prefix, "hook", "pre-tool-use", "--vault", targetVault],
       { input: rawInput, encoding: "utf-8", timeout: 10000 },
     );
     if (result.status === 0 && result.stdout && result.stdout.trim()) {

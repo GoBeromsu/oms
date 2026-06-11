@@ -14,8 +14,27 @@
  */
 
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const WRITE_TOOLS = new Set(["Write", "write", "Edit", "edit"]);
+
+/**
+ * Resolve how to invoke the oms CLI. Prefer `node <dist>` over the `oms` bin so
+ * the hook survives a bare `tsc` rebuild stripping the bin's executable bit
+ * (which makes spawnSync("oms") fail with EACCES). Fall back to PATH `oms`.
+ */
+function resolveOmsCommand() {
+  try {
+    const here = dirname(fileURLToPath(import.meta.url));
+    const dist = resolve(here, "../../../dist/cli/oms.js");
+    if (existsSync(dist)) return { cmd: process.execPath, prefix: [dist] };
+  } catch {
+    // fall through to PATH lookup
+  }
+  return { cmd: "oms", prefix: [] };
+}
 
 async function readStdin(timeoutMs = 5000) {
   return new Promise((resolve) => {
@@ -70,9 +89,10 @@ async function main() {
   if (!targetVault) return;
 
   try {
+    const { cmd, prefix } = resolveOmsCommand();
     const result = spawnSync(
-      "oms",
-      ["hook", "post-tool-use", "--vault", targetVault],
+      cmd,
+      [...prefix, "hook", "post-tool-use", "--vault", targetVault],
       { input: rawInput, encoding: "utf-8", timeout: 30000 },
     );
     // Forward any additionalContext output from the post-tool-use hook.
