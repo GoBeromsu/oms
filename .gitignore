@@ -18,3 +18,13 @@ coverage/
 .env
 .env.*
 .npmrc
+
+# External reference repos (dev-time consultation only — see docs/dev-reference-repos.md)
+vendor/reference-repos/
+
+# oms engine cache (never committed)
+.oms/cache/
+
+# Private personal overlay — vault paths, names, personal recipes (R19/R20)
+# .oms/ itself is committed (ADR-006); only private/ is excluded here.
+private/
