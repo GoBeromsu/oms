@@ -3,12 +3,12 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, describe, it, expect } from "vitest";
 import { openEngineStore } from "./store.js";
-import { createHashProjectionProvider } from "./provider.js";
-import type { VectorStore } from "../types.js";
+import type { EngineStore } from "./store.js";
+import { createHashProjectionProvider } from "./hash-stub.test-helper.js";
 
 const DIMS = 64;
 let dir: string;
-let store: VectorStore;
+let store: EngineStore;
 
 beforeAll(() => {
   dir = mkdtempSync(path.join(tmpdir(), "oms-store-test-"));
@@ -92,5 +92,54 @@ describe("openEngineStore — queryVec", () => {
       expect(h.score).toBeGreaterThan(0);
       expect(h.score).toBeLessThanOrEqual(1);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// EngineStore extensions: getShas + clearDocument
+// ---------------------------------------------------------------------------
+
+describe("openEngineStore — getShas + clearDocument", () => {
+  it("getShas returns empty Map for an unknown document", () => {
+    const shas = store.getShas("notes/nonexistent.md");
+    expect(shas.size).toBe(0);
+  });
+
+  it("getShas returns ordinal→sha map after upsert", async () => {
+    const row = await makeRow("notes/sha-test.md", 0, "sha test content");
+    const customRow = { ...row, sha: "deadbeef01234567" };
+    store.upsert([customRow]);
+    const shas = store.getShas("notes/sha-test.md");
+    expect(shas.get(0)).toBe("deadbeef01234567");
+  });
+
+  it("getShas returns all ordinals for multi-chunk document", async () => {
+    const rows = [
+      { ...(await makeRow("notes/multi.md", 0, "first chunk")), sha: "sha-chunk-0" },
+      { ...(await makeRow("notes/multi.md", 1, "second chunk")), sha: "sha-chunk-1" },
+    ];
+    store.upsert(rows);
+    const shas = store.getShas("notes/multi.md");
+    expect(shas.get(0)).toBe("sha-chunk-0");
+    expect(shas.get(1)).toBe("sha-chunk-1");
+    expect(shas.size).toBe(2);
+  });
+
+  it("clearDocument removes all chunks and getShas returns empty", async () => {
+    const row = await makeRow("notes/to-clear.md", 0, "content to clear");
+    store.upsert([row]);
+    expect(store.getShas("notes/to-clear.md").size).toBe(1);
+
+    store.clearDocument("notes/to-clear.md");
+
+    expect(store.getShas("notes/to-clear.md").size).toBe(0);
+    // Lexical index should also be gone
+    const hits = store.queryLex("content to clear", 5);
+    const paths = hits.map((h) => h.docPath);
+    expect(paths).not.toContain("notes/to-clear.md");
+  });
+
+  it("clearDocument on unknown document does not throw", () => {
+    expect(() => store.clearDocument("notes/ghost.md")).not.toThrow();
   });
 });

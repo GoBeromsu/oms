@@ -37,6 +37,7 @@ status: active
 3. **Parity-or-Better before Swap** — The existing working vector layer (`src/search/`) is the regression floor. The new engine must pass the golden-set harness (N≈20, k=10, stratified over lex/vec/hyde/graph) at parity-or-better versus qmd/gbrain before any production routing changes (R18, R7).
 4. **Non-Sticky / Vault-Agnostic** — No vault path, folder name, or taxonomy value is hardcoded. All concrete vault bindings are resolved at setup-time via the engine's own Socratic interview (R16). Ataraxia values are reference defaults only.
 5. **Two-Layer .oms Governance** — Layer 1 CONTRACT (lint-enforced yaml) and Layer 2 GOVERNANCE (human-readable intent records) are always explicitly separated. Author and checker lanes never run in the same active context (ADR-006, R17).
+6. **Embedding Integrity** — `native-dim-in == stored-dim-out`; no projection/fold/truncation of embedding vectors; no fake/stub embedder on any production path (ADR-007, R22).
 
 ### Decision Drivers
 

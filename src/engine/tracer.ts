@@ -17,7 +17,7 @@ import { mkdir, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import type { EngineConfig, RetrievalResult, TypedSubQuery } from "./types.js";
 import { chunkDocument } from "./embed/chunker.js";
-import { createHashProjectionProvider } from "./embed/provider.js";
+import { requireRealEmbeddingProvider } from "./embed/provider.js";
 import { openEngineStore } from "./embed/store.js";
 import { buildGraph, loadCachedGraph, saveCachedGraph } from "./graph/builder.js";
 import { buildAdjacency, traverseGraph } from "./graph/traverse.js";
@@ -106,7 +106,7 @@ export async function runTracer(
   const files = await resolveFiles(vaultPath, config.files);
 
   // ── Step 2: create embed provider + store ─────────────────────────────────
-  const embedProvider = createHashProjectionProvider(config.embeddingDimensions);
+  const embedProvider = requireRealEmbeddingProvider({ modelPath: config.modelPath });
   await mkdir(path.dirname(config.dbPath), { recursive: true });
   const store = openEngineStore(config.dbPath, config.embeddingDimensions);
 

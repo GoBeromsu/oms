@@ -17,7 +17,11 @@ export interface EngineConfig {
   dbPath: string;
   /** Dimensionality of raw embeddings produced by the chosen model. Default 768. */
   embeddingDimensions: number;
-  /** Optional path to a GGUF model file; falls back to hash-projection when absent. */
+  /**
+   * Optional path to a GGUF model file.
+   * Required on the strict production path (requireRealEmbeddingProvider);
+   * omitting it without UPSTAGE_API_KEY causes a loud throw.
+   */
   modelPath?: string;
 }
 
@@ -55,9 +59,11 @@ export interface Chunk {
 // ---------------------------------------------------------------------------
 
 /**
- * Abstraction over any embedding backend (hash-projection or llama.cpp).
+ * Abstraction over an embedding backend (GGUF/llama.cpp or Upstage Solar).
  * Mirrors the shape of SemanticEmbeddingProvider in src/search/ but exposes
  * `dimensions` as a configurable field instead of folding to the hard-coded 64.
+ * The hash-projection stub exists only in test helpers and must never appear
+ * on the production path.
  */
 export interface EmbeddingProvider {
   /** Human-readable model identifier (e.g. "node-llama-cpp:/path/to/model.gguf"). */

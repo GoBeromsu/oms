@@ -12,6 +12,30 @@ import * as sqliteVec from "sqlite-vec";
 import type { Chunk, ScoredHit, VectorStore } from "../types.js";
 
 // ---------------------------------------------------------------------------
+// Extended store interface (superset of VectorStore — dispatcher-safe)
+// ---------------------------------------------------------------------------
+
+/**
+ * Extended VectorStore returned by openEngineStore().
+ *
+ * Adds two helpers needed by the vault→store sync layer without disturbing
+ * the VectorStore interface consumed by the retrieval dispatcher.
+ * EngineStore satisfies VectorStore everywhere (structural subtype).
+ */
+export interface EngineStore extends VectorStore {
+  /**
+   * Return a Map from chunk ordinal → stored SHA-256 for all chunks of
+   * `docPath`.  Used by syncEngineStore() to skip re-embedding unchanged chunks.
+   */
+  getShas(docPath: string): Map<number, string>;
+  /**
+   * Delete all chunks (meta + vec + FTS) for `docPath`.
+   * Useful when a document is deleted from the vault.
+   */
+  clearDocument(docPath: string): void;
+}
+
+// ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
 
@@ -106,7 +130,10 @@ interface LexRow {
 // ---------------------------------------------------------------------------
 
 /**
- * Open (or create) an engine VectorStore at `dbPath`.
+ * Open (or create) an engine store at `dbPath`.
+ *
+ * Returns an EngineStore (superset of VectorStore) which is directly usable
+ * as DispatcherDeps.store without any cast.
  *
  * `dimensions` must match the embedding model's output width.
  * The vec0 virtual table DDL bakes in this value — opening with a different
@@ -115,7 +142,7 @@ interface LexRow {
  * @param dbPath     - Absolute path to the SQLite database file.
  * @param dimensions - Embedding vector width (must match EmbeddingProvider.dimensions).
  */
-export function openEngineStore(dbPath: string, dimensions: number): VectorStore {
+export function openEngineStore(dbPath: string, dimensions: number): EngineStore {
   // Ensure parent directory exists
   mkdirSync(path.dirname(dbPath), { recursive: true });
 
@@ -183,6 +210,30 @@ export function openEngineStore(dbPath: string, dimensions: number): VectorStore
      ORDER BY rank
      LIMIT ?`,
   );
+
+  // getShas: read stored ordinal→sha pairs for a document (used by sync layer)
+  const stmtGetShas = db.prepare<[string], { ordinal: number; sha: string }>(
+    "SELECT ordinal, sha FROM engine_chunk_meta WHERE doc_path = ?",
+  );
+
+  // clearDocument: delete all chunks for a document across all three tables
+  const stmtClearDocVec = vectorAvailable
+    ? db.prepare<[string]>(
+        "DELETE FROM engine_chunk_vec WHERE rowid IN (SELECT rowid FROM engine_chunk_meta WHERE doc_path = ?)",
+      )
+    : null;
+  const stmtClearDocFts = db.prepare<[string]>(
+    "DELETE FROM engine_chunk_fts WHERE rowid IN (SELECT rowid FROM engine_chunk_meta WHERE doc_path = ?)",
+  );
+  const stmtClearDocMeta = db.prepare<[string]>(
+    "DELETE FROM engine_chunk_meta WHERE doc_path = ?",
+  );
+
+  const doClearDocument = db.transaction((docPath: string) => {
+    stmtClearDocVec?.run(docPath);
+    stmtClearDocFts.run(docPath);
+    stmtClearDocMeta.run(docPath);
+  });
 
   // ---------------------------------------------------------------------------
   // Upsert transaction
@@ -260,6 +311,17 @@ export function openEngineStore(dbPath: string, dimensions: number): VectorStore
     close(): void {
       db.pragma("wal_checkpoint(PASSIVE)");
       db.close();
+    },
+
+    getShas(docPath: string): Map<number, string> {
+      const rows = stmtGetShas.all(docPath);
+      const out = new Map<number, string>();
+      for (const r of rows) out.set(r.ordinal, r.sha);
+      return out;
+    },
+
+    clearDocument(docPath: string): void {
+      doClearDocument(docPath);
     },
   };
 }

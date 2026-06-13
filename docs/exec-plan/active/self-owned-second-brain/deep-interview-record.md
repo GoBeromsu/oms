@@ -331,3 +331,31 @@ R18 후 ~22% → **R19 후 ~14%** (repo 토폴로지 해소 = 최대 기여)
 > 4. frontmatter: spec slug 유지, status는 승인 절차 따름.
 
 ## RECORD STATUS: FINALIZED ✅ (spec R1–R17b + plan R18–R21, ambiguity ~3% < 5% 임계)
+
+---
+
+## Post-Finalization Locked Principles — R22 (2026-06-14)
+
+> 인터뷰 임계는 R21에서 통과(~3%)했다. 이 라운드는 구현 과정에서 명시적으로 잠금된 두 불변 원칙을 /documents 라이프사이클에 기록한다. 공식 결정은 ADR-007에 있으며, 이 섹션은 인터뷰 record의 연속으로 맥락을 보존한다.
+
+### R22 — 임베딩 무결성 불변 (잠금) → ADR-007
+
+**P-A — 네이티브 차원 무결성 (no-projection / native-dim integrity)**
+
+사용자 verbatim 의도: "embedding dimensions are NEVER projected/folded/truncated — qmd and gbrain never do, and neither do we. native-dim-in == stored-dim-out. The engine embeds EmbeddingGemma-300M at full 768d (no modulo fold); Upstage Solar at 4096d. The 768->64 modulo fold in `src/search/semantic-embedding-provider.ts` is the LEGACY regression floor only, removed AT the #5 swap, never copied into the engine."
+
+- **불변**: 임베딩 차원은 절대 투영·폴딩·절단하지 않는다. `native-dim-in == stored-dim-out`.
+- 신규 엔진: EmbeddingGemma-300M = **768d**(전체), Upstage Solar = **4096d**(전체).
+- `src/search/semantic-embedding-provider.ts`의 768→64 모듈로 폴드는 레거시 회귀 층 전용. `#5 swap` 시 완전 제거. `src/engine/`에 복사 금지.
+- Solar 4096d가 pgvector HNSW 한계를 초과하는 것은 이 불변의 귀결 — exact scan + Qwen3-Reranker로 대응(ADR-002).
+
+**P-B — 프로덕션 경로 가짜 임베더 폴백 금지 (no fake stub as unintended fallback in production)**
+
+사용자 verbatim 의도: "a fake/stub provider used when a real model is missing must never sit on a production path — that is an unintended fallback. Verify with TEST code instead; test-only stubs live in *.test-helper.ts / *.test.ts and are never importable by production; do not leave decommission-marked dead code lying around. The production embedding factory requireRealEmbeddingProvider THROWS (citing OMS_MODEL_PATH) when no real model/key is configured — it never silently substitutes a fake embedder. (The hash-projection embedder, never in the plan, was removed from production and moved to a test-helper.)"
+
+- 테스트 전용 스텁: `*.test-helper.ts` / `*.test.ts`에만. 프로덕션 임포트 불가.
+- 폐기 표시 데드 코드: 즉시 제거. 코드베이스에 잔류 금지.
+- `requireRealEmbeddingProvider`: 실제 모델/키 미설정 시 예외 throw(`OMS_MODEL_PATH` 메시지). 가짜 임베더 묵시적 대체 없음.
+- 해시-투영 임베더: 계획에 없었음. 프로덕션에서 제거 → 테스트-헬퍼로 이동 완료.
+
+**공식 기록 위치**: [ADR-007 임베딩 무결성 불변](../../../decisions/ADR-007-no-fake-embedder-fallback-native-dim-integrity.md)

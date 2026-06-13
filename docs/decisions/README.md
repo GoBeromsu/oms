@@ -10,6 +10,7 @@ oh-my-secondbrain 프로젝트의 주요 설계 결정을 기록한다.
 | [ADR-004](./ADR-004-config-secrets-access-topology.md) | Config · Secrets · Access Topology — 3-tier global/vault/per-repo 구성 | Proposed |
 | [ADR-005](./ADR-005-graph-access-model.md) | 그래프 접근 모델 — 엣지 계층 · 운영 모드 · MCP tools | Proposed |
 | [ADR-006](./ADR-006-oms-governance-contract-separation.md) | .oms 거버넌스 — 기계검증 계약(yaml) ↔ 의도 기록(documents) 명시적 분리 | Accepted |
+| [ADR-007](./ADR-007-no-fake-embedder-fallback-native-dim-integrity.md) | 임베딩 무결성 불변 — 네이티브 차원 보존 & 가짜 임베더 폴백 금지 | Accepted |
 
 ## 작성 규칙
 
