@@ -88,15 +88,10 @@ describe("Claude Code hook wiring helpers", () => {
   });
 
   it("buildGuardCommandString includes OMS_VAULT and guard bin", () => {
-    const cmd = buildGuardCommandString("/Users/testuser/Vault", undefined, "/Users/testuser", "oms-guard");
+    const cmd = buildGuardCommandString("/Users/testuser/Vault", "/Users/testuser", "oms-guard");
     expect(cmd).toContain("OMS_VAULT=");
     expect(cmd).toContain("oms-guard");
     expect(cmd).not.toContain("OMS_AGENT_VAULT");
-  });
-
-  it("buildGuardCommandString includes OMS_AGENT_VAULT when agentVault provided", () => {
-    const cmd = buildGuardCommandString("/Users/testuser/Vault", "/Users/testuser/RawVault", "/Users/testuser", "oms-guard");
-    expect(cmd).toContain("OMS_AGENT_VAULT=");
   });
 
   it("isOmsHookEntry detects marker in hook command", () => {

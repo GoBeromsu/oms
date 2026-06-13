@@ -8,7 +8,6 @@
  *
  * Configuration (env vars set by the settings.json hook definition):
  *   OMS_VAULT        — primary vault path
- *   OMS_AGENT_VAULT  — agent vault path
  *
  * Fail-open: any error → silent return (PostToolUse hooks are advisory).
  */
@@ -63,7 +62,6 @@ async function readStdin(timeoutMs = 5000) {
 async function main() {
   const vaultPaths = [
     process.env.OMS_VAULT,
-    process.env.OMS_AGENT_VAULT,
   ].filter(Boolean);
 
   if (vaultPaths.length === 0) return;

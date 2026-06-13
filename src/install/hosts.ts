@@ -13,8 +13,6 @@ export interface HostOperationOptions {
   action: HostAction;
   runtime: RuntimeSelection;
   vault: string;
-  /** Optional second vault path (e.g. agent/raw vault). Emitted as OMS_AGENT_VAULT. */
-  agentVault?: string;
   packageSpec?: string;
   dryRun?: boolean;
   executeExternal?: boolean;
@@ -142,14 +140,10 @@ export function toShellVaultPath(absPath: string, homeDir: string): string {
 /** Build the shell command string for a guard binary entry. */
 export function buildGuardCommandString(
   vault: string,
-  agentVault: string | undefined,
   homeDir: string,
   guardBin: string,
 ): string {
   const parts: string[] = [`OMS_VAULT=${toShellVaultPath(vault, homeDir)}`];
-  if (agentVault) {
-    parts.push(`OMS_AGENT_VAULT=${toShellVaultPath(agentVault, homeDir)}`);
-  }
   parts.push(guardBin);
   return parts.join(" ");
 }
@@ -203,7 +197,7 @@ async function readSettingsJsonSafe(settingsPath: string): Promise<SettingsReadR
  * Returns a human-readable message and whether the file was changed.
  */
 export async function upsertClaudeHooks(
-  options: Pick<HostOperationOptions, "vault" | "agentVault" | "dryRun" | "homeDir">,
+  options: Pick<HostOperationOptions, "vault" | "dryRun" | "homeDir">,
   claudeDir: string,
 ): Promise<{ changed: boolean; messages: string[] }> {
   const settingsPath = path.join(claudeDir, "settings.json");
@@ -212,8 +206,8 @@ export async function upsertClaudeHooks(
   const messages: string[] = [];
 
   if (corrupt) {
-    const preCmd = buildGuardCommandString(options.vault, options.agentVault, homeDir, GUARD_MARKER);
-    const postCmd = buildGuardCommandString(options.vault, options.agentVault, homeDir, POST_GUARD_MARKER);
+    const preCmd = buildGuardCommandString(options.vault, homeDir, GUARD_MARKER);
+    const postCmd = buildGuardCommandString(options.vault, homeDir, POST_GUARD_MARKER);
     messages.push(
       `WARNING: ${settingsPath} is not valid JSON — hook wiring skipped to avoid data loss.`,
       `Manual step: add these entries to ${settingsPath}:`,
@@ -230,8 +224,8 @@ export async function upsertClaudeHooks(
     : {};
   let changed = false;
 
-  const preCmd = buildGuardCommandString(options.vault, options.agentVault, homeDir, GUARD_MARKER);
-  const postCmd = buildGuardCommandString(options.vault, options.agentVault, homeDir, POST_GUARD_MARKER);
+  const preCmd = buildGuardCommandString(options.vault, homeDir, GUARD_MARKER);
+  const postCmd = buildGuardCommandString(options.vault, homeDir, POST_GUARD_MARKER);
 
   // PreToolUse
   const preArr = Array.isArray(hooks["PreToolUse"]) ? [...(hooks["PreToolUse"] as unknown[])] : [];

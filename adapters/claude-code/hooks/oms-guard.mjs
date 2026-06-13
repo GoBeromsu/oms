@@ -8,7 +8,6 @@
  *
  * Configuration (env vars set by the settings.json hook definition):
  *   OMS_VAULT        — primary vault path (e.g. /Users/…/Ataraxia)
- *   OMS_AGENT_VAULT  — agent vault path  (e.g. /Users/…/agent)
  *   OMS_GUARD        — set to "off" to bypass all checks
  *
  * Fail-open: any error (oms crash, timeout, invalid JSON) → {"continue": true}.
@@ -74,7 +73,6 @@ async function main() {
 
   const vaultPaths = [
     process.env.OMS_VAULT,
-    process.env.OMS_AGENT_VAULT,
   ].filter(Boolean);
 
   // No vaults configured → pass through.
