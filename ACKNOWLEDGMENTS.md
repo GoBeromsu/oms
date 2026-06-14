@@ -58,6 +58,9 @@ oh-my-secondbrain은 아래 공개 작업들의 아이디어와 구현에 빚지
 | HyDE (Hypothetical Document Embeddings) — generate a hypothetical answer passage then embed it for retrieval | [nashsu/llm_wiki](https://github.com/nashsu/llm_wiki) | GPL-3.0 | **IDEA-ONLY — zero verbatim code** |
 | P-08-style two-layer retry: inner immediate retry + outer 50 ms back-off, abort on CancelToken | P-08 resilience pattern (architecture concept) | idea-only | No external code |
 | Lightweight cancel token: mutable boolean wrapped in a getter+cancel() object, threaded through every async call | gajae-code patterns | MIT | idea-only, implementation is original |
+| Lazy-load + 5-minute idle unload guard (`src/engine/embed/provider.ts`): model/contexts not initialised until first `embed()` call; a `setTimeout` resets per call; no calls for 5 min → dispose pool; next `embed()` reloads lazily. The only permitted timer (plan.md:83, R2). | [qmd (tobi)](https://github.com/tobi/qmd) | MIT | **IDEA-ONLY — zero verbatim code** |
+| Hardware-adaptive parallel embed pool (`src/engine/embed/provider.ts`): `poolSize = min(4, cpuCount-1)`, round-robin context selection across the pool, `Promise.all` parallel context init, 2-stage batch distribution. | [qmd (tobi)](https://github.com/tobi/qmd) | MIT | **IDEA-ONLY — zero verbatim code** |
+| SHA-256 chunk-level incremental diff (`src/engine/embed/sync.ts`): compute SHA-256 of each chunk text; compare with stored SHA from `EngineStore.getShas()`; skip `embed()` call when SHA matches — only changed chunks are re-embedded. | [qmd (tobi)](https://github.com/tobi/qmd) | MIT | **IDEA-ONLY — zero verbatim code** |
 
 > **⚠ License flag — gbrain**: The gbrain project was referenced for logic/architecture patterns only. The original repo URL and license are unconfirmed (`TODO(verify)`). No code was copied. Attribution will be updated once the license is confirmed.
 

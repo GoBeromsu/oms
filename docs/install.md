@@ -4,7 +4,7 @@ Oh My Second Brain v0 is distributed as one npm/GitHub-release package that cont
 
 ## Prerequisites
 
-- Node.js 18 or newer.
+- Node.js 20 or newer.
 - `npm` on `PATH`.
 - An Obsidian vault, or any folder of Markdown notes.
 - Optional host CLIs: `claude`, `codex`, `hermes`.
@@ -135,8 +135,13 @@ The uninstaller removes Oh My Second Brain host registrations and adapter files.
 
 ```bash
 oh-my-second-brain doctor --vault /path/to/vault
+oh-my-second-brain semantic sync --vault /path/to/vault --collection vault
+oh-my-second-brain semantic query "what should I retrieve?" --vault /path/to/vault
+oh-my-second-brain semantic context add vault "Prefer durable notes with reusable evidence." --vault /path/to/vault
+oh-my-second-brain semantic ls vault --vault /path/to/vault
+oh-my-second-brain semantic doctor --vault /path/to/vault
 oh-my-second-brain install --runtime all --vault /path/to/vault --dry-run
 claude plugin validate adapters/claude-code
 ```
 
-Inside a host runtime, verify the MCP server by listing MCP tools or asking for Oh My Second Brain graph/status. The server exposes status, graph build, axis retrieval, lazy note loading, contract validation, and gated capture tools.
+Inside a host runtime, verify the MCP server by listing MCP tools or asking for Oh My Second Brain graph/status. The server exposes status, graph build, context retrieval, native OMS semantic-index sync, qmd-compatible semantic query/status aliases, `qmd://` document resources, semantic document rehydration, axis retrieval, lazy note loading, contract validation, and gated capture tools. OMS does not require the `qmd` binary; `oms semantic doctor` now reports the built-in SQLite/FTS/vector backend and optional GGUF model path diagnostics.
