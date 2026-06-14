@@ -96,28 +96,101 @@ interface ParsedDocTarget {
   readonly fromLine?: number;
   readonly lineCount?: number;
   readonly isDocid: boolean;
+  readonly isGlob: boolean;
 }
 
-/** Parse target forms: "file.md", "file.md:N", "file.md:N-M", "#docid". */
-function parseDocTarget(target: string): ParsedDocTarget {
-  if (target.startsWith("#")) {
-    return { filePath: target.slice(1), isDocid: true };
+function positiveInt(value: string | undefined): number | undefined {
+  if (!value || !/^\d+$/u.test(value)) return undefined;
+  const parsed = Number(value);
+  return parsed > 0 ? parsed : undefined;
+}
+
+/**
+ * Strip a resource scheme to a vault-relative path (parity with src/search
+ * normalizePath): qmd://<path> and oms://<collection>/<path> are URL-decoded;
+ * plain targets get backslashes and a leading "./" normalized away.
+ */
+function normalizeDocScheme(target: string): string {
+  if (target.startsWith("qmd://")) {
+    return decodeURIComponent(target.slice("qmd://".length)).replace(/^\/+/u, "");
   }
-  const colonIdx = target.lastIndexOf(":");
+  if (target.startsWith("oms://")) {
+    const rest = target.slice("oms://".length);
+    const slash = rest.indexOf("/");
+    return slash >= 0 ? decodeURIComponent(rest.slice(slash + 1)) : "";
+  }
+  return target.replace(/\\/g, "/").replace(/^\.?\//u, "");
+}
+
+/** Split a trailing line range off a path, supporting both colon forms. */
+function splitDocRange(value: string): { filePath: string; fromLine?: number; lineCount?: number } {
+  const parts = value.split(":");
+  // src/search colon form: "file:FROM:COUNT" (>= 3 parts, last two positive ints).
+  if (parts.length >= 3) {
+    const count = positiveInt(parts.at(-1));
+    const from = positiveInt(parts.at(-2));
+    if (from !== undefined && count !== undefined) {
+      return { filePath: parts.slice(0, -2).join(":"), fromLine: from, lineCount: count };
+    }
+  }
+  const colonIdx = value.lastIndexOf(":");
   if (colonIdx > 0) {
-    const rangePart = target.slice(colonIdx + 1);
-    const filePart = target.slice(0, colonIdx);
-    const rangeMatch = /^(\d+)-(\d+)$/u.exec(rangePart);
-    if (rangeMatch) {
-      const from = parseInt(rangeMatch[1]!, 10);
-      const to = parseInt(rangeMatch[2]!, 10);
-      return { filePath: filePart, fromLine: from, lineCount: Math.max(0, to - from + 1), isDocid: false };
+    const rangePart = value.slice(colonIdx + 1);
+    const filePart = value.slice(0, colonIdx);
+    const dash = /^(\d+)-(\d+)$/u.exec(rangePart);
+    if (dash) {
+      const from = parseInt(dash[1]!, 10);
+      const to = parseInt(dash[2]!, 10);
+      return { filePath: filePart, fromLine: from, lineCount: Math.max(0, to - from + 1) };
     }
     if (/^\d+$/u.test(rangePart)) {
-      return { filePath: filePart, fromLine: parseInt(rangePart, 10), lineCount: 1, isDocid: false };
+      return { filePath: filePart, fromLine: parseInt(rangePart, 10), lineCount: 1 };
     }
   }
-  return { filePath: target, isDocid: false };
+  return { filePath: value };
+}
+
+/**
+ * Parse target forms: "#docid", "file.md", "file.md:N", "file.md:N-M",
+ * "file.md:FROM:COUNT", "dir/*.md" (glob), and qmd:// / oms:// resource URIs.
+ */
+function parseDocTarget(target: string): ParsedDocTarget {
+  if (target.startsWith("#")) {
+    return { filePath: target.slice(1), isDocid: true, isGlob: false };
+  }
+  const scheme = normalizeDocScheme(target);
+  const { filePath, fromLine, lineCount } = splitDocRange(scheme);
+  return { filePath, fromLine, lineCount, isDocid: false, isGlob: filePath.includes("*") };
+}
+
+/** Mirror src/search globRegex: "*" → one path segment, "**" → any depth. */
+function docGlobToRegex(pattern: string): RegExp {
+  let source = "";
+  for (let index = 0; index < pattern.length; index++) {
+    const char = pattern[index] ?? "";
+    const next = pattern[index + 1] ?? "";
+    if (char === "*" && next === "*") {
+      source += ".*";
+      index++;
+    } else if (char === "*") {
+      source += "[^/]*";
+    } else if ("|\\{}()[]^$+?.".includes(char)) {
+      source += `\\${char}`;
+    } else {
+      source += char;
+    }
+  }
+  return new RegExp(`^${source}$`, "u");
+}
+
+/** Filesystem glob over the vault's markdown files; sorted for determinism. */
+async function globVaultDocs(vault: string, pattern: string): Promise<string[]> {
+  const regex = docGlobToRegex(pattern);
+  const matches: string[] = [];
+  for await (const rel of walkMarkdown(vault, vault)) {
+    if (regex.test(rel)) matches.push(rel);
+  }
+  return matches.sort((a, b) => a.localeCompare(b));
 }
 
 /** Return true if resolving filePath inside vaultRoot would escape the vault. */
@@ -556,6 +629,12 @@ export class McpEngineAdapter {
         return { available: false, reason: `No OMS document matched "${opts.target}".`, documents: [] };
       }
       resolvedPath = matched;
+    } else if (parsed.isGlob) {
+      const [matched] = await globVaultDocs(vault, parsed.filePath);
+      if (!matched) {
+        return { available: false, reason: `No OMS document matched "${opts.target}".`, documents: [] };
+      }
+      resolvedPath = matched;
     }
 
     if (isUnsafeVaultPath(resolvedPath, vault)) {
@@ -604,49 +683,54 @@ export class McpEngineAdapter {
     for (const rawTarget of opts.targets) {
       const parsed = parseDocTarget(rawTarget);
 
-      let resolvedPath = parsed.filePath;
+      let resolvedPaths: string[];
       if (parsed.isDocid) {
         const store = this.deps.store as EngineStore;
         const matched = store.listDocPaths().find((p) => p === parsed.filePath);
-        if (!matched) continue;
-        resolvedPath = matched;
+        resolvedPaths = matched ? [matched] : [];
+      } else if (parsed.isGlob) {
+        resolvedPaths = await globVaultDocs(vault, parsed.filePath);
+      } else {
+        resolvedPaths = [parsed.filePath];
       }
 
-      if (isUnsafeVaultPath(resolvedPath, vault)) {
-        return { available: false, reason: "OMS semantic document target must stay inside the vault.", documents: [] };
+      for (const resolvedPath of resolvedPaths) {
+        if (isUnsafeVaultPath(resolvedPath, vault)) {
+          return { available: false, reason: "OMS semantic document target must stay inside the vault.", documents: [] };
+        }
+
+        if (seen.has(resolvedPath)) continue;
+
+        let raw: string;
+        try {
+          raw = readFileSync(path.join(vault, resolvedPath), "utf-8");
+        } catch {
+          continue;
+        }
+
+        const content = sliceDocLines(raw, {
+          fromLine: parsed.fromLine,
+          lineCount: parsed.lineCount,
+          lineLimit: opts.lineLimit,
+          lineNumbers: opts.lineNumbers,
+        });
+
+        const nextBytes = Buffer.byteLength(content, "utf-8");
+        if (opts.maxBytes && usedBytes + nextBytes > opts.maxBytes) {
+          return { available: true, documents };
+        }
+
+        seen.add(resolvedPath);
+        usedBytes += nextBytes;
+
+        documents.push({
+          target: rawTarget,
+          path: opts.fullPath === true ? path.join(vault, resolvedPath) : resolvedPath,
+          content,
+          docid: resolvedPath,
+          title: extractDocTitle(raw),
+        });
       }
-
-      if (seen.has(resolvedPath)) continue;
-
-      let raw: string;
-      try {
-        raw = readFileSync(path.join(vault, resolvedPath), "utf-8");
-      } catch {
-        continue;
-      }
-
-      const content = sliceDocLines(raw, {
-        fromLine: parsed.fromLine,
-        lineCount: parsed.lineCount,
-        lineLimit: opts.lineLimit,
-        lineNumbers: opts.lineNumbers,
-      });
-
-      const nextBytes = Buffer.byteLength(content, "utf-8");
-      if (opts.maxBytes && usedBytes + nextBytes > opts.maxBytes) {
-        return { available: true, documents };
-      }
-
-      seen.add(resolvedPath);
-      usedBytes += nextBytes;
-
-      documents.push({
-        target: rawTarget,
-        path: opts.fullPath === true ? path.join(vault, resolvedPath) : resolvedPath,
-        content,
-        docid: resolvedPath,
-        title: extractDocTitle(raw),
-      });
     }
 
     return { available: true, documents };
