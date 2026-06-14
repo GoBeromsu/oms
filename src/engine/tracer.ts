@@ -198,7 +198,7 @@ export function makeTracerConfig(overrides: Partial<TracerConfig> = {}): TracerC
     vaultPath,
     dbPath: overrides.dbPath ?? path.join(vaultPath, ".oms", "cache", "engine", "engine.db"),
     embeddingDimensions: overrides.embeddingDimensions ?? 768,
-    modelPath: overrides.modelPath,
+    modelPath: overrides.modelPath ?? process.env["OMS_MODEL_PATH"],
     files: overrides.files,
     cacheDir: overrides.cacheDir,
     topK: overrides.topK ?? 10,

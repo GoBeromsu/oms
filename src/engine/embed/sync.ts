@@ -75,7 +75,7 @@ export interface EngineSyncResult {
 
 const SKIP_DIRS = new Set(["node_modules", ".git", ".oms"]);
 
-async function* walkMarkdown(dir: string, base: string): AsyncGenerator<string> {
+export async function* walkMarkdown(dir: string, base: string): AsyncGenerator<string> {
   let entries;
   try {
     entries = await readdir(dir, { withFileTypes: true });

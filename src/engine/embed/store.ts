@@ -33,6 +33,11 @@ export interface EngineStore extends VectorStore {
    * Useful when a document is deleted from the vault.
    */
   clearDocument(docPath: string): void;
+  /**
+   * Return every distinct `doc_path` currently stored.
+   * Used by the cleanup op to diff stored docs against live vault paths.
+   */
+  listDocPaths(): string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -229,6 +234,11 @@ export function openEngineStore(dbPath: string, dimensions: number): EngineStore
     "DELETE FROM engine_chunk_meta WHERE doc_path = ?",
   );
 
+  // listDocPaths: distinct documents currently present (used by cleanup diff)
+  const stmtListDocPaths = db.prepare<[], { doc_path: string }>(
+    "SELECT DISTINCT doc_path FROM engine_chunk_meta",
+  );
+
   const doClearDocument = db.transaction((docPath: string) => {
     stmtClearDocVec?.run(docPath);
     stmtClearDocFts.run(docPath);
@@ -322,6 +332,10 @@ export function openEngineStore(dbPath: string, dimensions: number): EngineStore
 
     clearDocument(docPath: string): void {
       doClearDocument(docPath);
+    },
+
+    listDocPaths(): string[] {
+      return stmtListDocPaths.all().map((r) => r.doc_path);
     },
   };
 }

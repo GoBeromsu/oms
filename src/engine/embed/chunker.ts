@@ -16,9 +16,41 @@ const DEFAULT_OVERLAP_RATIO = 0.15;
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-/** Approximate token count: ~4 characters per token (GPT-style heuristic). */
+/**
+ * Approximate token count, script-aware.
+ *
+ * The naive `length / 4` heuristic holds for English/Latin text but drastically
+ * UNDER-counts CJK (Korean, Chinese, Japanese): EmbeddingGemma tokenises those
+ * scripts at roughly one token per character, so a 900-"token" chunk estimated
+ * at 4 chars/token is really ~3600 tokens of Hangul — enough to overflow the
+ * embedding context. We weight CJK/Hangul/Kana codepoints at ~1 token each and
+ * all other characters at ~0.25 (the 4-chars/token Latin rate). This keeps
+ * mixed Korean/English chunks safely under the embedding context window.
+ */
 function approxTokens(text: string): number {
-  return Math.ceil(text.length / 4);
+  let weighted = 0;
+  for (const ch of text) {
+    weighted += isCjk(ch.codePointAt(0)!) ? 1 : 0.25;
+  }
+  return Math.ceil(weighted);
+}
+
+/** True for CJK / Hangul / Kana / fullwidth codepoints (~1 token per char). */
+function isCjk(cp: number): boolean {
+  return (
+    (cp >= 0x1100 && cp <= 0x11ff) || // Hangul Jamo
+    (cp >= 0x3000 && cp <= 0x303f) || // CJK symbols & punctuation
+    (cp >= 0x3040 && cp <= 0x30ff) || // Hiragana + Katakana
+    (cp >= 0x3130 && cp <= 0x318f) || // Hangul Compatibility Jamo
+    (cp >= 0x3400 && cp <= 0x4dbf) || // CJK Unified Ideographs Ext A
+    (cp >= 0x4e00 && cp <= 0x9fff) || // CJK Unified Ideographs
+    (cp >= 0xa960 && cp <= 0xa97f) || // Hangul Jamo Extended-A
+    (cp >= 0xac00 && cp <= 0xd7a3) || // Hangul Syllables
+    (cp >= 0xd7b0 && cp <= 0xd7ff) || // Hangul Jamo Extended-B
+    (cp >= 0xf900 && cp <= 0xfaff) || // CJK Compatibility Ideographs
+    (cp >= 0xff00 && cp <= 0xffef) || // Halfwidth & Fullwidth forms
+    (cp >= 0x20000 && cp <= 0x2fa1f)  // CJK Ext B–F + compatibility supplement
+  );
 }
 
 /** SHA-256 hex digest of text for change-detection. */

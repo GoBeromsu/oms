@@ -30,6 +30,30 @@ export const GGUF_EMBEDDING_DIMENSIONS = 768;
 /** Milliseconds of inactivity before the GGUF pool is unloaded (plan.md:83). */
 const IDLE_UNLOAD_MS = 5 * 60 * 1000;
 
+/**
+ * Embedding context window for EmbeddingGemma-300M (its trained n_ctx).
+ *
+ * Each pooled context is sized to this EXPLICITLY rather than left to
+ * node-llama-cpp's "auto": a pool of N auto-sized contexts divides available
+ * memory N ways and each can silently shrink below the largest chunk, making
+ * getEmbeddingFor() throw "Input is longer than the context size". Pinning the
+ * window makes embedding deterministic across pool sizes and keeps inputs
+ * in-distribution (2048 = trained context → no overflow degradation).
+ */
+const EMBED_CONTEXT_TOKENS = 2048;
+
+/**
+ * Hard input-token ceiling enforced before every embed() call.
+ *
+ * Sits a margin below EMBED_CONTEXT_TOKENS to leave room for any special /
+ * task-prefix tokens getEmbeddingFor() injects. Inputs above this are
+ * token-exactly truncated via the model's own tokenizer rather than thrown —
+ * the engine MUST never choke on one oversized chunk the way the whole-doc
+ * floor (src/search) does. This bounds INPUT LENGTH only; it is NOT a dimension
+ * fold (ADR-007) — the emitted vector is still the full 768d.
+ */
+const EMBED_MAX_INPUT_TOKENS = 1900;
+
 // ---------------------------------------------------------------------------
 // node-llama-cpp type aliases (dynamic import; avoids hard dep at module load)
 // ---------------------------------------------------------------------------
@@ -126,7 +150,12 @@ export function createGGUFEmbeddingProvider(
       const llama = await getLlama();
       const model = await llama.loadModel({ modelPath });
       const contexts = await Promise.all(
-        Array.from({ length: poolSize }, () => model.createEmbeddingContext()),
+        Array.from({ length: poolSize }, () =>
+          model.createEmbeddingContext({
+            contextSize: EMBED_CONTEXT_TOKENS,
+            batchSize: EMBED_CONTEXT_TOKENS,
+          }),
+        ),
       );
       pool = { model, contexts, nextIdx: 0 };
       return pool;
@@ -144,11 +173,20 @@ export function createGGUFEmbeddingProvider(
     async embed(text: string): Promise<Float32Array> {
       resetIdleTimer();
       const p = await ensurePool();
+      // Token-exact truncation: never feed more than the context can hold, so a
+      // single oversized chunk can never throw "Input is longer than the context
+      // size". Bounds INPUT LENGTH only via the model's own tokenizer — NOT a
+      // dimension fold (ADR-007); the output stays full 768d.
+      let input = text;
+      const tokens = p.model.tokenize(text);
+      if (tokens.length > EMBED_MAX_INPUT_TOKENS) {
+        input = p.model.detokenize(tokens.slice(0, EMBED_MAX_INPUT_TOKENS));
+      }
       // Round-robin context selection across the pool
       const idx = p.nextIdx % p.contexts.length;
       p.nextIdx = idx + 1;
       const ctx = p.contexts[idx]!;
-      const result = await ctx.getEmbeddingFor(text);
+      const result = await ctx.getEmbeddingFor(input);
       // No fold — return full 768d, L2-normalised
       return normalizeVector(result.vector);
     },

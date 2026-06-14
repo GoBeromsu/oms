@@ -2,6 +2,8 @@ import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { parse as parseYaml } from "yaml";
 import type { GraphEdge } from "../types.js";
+import type { EngineGraphNode } from "./node.js";
+import { tokenize } from "./node.js";
 import { buildWikilinkIndex, resolveWikilink } from "./resolver.js";
 
 // ---------------------------------------------------------------------------
@@ -298,4 +300,168 @@ export async function saveCachedGraph(cachePath: string, edges: GraphEdge[]): Pr
     edges,
   };
   await writeFile(cachePath, `${JSON.stringify(file, null, 2)}\n`, "utf-8");
+}
+
+/**
+ * Load the persisted full-graph cache, returning both edges and the build
+ * timestamp.  Unlike {@link loadCachedGraph} (which drops `generatedAt`), this
+ * is used by oms_graph_status to report when the cache was built.
+ * Returns `null` when the file is absent, unreadable, or at a stale version.
+ */
+export async function loadCachedGraphMeta(
+  cachePath: string,
+): Promise<{ edges: GraphEdge[]; generatedAt: string } | null> {
+  try {
+    const raw = await readFile(cachePath, "utf-8");
+    const file = JSON.parse(raw) as EngineCacheFile;
+    if (file.version !== CACHE_VERSION) return null;
+    return { edges: file.edges, generatedAt: file.generatedAt };
+  } catch {
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Node index — per-note metadata for axis-filtered retrieval (C2)
+// ---------------------------------------------------------------------------
+
+const NODE_CACHE_VERSION = 1;
+
+/** JSON-serialisable form of EngineGraphNode (Set → string[] for searchTerms). */
+interface SerializedNode {
+  readonly path: string;
+  readonly concept: string | null;
+  readonly folder: string;
+  readonly axes: Record<string, string[]>;
+  readonly wikilinks: string[];
+  readonly bodyPreview: string;
+  readonly searchTerms: string[];
+}
+
+interface NodeCacheFile {
+  readonly version: number;
+  readonly generatedAt: string;
+  readonly nodes: SerializedNode[];
+}
+
+/**
+ * Scan the vault (or an explicit file slice) and build the per-note index
+ * consumed by retrieve_by_axis and retrieve_context.
+ *
+ * Each node carries concept (frontmatter["concept"] only — no Ontology, R18),
+ * folder group, every frontmatter field as a string-array axis, resolved
+ * out-going wikilinks, a 240-char body preview, and a tokenised searchTerms
+ * set (frontmatter strings ∪ body) for lexical scoring.
+ */
+export async function buildNodeIndex(opts: {
+  vaultPath: string;
+  /** Vault-relative file paths.  Whole vault is walked when omitted. */
+  files?: readonly string[];
+}): Promise<EngineGraphNode[]> {
+  const vaultPath = path.resolve(opts.vaultPath);
+
+  let files: readonly string[];
+  if (opts.files !== undefined) {
+    files = opts.files;
+  } else {
+    const collected: string[] = [];
+    for await (const f of walkMarkdown(vaultPath, vaultPath)) collected.push(f);
+    files = collected;
+  }
+
+  const index = buildWikilinkIndex(files);
+  const nodes: EngineGraphNode[] = [];
+
+  for (const docPath of files) {
+    let raw: string;
+    try {
+      raw = await readFile(path.join(vaultPath, docPath), "utf-8");
+    } catch {
+      continue; // unreadable file — skip silently
+    }
+
+    const frontmatter = parseFrontmatter(raw);
+    const body = extractBody(raw);
+
+    const conceptRaw = frontmatter["concept"];
+    const concept = typeof conceptRaw === "string" ? conceptRaw : null;
+
+    const axes: Record<string, string[]> = {};
+    const fmStrings: string[] = [];
+    for (const [key, value] of Object.entries(frontmatter)) {
+      const arr = toStringArray(value);
+      if (arr.length > 0) {
+        axes[key] = arr;
+        fmStrings.push(...arr);
+      }
+    }
+
+    const wikilinks: string[] = [];
+    for (const rawLink of extractRawWikilinks(body)) {
+      const { docPath: target } = resolveWikilink(rawLink, index);
+      if (target !== null) wikilinks.push(target);
+    }
+
+    const searchTerms = new Set<string>([
+      ...tokenize(fmStrings.join(" ")),
+      ...tokenize(body),
+    ]);
+
+    nodes.push({
+      path: docPath,
+      concept,
+      folder: noteType(docPath),
+      axes,
+      wikilinks,
+      bodyPreview: body.slice(0, 240),
+      searchTerms,
+    });
+  }
+
+  return nodes;
+}
+
+/** Persist the node index to `cachePath` (compact JSON; Set serialised as array). */
+export async function saveNodeIndex(
+  cachePath: string,
+  nodes: readonly EngineGraphNode[],
+): Promise<void> {
+  await mkdir(path.dirname(cachePath), { recursive: true });
+  const file: NodeCacheFile = {
+    version: NODE_CACHE_VERSION,
+    generatedAt: new Date().toISOString(),
+    nodes: nodes.map((n) => ({
+      path: n.path,
+      concept: n.concept,
+      folder: n.folder,
+      axes: n.axes,
+      wikilinks: n.wikilinks,
+      bodyPreview: n.bodyPreview,
+      searchTerms: Array.from(n.searchTerms),
+    })),
+  };
+  await writeFile(cachePath, `${JSON.stringify(file)}\n`, "utf-8");
+}
+
+/**
+ * Load the node index from `cachePath`, rebuilding each searchTerms Set from
+ * its serialised array form.  Returns `null` when absent / unreadable / stale.
+ */
+export async function loadNodeIndex(cachePath: string): Promise<EngineGraphNode[] | null> {
+  try {
+    const raw = await readFile(cachePath, "utf-8");
+    const file = JSON.parse(raw) as NodeCacheFile;
+    if (file.version !== NODE_CACHE_VERSION) return null;
+    return file.nodes.map((n) => ({
+      path: n.path,
+      concept: n.concept,
+      folder: n.folder,
+      axes: n.axes,
+      wikilinks: n.wikilinks,
+      bodyPreview: n.bodyPreview,
+      searchTerms: new Set(n.searchTerms),
+    }));
+  } catch {
+    return null;
+  }
 }
