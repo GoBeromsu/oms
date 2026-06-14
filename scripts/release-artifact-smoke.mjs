@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, existsSync, mkdirSync, realpathSync, rmSync } from "node:fs";
+import { mkdtempSync, existsSync, mkdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -53,7 +53,7 @@ function assertPath(target, label = target) {
 }
 
 function installRuntimeDependencies(packageRoot) {
-  run("npm", ["install", "--omit=dev", "--ignore-scripts", "--no-audit", "--no-fund"], {
+  run("npm", ["install", "--omit=dev", "--no-audit", "--no-fund"], {
     cwd: packageRoot,
     stdio: "inherit",
   });
@@ -63,6 +63,11 @@ function makeVault(tempRoot) {
   const vault = path.join(tempRoot, "Vault");
   mkdirSync(path.join(vault, "Inbox"), { recursive: true });
   mkdirSync(path.join(vault, "Literature"), { recursive: true });
+  writeFileSync(
+    path.join(vault, "Literature", "semantic-retrieval.md"),
+    "---\ntitle: Semantic Retrieval\n---\n# Semantic Retrieval\n\nAgent retrieval uses OMS native semantic search.\n",
+    "utf-8",
+  );
   return vault;
 }
 
@@ -137,6 +142,19 @@ async function mcpSmoke(packageRoot, vault) {
       "oms_graph_build",
       "oms_list_concepts",
       "oms_retrieve_by_axis",
+      "oms_retrieve_context",
+      "oms_sync_embeddings",
+      "oms_semantic_query",
+      "oms_semantic_status",
+      "oms_semantic_collections",
+      "oms_semantic_contexts",
+      "oms_semantic_cleanup",
+      "oms_get_document",
+      "query",
+      "status",
+      "get",
+      "multi_get",
+      "oms_multi_get_documents",
       "oms_lazy_load_note",
       "oms_validate_contract",
       "oms_capture_prepare",
@@ -144,6 +162,26 @@ async function mcpSmoke(packageRoot, vault) {
     ];
     const missing = requiredTools.filter((tool) => !toolNames.has(tool));
     if (missing.length > 0) fail(`MCP server missing tools: ${missing.join(", ")}`);
+    const sync = await client.callTool({ name: "oms_sync_embeddings", arguments: { collection: "vault" } });
+    const syncPayload = JSON.parse(sync.content[0]?.type === "text" ? sync.content[0].text : "{}");
+    if (syncPayload.available !== true) fail("MCP semantic sync did not report available true");
+    const query = await client.callTool({
+      name: "oms_semantic_query",
+      arguments: { query: "lex: agent retr", collection: "vault", limit: 1 },
+    });
+    const queryPayload = JSON.parse(query.content[0]?.type === "text" ? query.content[0].text : "{}");
+    if (queryPayload.hits?.[0]?.path !== "Literature/semantic-retrieval.md") {
+      fail("MCP semantic query did not find packaged smoke note");
+    }
+    const templates = await client.listResourceTemplates();
+    if (!templates.resourceTemplates.some((template) => template.uriTemplate === "qmd://{path}")) {
+      fail("MCP server missing qmd:// resource template");
+    }
+    const resource = await client.readResource({ uri: "qmd://Literature/semantic-retrieval.md" });
+    const text = resource.contents[0]?.text ?? "";
+    if (!text.includes("Agent retrieval uses OMS native semantic search")) {
+      fail("MCP qmd:// resource did not read semantic smoke note");
+    }
     console.log("[release:artifact-smoke] ok: MCP listTools works from unpacked package.");
   } finally {
     await client.close();
