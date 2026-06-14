@@ -12,6 +12,20 @@ status: active
 
 ---
 
+## Execution Update — 2026-06-14 (M1 + swap + Phase 2 shipped; PR #33)
+
+> Records execution-time reality where it diverges from the plan as written. Lifecycle rule: decisions **supersede**, never delete. M2 (compile) / M3 (wiki) / M4 (distill) / M5 (governance+setup) remain **future work** — this plan stays `active`. Only the retrieval vertical and the swap ceremony are addressed here.
+
+**Shipped (PR #33, branch `feat/oms-engine`, 20 commits beyond `main`).**
+- **M1 retrieval vertical + golden-set harness** — green; engine parity-or-better vs the qmd/src-search baseline (recall@10).
+- **Swap executed in two rounds, not one:** Round 1 = **graph-only** model-free assembly wired live (`oms_retrieve_by_axis` engine-native; semantic stays on `src/search` behind ADR-007 deferred guards). Round 2 = **Phase 2 model-gated routing**: `oms_semantic_query/sync/status/collections/contexts/cleanup`, `oms_retrieve_context`'s semantic leg, `get`/`multi_get`, and the `qmd://` `ReadResource` route through the engine **iff** an embedding model is configured (`OMS_MODEL_PATH`/`UPSTAGE_API_KEY`), degrading to `src/search` otherwise. Engine `getDocument`/`multiGet` reached document-surface parity (`qmd://`/`oms://` schemes, `:FROM:COUNT` ranges, vault globs); semantic hits gained title + doc-head snippet (T2).
+
+**SUPERSEDED — R18 swap ceremony step 7c (`src/search/` → `src/search.legacy/` rename).** The plan (M5 §7c, Files-Affected, ADR R21) assumed the swap *renames* `src/search/` to `.legacy/` and deletes it one release later. **This is reversed.** `src/search/` is **retained first-class as the model-free fallback tier** — it backs the morning default backend, the `get`/`multi_get`/`ReadResource` degradation path, the localhost semantic-HTTP CLI, and all 622 NO_MODEL tests. Renaming it `.legacy` would mislead and break every importer. Phase 2 made it the *gated fallback*, not dead code. **No `.legacy` rename will occur; no follow-up deletion PR is owed.** (Distill into a formal ADR during M5 execution.)
+
+**Parity confirmation (qmd oracle, R7).** Beyond the standing golden harness: a bounded live cross-check took qmd's top-6 real notes for an agent-retrieval query + 2 unrelated distractors into a throwaway `/tmp` vault, synced the engine through the built MCP server with the real EmbeddingGemma GGUF, and ran the same lex/vec/intent — engine `#1` = qmd `#1` (`Retriever-Augmented Generation (RAG).md`); both distractors absent from the engine top-8; real-path docids confirm the engine backend served them; zero footprint on the real vault.
+
+---
+
 ## Skill Packaging & Repo Topology (R19/R20)
 
 > Reconciles the planner draft's flat-skill assumption with spec §3/§9 (deep-interview **R20**) and the monorepo decision (**R19**). The milestone skill paths below (`core/skills/compile`, `wiki`, …) are the **public leaves**; this section adds the private router on top of them — it does not move them.
@@ -384,7 +398,7 @@ These decisions surfaced during planning. **All six were ratified in deep-interv
 - [x] **engine module directory convention** — ✅ R21: `src/engine/{embed,index,graph,retrieve,wiki,distill}/`, one sub-dir per component, README per sub-dir, no loose files at the module root; new capability = new named sub-dir. (Prevents catch-all.)
 - [x] **staleness ledger persistence format** — ✅ R21: **JSON** (`.llmwiki/staleness.json`) — human-readable, delete-to-reset escape hatch, gitignored·never-synced. Per-concept-unit count ≪ 20k notes, so JSON is sufficient; SQLite deferred unless profiling proves rewrite cost.
 - [x] **golden-set harness tooling** — ✅ R21: **vitest named suite** at `test/golden-set/`, skipped in CI, manual-run only via `RUN_GOLDEN=1` env gate (encodes R2 manual-only / no-CI).
-- [x] **R18 swap ceremony procedure** — ✅ R21: M5 step 7 — parity-green → rename `src/search/`→`src/search.legacy/` (swap commit) → flip MCP routing → delete `.legacy` in a separate follow-up PR after one release cycle.
+- [x] **R18 swap ceremony procedure** — ✅ R21: M5 step 7 — parity-green → rename `src/search/`→`src/search.legacy/` (swap commit) → flip MCP routing → delete `.legacy` in a separate follow-up PR after one release cycle. **⚠️ SUPERSEDED 2026-06-14 (see Execution Update):** swap shipped in two rounds (graph-only → Phase 2 model-gated) and the `.legacy` rename is *cancelled* — `src/search/` stays first-class as the model-gated fallback tier; no follow-up deletion PR is owed.
 - [x] **setup interview self-reimplementation scope** — ✅ R21: exactly 6 binding dimensions (folder mapping, provenance grades, lint SSOT, embedder, `ignore_for_external_apis`, write routing). No full Ouroboros-level ambiguity engine. Output to `vault/.oms/taxonomy.yaml` only (Non-Sticky guard).
 - [x] **skill packaging: thick-router/leaf split + private boundary** — ✅ R20/R21 (new): one private thick router routes to generic public leaves; distill standalone; public/private boundary == router↔leaf; personal overlay isolated behind `private/` (gitignore) or submodule (R19).
 - [ ] **ACKNOWLEDGMENTS.md additions required** — before any code using absorbed patterns ships: qmd (tobi, MIT), graphify (Safi Shamsi, MIT), gajae-code (Can Bölük / Mario Zechner, MIT), Karpathy gist, Astro-Han (MIT), nvk/llm-wiki (Apache 2.0), lucasastorian (license TBD — note as unconfirmed), nashsu/llm_wiki (GPL-3.0 — idea-only, no code; attribution still required per standing rule), omc deep-interview methodology (self-reimplemented method, attribution in ACKNOWLEDGMENTS), terminology bstack self-authored (internal reference). gbrain license status remains TODO — flag as unresolved before any gbrain-derived logic ships.
