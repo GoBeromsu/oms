@@ -27,17 +27,20 @@ import {
 import { loadOntology } from "../ontology/loader.js";
 import { resolveConcept } from "../ontology/resolver.js";
 import { retrieveMorningContext } from "../retrieve/morning.js";
+import { makeEngineMorningBackend } from "./engine-morning-backend.js";
 import { resolveBundledAssetPaths } from "../runtime/assets.js";
 import type { Concept, Ontology } from "../ontology/types.js";
 import {
   handleSemanticTool,
   isEngineSemanticOp,
+  isEngineDocumentOp,
   semanticMcpTools,
   semanticOptionsFromArgs,
   retrieveContextSemanticInputProperties,
 } from "./semantic-retrieve.js";
 import { getSemanticDocument } from "../search/semantic.js";
 import { assembleEngine, assembleGraphOnlyEngine, type AssembledEngine } from "../engine/assemble.js";
+import type { McpEngineAdapter } from "../engine/mcp/facade.js";
 
 const SERVER_VERSION = "0.0.0";
 const bundledAssets = resolveBundledAssetPaths();
@@ -352,6 +355,29 @@ export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
     return semanticEngine;
   };
 
+  // A real embedding model is configured iff one of these is set (ADR-007). The
+  // engine's model-OPTIONAL surface (document reads, retrieve_context's semantic
+  // leg, ReadResource) keys off this to decide engine vs src/search WITHOUT
+  // triggering an assembly throw on a model-less host.
+  const hasEmbeddingModel = (): boolean =>
+    Boolean(process.env["OMS_MODEL_PATH"] ?? process.env["UPSTAGE_API_KEY"]);
+
+  // Lenient adapter resolver for those model-optional paths: returns the engine
+  // adapter only when a model is configured AND assembly succeeds, else null so
+  // the caller degrades to the model-free src/search layer. This is the deliberate
+  // counterpart to the isEngineSemanticOp path, which assembles eagerly and lets
+  // the no-model error surface loudly (ADR-007). Both honor the same invariant:
+  // query + document reads resolve on the SAME backend, so a retrieve_context
+  // real-path docid always hydrates where it was produced (no split-brain).
+  const trySemanticEngineAdapter = (): McpEngineAdapter | null => {
+    if (!hasEmbeddingModel()) return null;
+    try {
+      return getSemanticEngine().adapter;
+    } catch {
+      return null;
+    }
+  };
+
   const server = new Server(
     { name: "oms", version: SERVER_VERSION },
     {
@@ -385,9 +411,18 @@ export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
 
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const uri = request.params.uri;
-    const result = await getSemanticDocument({ vault, target: uri });
+    // Resource reads hydrate on the SAME backend the semantic ops use: the engine
+    // (file-based, qmd:// / oms:// scheme aware) when a model is configured, else
+    // src/search — so a retrieve_context docid resolves through the URI surface
+    // regardless of which backend produced it.
+    const engineAdapter = trySemanticEngineAdapter();
+    const result = engineAdapter
+      ? await engineAdapter.getDocument({ vault, target: uri })
+      : await getSemanticDocument({ vault, target: uri });
     if (!result.available || !result.documents[0]) {
-      throw new Error(result.available ? "OMS semantic resource not found." : result.reason);
+      throw new Error(
+        !result.available && result.reason ? result.reason : "OMS semantic resource not found.",
+      );
     }
     return {
       contents: [
@@ -503,29 +538,35 @@ export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
     }
 
     if (request.params.name === "oms_retrieve_context") {
-      // Graph + semantic fusion stays on the mature src/search path (morning):
-      // it owns rich semantic hits (real snippets, line-addressable docids that
-      // feed get/multi_get) plus the src/graph warm cache. The engine semantic
-      // layer is intentionally thinner (M2+), so routing here would regress
-      // output richness — it migrates only once the engine reaches parity.
+      // Graph + semantic fusion. The graph leg stays on the src/graph warm cache;
+      // the semantic leg routes to the native engine when a model is configured
+      // (parity-verified ranking, real-path docids) and degrades to the model-free
+      // src/search backend otherwise. get/multi_get and ReadResource make the SAME
+      // model-gated choice, so a docid emitted here always hydrates on the backend
+      // that produced it — no split-brain between query and document reads.
+      const engineAdapter = trySemanticEngineAdapter();
+      const semanticBackend = engineAdapter ? makeEngineMorningBackend(engineAdapter, vault) : undefined;
       const { ontology, source } = await activeOntology(vault);
       const limitValue = args?.["limit"];
       const maxNeighborsValue = args?.["maxNeighbors"];
       const useCacheValue = args?.["useCache"];
-      const result = await retrieveMorningContext({
-        vault,
-        ontology,
-        concept: stringArg(args, "concept"),
-        folder: stringArg(args, "folder"),
-        property: stringArg(args, "property"),
-        value: stringArg(args, "value"),
-        wikilink: stringArg(args, "wikilink"),
-        query: stringArg(args, "query"),
-        limit: typeof limitValue === "number" ? limitValue : undefined,
-        maxNeighbors: typeof maxNeighborsValue === "number" ? maxNeighborsValue : undefined,
-        useCache: typeof useCacheValue === "boolean" ? useCacheValue : undefined,
-        semantic: semanticOptionsFromArgs(args),
-      });
+      const result = await retrieveMorningContext(
+        {
+          vault,
+          ontology,
+          concept: stringArg(args, "concept"),
+          folder: stringArg(args, "folder"),
+          property: stringArg(args, "property"),
+          value: stringArg(args, "value"),
+          wikilink: stringArg(args, "wikilink"),
+          query: stringArg(args, "query"),
+          limit: typeof limitValue === "number" ? limitValue : undefined,
+          maxNeighbors: typeof maxNeighborsValue === "number" ? maxNeighborsValue : undefined,
+          useCache: typeof useCacheValue === "boolean" ? useCacheValue : undefined,
+          semantic: semanticOptionsFromArgs(args),
+        },
+        semanticBackend,
+      );
       return jsonText({
         vault,
         ontologySource: source,
@@ -535,12 +576,19 @@ export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
 
     // Semantic / sync / cleanup ops route to the native engine adapter, lazily
     // assembled (parity verified vs the src/search baseline — golden-set gate).
-    // get/multi_get document reads stay on src/search (GAP-9): isEngineSemanticOp
-    // keeps them — and every non-semantic tool — off the model path, so a doc
-    // read never forces engine assembly (and never throws) on a model-less host.
+    // Two adapter-resolution policies:
+    //   - isEngineSemanticOp → EAGER getSemanticEngine().adapter: a model-less host
+    //     throws a loud ADR-007 error (surfaces via the dispatch catch below).
+    //   - isEngineDocumentOp → LENIENT trySemanticEngineAdapter(): model present →
+    //     engine (hydrates retrieve_context's real-path docids on the same backend),
+    //     absent → null so handleSemanticTool falls back to src/search WITHOUT
+    //     forcing engine assembly.
+    // Every other tool gets null and never touches the model path.
     const semanticAdapter = isEngineSemanticOp(request.params.name)
       ? getSemanticEngine().adapter
-      : null;
+      : isEngineDocumentOp(request.params.name)
+        ? trySemanticEngineAdapter()
+        : null;
     const semanticToolResult = await handleSemanticTool(request.params.name, args, vault, semanticAdapter);
     if (semanticToolResult) {
       return semanticToolResult.ok ? jsonText(semanticToolResult.value) : errorText(semanticToolResult.message);
