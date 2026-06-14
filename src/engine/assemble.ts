@@ -9,8 +9,8 @@
  *   - DispatcherDeps assembled from store + embed + optional tuning knobs.
  *   - McpEngineAdapter constructed with those deps.
  *
- * The retrieve_by_axis and retrieve_context methods on the adapter remain as
- * deferred throw-stubs (engine C2 is not yet capable — task #5 / swap step).
+ * All 10 MCP ops are live on the adapter (retrieve_by_axis / retrieve_context
+ * are wired to the engine C2 graph + node index as of the task #5 swap).
  *
  * R18: NO runtime import from src/search.
  */
@@ -19,6 +19,7 @@ import { requireRealEmbeddingProvider } from "./embed/provider.js";
 import { openEngineStore } from "./embed/store.js";
 import { syncEngineStore } from "./embed/sync.js";
 import { McpEngineAdapter } from "./mcp/facade.js";
+import { makeDeferredProvider, makeDeferredStore } from "./embed/deferred.js";
 import type { DispatcherDeps } from "./retrieval/dispatcher.js";
 import type { EngineStore } from "./embed/store.js";
 import type { EmbeddingProvider } from "./types.js";
@@ -141,7 +142,7 @@ export function assembleEngine(config: AssembleConfig): AssembledEngine {
     // graphTraverse, hydeGenerator, provenanceMap: not wired here (C2 / M2+)
   };
 
-  const adapter = new McpEngineAdapter(deps);
+  const adapter = new McpEngineAdapter(deps, vault);
 
   return {
     adapter,
@@ -168,6 +169,69 @@ export function assembleEngine(config: AssembleConfig): AssembledEngine {
         skipped: result.skipped,
         available: result.available,
         reason: result.reason,
+      };
+    },
+
+    async dispose(): Promise<void> {
+      await provider.dispose().catch(() => undefined);
+      store.close();
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Graph-only factory (Option-1 swap)
+// ---------------------------------------------------------------------------
+
+/**
+ * Assemble a GRAPH-ONLY engine: a McpEngineAdapter whose graph ops (build,
+ * status, axis-first retrieval) run model-free off the filesystem, with
+ * deferred (throw-on-use) embedding provider + store standing in for the
+ * semantic layer.
+ *
+ * Used by the MCP server's Option-1 swap: the engine owns axis-first retrieval
+ * immediately (no model required), while semantic retrieval stays on the
+ * src/search layer until the engine reaches output parity. Unlike
+ * assembleEngine(), this NEVER opens a SQLite store and NEVER loads a model, so
+ * it is side-effect-free and safe to call on every server boot (R2 stateless).
+ * The deferred primitives are LOUD GUARDS (ADR-007): any accidental semantic
+ * call throws rather than fabricating vectors.
+ *
+ * @param config - Vault path (+ optional rrfK/graphDepth; modelPath/dbPath ignored).
+ * @returns An AssembledEngine whose adapter serves graph ops; semantic ops throw.
+ */
+export function assembleGraphOnlyEngine(config: AssembleConfig): AssembledEngine {
+  const vault = config.vault;
+  const provider = makeDeferredProvider();
+  const store = makeDeferredStore();
+
+  const deps: DispatcherDeps = {
+    store,
+    embed: provider,
+    ...(config.rrfK !== undefined ? { rrfK: config.rrfK } : {}),
+    ...(config.graphDepth !== undefined ? { graphDepth: config.graphDepth } : {}),
+  };
+
+  const adapter = new McpEngineAdapter(deps, vault);
+
+  return {
+    adapter,
+    deps,
+    store,
+    provider,
+
+    async syncVault(): Promise<SyncVaultResult> {
+      // Graph-only: vault embedding-sync requires a real provider. Report
+      // unavailable rather than throwing so callers can degrade gracefully.
+      return {
+        scanned: 0,
+        added: 0,
+        updated: 0,
+        skipped: 0,
+        available: false,
+        reason:
+          "graph-only engine: vault sync requires a real embedding provider " +
+          "(set OMS_MODEL_PATH or UPSTAGE_API_KEY).",
       };
     },
 
