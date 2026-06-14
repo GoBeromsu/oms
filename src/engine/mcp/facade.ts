@@ -20,6 +20,7 @@
  */
 
 import path from "node:path";
+import { readFileSync } from "node:fs";
 import { dispatch } from "../retrieval/dispatcher.js";
 import type { DispatcherDeps } from "../retrieval/dispatcher.js";
 import { syncEngineStore, walkMarkdown } from "../embed/sync.js";
@@ -54,6 +55,10 @@ import type {
   McpRetrieveContextOptions,
   McpSemanticSearchHit,
   EngineSyncResult,
+  McpSemanticGetOptions,
+  McpSemanticMultiGetOptions,
+  McpSemanticDocumentResult,
+  McpSemanticDocument,
 } from "./types.js";
 import {
   queryOptionsToSubQueries,
@@ -83,6 +88,72 @@ function clamp(n: number, lo: number, hi: number): number {
 }
 
 // ---------------------------------------------------------------------------
+// Document-hydration helpers (file-based, R18-clean — no src/search imports)
+// ---------------------------------------------------------------------------
+
+interface ParsedDocTarget {
+  readonly filePath: string;
+  readonly fromLine?: number;
+  readonly lineCount?: number;
+  readonly isDocid: boolean;
+}
+
+/** Parse target forms: "file.md", "file.md:N", "file.md:N-M", "#docid". */
+function parseDocTarget(target: string): ParsedDocTarget {
+  if (target.startsWith("#")) {
+    return { filePath: target.slice(1), isDocid: true };
+  }
+  const colonIdx = target.lastIndexOf(":");
+  if (colonIdx > 0) {
+    const rangePart = target.slice(colonIdx + 1);
+    const filePart = target.slice(0, colonIdx);
+    const rangeMatch = /^(\d+)-(\d+)$/u.exec(rangePart);
+    if (rangeMatch) {
+      const from = parseInt(rangeMatch[1]!, 10);
+      const to = parseInt(rangeMatch[2]!, 10);
+      return { filePath: filePart, fromLine: from, lineCount: Math.max(0, to - from + 1), isDocid: false };
+    }
+    if (/^\d+$/u.test(rangePart)) {
+      return { filePath: filePart, fromLine: parseInt(rangePart, 10), lineCount: 1, isDocid: false };
+    }
+  }
+  return { filePath: target, isDocid: false };
+}
+
+/** Return true if resolving filePath inside vaultRoot would escape the vault. */
+function isUnsafeVaultPath(filePath: string, vaultRoot: string): boolean {
+  if (path.isAbsolute(filePath)) return true;
+  const root = path.resolve(vaultRoot);
+  const resolved = path.resolve(vaultRoot, filePath);
+  return resolved !== root && !resolved.startsWith(root + path.sep);
+}
+
+/** Slice and optionally number lines. lineNumbers format: "N\tline". */
+function sliceDocLines(
+  content: string,
+  opts: { readonly fromLine?: number; readonly lineCount?: number; readonly lineLimit?: number; readonly lineNumbers?: boolean },
+): string {
+  const lines = content.split(/\r?\n/u);
+  const start = Math.max(0, (opts.fromLine ?? 1) - 1);
+  const count = opts.lineCount ?? opts.lineLimit ?? lines.length;
+  const selected = lines.slice(start, start + Math.max(0, count));
+  return selected
+    .map((line, index) => (opts.lineNumbers === true ? `${start + index + 1}\t${line}` : line))
+    .join("\n");
+}
+
+/** Cheaply extract a title from the first 20 lines (# H1 or frontmatter title:). */
+function extractDocTitle(content: string): string | undefined {
+  for (const line of content.split(/\r?\n/u).slice(0, 20)) {
+    const h1 = /^#\s+(.+)$/u.exec(line);
+    if (h1) return h1[1]!.trim();
+    const fm = /^title:\s*(.+)$/u.exec(line);
+    if (fm) return fm[1]!.trim();
+  }
+  return undefined;
+}
+
+// ---------------------------------------------------------------------------
 // Adapter facade
 // ---------------------------------------------------------------------------
 
@@ -98,10 +169,16 @@ export class McpEngineAdapter {
    * @param vaultPath - Absolute vault root, used by graph / sync / cleanup /
    *                    retrieve ops that are vault-scoped. Required so tsc
    *                    enforces it at every construction site (RISK-4).
+   * @param modelPath - Server-configured GGUF path (OMS_MODEL_PATH, resolved by
+   *                    assembleEngine). Threaded into syncEmbeddings so a sync
+   *                    triggered through the MCP surface — which carries no
+   *                    per-call modelPath — still reaches the real provider
+   *                    instead of tripping the ADR-007 model-less guard.
    */
   constructor(
     private readonly deps: DispatcherDeps,
     private readonly vaultPath: string,
+    private readonly modelPath?: string,
   ) {}
 
   // -------------------------------------------------------------------------
@@ -167,7 +244,11 @@ export class McpEngineAdapter {
         vault: opts.vault,
         collection: opts.collection,
         collectionPath: opts.collectionPath,
-        modelPath: opts.modelPath,
+        // Fall back to the server-configured model (OMS_MODEL_PATH) when the MCP
+        // call omits an explicit modelPath — otherwise syncEngineStore builds a
+        // model-less provider and the ADR-007 guard rejects the sync. Mirrors
+        // AssembledEngine.syncVault, which threads config.modelPath the same way.
+        modelPath: opts.modelPath ?? this.modelPath,
         embed: opts.embed ?? true,
       });
       if (!syncResult.available) {
@@ -452,5 +533,122 @@ export class McpEngineAdapter {
     } catch (err) {
       return { available: false, reason: err instanceof Error ? err.message : String(err), hits: [] };
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // 9. oms_get — single-document file-based hydration (GAP-9)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Hydrate one document from disk by real vault-relative path (ADR-008).
+   * Supports "file.md", "file.md:N" (single line), "file.md:N-M" (range),
+   * and "#docid" (resolved via store.listDocPaths). No embedding model needed.
+   */
+  async getDocument(opts: McpSemanticGetOptions): Promise<McpSemanticDocumentResult> {
+    const vault = opts.vault ?? this.vaultPath;
+    const parsed = parseDocTarget(opts.target);
+
+    let resolvedPath = parsed.filePath;
+    if (parsed.isDocid) {
+      const store = this.deps.store as EngineStore;
+      const matched = store.listDocPaths().find((p) => p === parsed.filePath);
+      if (!matched) {
+        return { available: false, reason: `No OMS document matched "${opts.target}".`, documents: [] };
+      }
+      resolvedPath = matched;
+    }
+
+    if (isUnsafeVaultPath(resolvedPath, vault)) {
+      return { available: false, reason: "OMS semantic document target must stay inside the vault.", documents: [] };
+    }
+
+    let raw: string;
+    try {
+      raw = readFileSync(path.join(vault, resolvedPath), "utf-8");
+    } catch {
+      return { available: false, reason: `No OMS document matched "${opts.target}".`, documents: [] };
+    }
+
+    const content = sliceDocLines(raw, {
+      fromLine: opts.fromLine ?? parsed.fromLine,
+      lineCount: opts.lineCount ?? parsed.lineCount,
+      lineNumbers: opts.lineNumbers,
+    });
+
+    const doc: McpSemanticDocument = {
+      target: opts.target,
+      path: opts.fullPath === true ? path.join(vault, resolvedPath) : resolvedPath,
+      content,
+      docid: resolvedPath,
+      title: extractDocTitle(raw),
+    };
+
+    return { available: true, documents: [doc] };
+  }
+
+  // -------------------------------------------------------------------------
+  // 10. oms_multi_get — batch file-based hydration (GAP-9)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Hydrate multiple documents from disk. De-dups by resolved path. Honors
+   * lineLimit per doc and stops early when accumulated bytes would exceed
+   * maxBytes (returns available:true with partial results, mirroring src/search).
+   */
+  async multiGetDocuments(opts: McpSemanticMultiGetOptions): Promise<McpSemanticDocumentResult> {
+    const vault = opts.vault ?? this.vaultPath;
+    const documents: McpSemanticDocument[] = [];
+    const seen = new Set<string>();
+    let usedBytes = 0;
+
+    for (const rawTarget of opts.targets) {
+      const parsed = parseDocTarget(rawTarget);
+
+      let resolvedPath = parsed.filePath;
+      if (parsed.isDocid) {
+        const store = this.deps.store as EngineStore;
+        const matched = store.listDocPaths().find((p) => p === parsed.filePath);
+        if (!matched) continue;
+        resolvedPath = matched;
+      }
+
+      if (isUnsafeVaultPath(resolvedPath, vault)) {
+        return { available: false, reason: "OMS semantic document target must stay inside the vault.", documents: [] };
+      }
+
+      if (seen.has(resolvedPath)) continue;
+
+      let raw: string;
+      try {
+        raw = readFileSync(path.join(vault, resolvedPath), "utf-8");
+      } catch {
+        continue;
+      }
+
+      const content = sliceDocLines(raw, {
+        fromLine: parsed.fromLine,
+        lineCount: parsed.lineCount,
+        lineLimit: opts.lineLimit,
+        lineNumbers: opts.lineNumbers,
+      });
+
+      const nextBytes = Buffer.byteLength(content, "utf-8");
+      if (opts.maxBytes && usedBytes + nextBytes > opts.maxBytes) {
+        return { available: true, documents };
+      }
+
+      seen.add(resolvedPath);
+      usedBytes += nextBytes;
+
+      documents.push({
+        target: rawTarget,
+        path: opts.fullPath === true ? path.join(vault, resolvedPath) : resolvedPath,
+        content,
+        docid: resolvedPath,
+        title: extractDocTitle(raw),
+      });
+    }
+
+    return { available: true, documents };
   }
 }

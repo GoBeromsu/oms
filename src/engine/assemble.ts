@@ -142,7 +142,9 @@ export function assembleEngine(config: AssembleConfig): AssembledEngine {
     // graphTraverse, hydeGenerator, provenanceMap: not wired here (C2 / M2+)
   };
 
-  const adapter = new McpEngineAdapter(deps, vault);
+  // Thread the resolved model path so adapter.syncEmbeddings (MCP sync, no
+  // per-call modelPath) reaches the real provider — see McpEngineAdapter ctor.
+  const adapter = new McpEngineAdapter(deps, vault, config.modelPath);
 
   return {
     adapter,

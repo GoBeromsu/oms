@@ -298,6 +298,49 @@ export interface McpRetrieveContextOptions extends McpAxisFilters {
 }
 
 // ---------------------------------------------------------------------------
+// oms_get / oms_multi_get — document hydration types (GAP-9, R18 mirror)
+// ---------------------------------------------------------------------------
+
+/** A single hydrated document returned by get/multi_get (mirrors SemanticDocument). */
+export interface McpSemanticDocument {
+  readonly target: string;
+  readonly path: string;
+  readonly content: string;
+  readonly docid?: string;
+  readonly title?: string;
+  readonly uri?: string;
+}
+
+/** Output of oms_get / oms_multi_get (flat shape; mirrors SemanticDocumentResult). */
+export interface McpSemanticDocumentResult {
+  readonly available: boolean;
+  readonly reason?: string;
+  readonly documents: McpSemanticDocument[];
+}
+
+/** Options for oms_get (mirrors SemanticGetOptions). */
+export interface McpSemanticGetOptions {
+  readonly target: string;
+  readonly vault?: string;
+  readonly fromLine?: number;
+  readonly lineCount?: number;
+  readonly lineNumbers?: boolean;
+  readonly fullPath?: boolean;
+  readonly collection?: string;
+}
+
+/** Options for oms_multi_get (mirrors SemanticMultiGetOptions). */
+export interface McpSemanticMultiGetOptions {
+  readonly targets: string[];
+  readonly vault?: string;
+  readonly lineLimit?: number;
+  readonly maxBytes?: number;
+  readonly lineNumbers?: boolean;
+  readonly fullPath?: boolean;
+  readonly collection?: string;
+}
+
+// ---------------------------------------------------------------------------
 // Engine-facing seam types (internal to engine/mcp — not mirrored from src/search)
 // ---------------------------------------------------------------------------
 
