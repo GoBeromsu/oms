@@ -226,6 +226,47 @@ function extractDocTitle(content: string): string | undefined {
   return undefined;
 }
 
+/**
+ * First body lines (YAML frontmatter stripped, heading markers removed) as a
+ * single-line preview, capped to maxChars. The engine's retrieval is
+ * document-level (no chunk offsets), so this is an honest doc-head preview, not
+ * a match-centered excerpt.
+ */
+function docHeadSnippet(content: string, maxChars = 200): string {
+  let body = content;
+  const fm = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/u.exec(body);
+  if (fm && fm.index === 0) body = body.slice(fm[0].length);
+  const preview = body
+    .split(/\r?\n/u)
+    .map((line) => line.replace(/^#{1,6}\s+/u, "").trim())
+    .filter((line) => line.length > 0)
+    .join(" ");
+  return preview.length > maxChars ? `${preview.slice(0, maxChars).trimEnd()}…` : preview;
+}
+
+/**
+ * Best-effort title + doc-head snippet for ranked hits. Retrieval returns
+ * document-level paths only, so the snippet is the note's opening body (not a
+ * passage match) — practical parity with the src/search hit preview without
+ * faking relevance. Out-of-vault paths or read failures degrade to the bare hit
+ * (empty snippet, no title), never throwing.
+ */
+function enrichQueryHits(result: McpSemanticQueryResult, vault: string): McpSemanticQueryResult {
+  if (!result.available || result.hits.length === 0) return result;
+  const hits = result.hits.map((hit): McpSemanticSearchHit => {
+    if (isUnsafeVaultPath(hit.path, vault)) return hit;
+    let raw: string;
+    try {
+      raw = readFileSync(path.join(vault, hit.path), "utf-8");
+    } catch {
+      return hit;
+    }
+    const title = extractDocTitle(raw);
+    return { ...hit, snippet: docHeadSnippet(raw), ...(title !== undefined ? { title } : {}) };
+  });
+  return { available: true, hits };
+}
+
 // ---------------------------------------------------------------------------
 // Adapter facade
 // ---------------------------------------------------------------------------
@@ -289,7 +330,10 @@ export class McpEngineAdapter {
     try {
       const k = opts.candidateLimit ?? 20;
       const results = await dispatch(subQueries, this.deps, k);
-      return retrievalResultsToQueryResult(results, opts);
+      const mapped = retrievalResultsToQueryResult(results, opts);
+      // Fill title + doc-head snippet from disk so engine hits reach practical
+      // parity with the src/search preview (the pure mapper stays text-free).
+      return enrichQueryHits(mapped, opts.vault ?? this.vaultPath);
     } catch (err) {
       return queryResultUnavailable(err instanceof Error ? err.message : String(err));
     }
