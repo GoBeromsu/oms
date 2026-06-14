@@ -10,11 +10,16 @@ import {
   querySemanticStore,
   readSemanticStatus,
   type SemanticDocument,
+  type SemanticDocumentResult,
   type SemanticEmbeddingSyncResult,
+  type SemanticGetOptions,
   type SemanticHitEvidence,
+  type SemanticMultiGetOptions,
   type SemanticProviderStatus,
   type SemanticQueryOptions,
+  type SemanticQueryResult,
   type SemanticSearchHit,
+  type SemanticStatusOptions,
 } from "../search/semantic.js";
 import { syncRetrieveEmbeddings } from "./embedding-sync.js";
 
@@ -89,6 +94,41 @@ export interface MorningRetrieveResult {
   readonly semanticDocuments: readonly SemanticDocument[];
   readonly hits: readonly MorningRetrieveHit[];
 }
+
+/**
+ * Pluggable semantic backend for the morning retrieval flow.
+ *
+ * Abstracts the five semantic leaf operations so the caller chooses the
+ * implementation without morning.ts knowing which one it is:
+ *   - {@link defaultMorningSemanticBackend} → the model-free src/search layer.
+ *   - makeEngineMorningBackend(...) (src/mcp/engine-morning-backend.ts) → the
+ *     native EmbeddingGemma engine, injected by the MCP server once a real
+ *     model is configured.
+ *
+ * query + getDocument + multiGet MUST come from the SAME backend: the engine
+ * emits real-path docids that only its own file-based hydration resolves, so a
+ * split backend (engine query + src/search hydration) would strand every hit.
+ */
+export interface MorningSemanticBackend {
+  readonly sync: (opts: MorningRetrieveOptions) => Promise<SemanticEmbeddingSyncResult | undefined>;
+  readonly status: (opts: SemanticStatusOptions) => Promise<SemanticProviderStatus>;
+  readonly query: (opts: SemanticQueryOptions) => Promise<SemanticQueryResult>;
+  readonly getDocument: (opts: SemanticGetOptions) => Promise<SemanticDocumentResult>;
+  readonly multiGet: (opts: SemanticMultiGetOptions) => Promise<SemanticDocumentResult>;
+}
+
+/**
+ * Default semantic backend: the mature, model-free src/search layer (SHA-1
+ * hash embeddings + JSON/SQLite store). Used by the CLI and by any caller that
+ * does not inject an engine-backed backend, so non-MCP paths are unchanged.
+ */
+export const defaultMorningSemanticBackend: MorningSemanticBackend = {
+  sync: (opts) => syncRetrieveEmbeddings(opts),
+  status: (opts) => readSemanticStatus(opts),
+  query: (opts) => querySemanticStore(opts),
+  getDocument: (opts) => getSemanticDocument(opts),
+  multiGet: (opts) => multiGetSemanticDocuments(opts),
+};
 
 function graphHit(source: "oms-seed" | "oms-neighbor", node: GraphExploreNode): MorningRetrieveHit {
   return {
@@ -166,6 +206,7 @@ function semanticHitTarget(hit: SemanticSearchHit): string {
 async function hydrateSemanticHits(
   opts: MorningRetrieveOptions,
   hits: readonly SemanticSearchHit[],
+  backend: MorningSemanticBackend,
 ): Promise<readonly SemanticDocument[]> {
   const hydrate = opts.semantic?.hydrate ?? "none";
   if (hydrate === "none") return [];
@@ -180,7 +221,7 @@ async function hydrateSemanticHits(
 
   if (targets.length === 0) return [];
   if (targets.length === 1 && typeof opts.semantic?.hydrateFromLine === "number") {
-    const result = await getSemanticDocument({
+    const result = await backend.getDocument({
       target: targets[0] ?? "",
       vault: opts.vault,
       fromLine: opts.semantic.hydrateFromLine,
@@ -194,7 +235,7 @@ async function hydrateSemanticHits(
     return result.available ? result.documents : [];
   }
 
-  const result = await multiGetSemanticDocuments({
+  const result = await backend.multiGet({
     vault: opts.vault,
     targets,
     lineLimit: opts.semantic?.hydrateLineLimit,
@@ -208,7 +249,10 @@ async function hydrateSemanticHits(
   return result.available ? result.documents : [];
 }
 
-async function loadSemantic(opts: MorningRetrieveOptions): Promise<{
+async function loadSemantic(
+  opts: MorningRetrieveOptions,
+  backend: MorningSemanticBackend,
+): Promise<{
   status: MorningRetrieveResult["providers"]["semantic"];
   sync?: SemanticEmbeddingSyncResult;
   hits: readonly SemanticSearchHit[];
@@ -217,7 +261,7 @@ async function loadSemantic(opts: MorningRetrieveOptions): Promise<{
     return { status: { available: false, reason: "disabled" }, hits: [] };
   }
 
-  const sync = await syncRetrieveEmbeddings(opts);
+  const sync = await backend.sync(opts);
   if (sync && !sync.available) {
     return {
       status: { available: false, reason: `embedding sync failed: ${sync.reason}` },
@@ -226,7 +270,7 @@ async function loadSemantic(opts: MorningRetrieveOptions): Promise<{
     };
   }
 
-  const status = await readSemanticStatus({
+  const status = await backend.status({
     vault: opts.vault,
     index: opts.semantic?.index,
     storage: opts.semantic?.storage,
@@ -236,7 +280,7 @@ async function loadSemantic(opts: MorningRetrieveOptions): Promise<{
     return { status, sync, hits: [] };
   }
 
-  const queryResult = await querySemanticStore(semanticQueryOptions(opts));
+  const queryResult = await backend.query(semanticQueryOptions(opts));
   if (!queryResult.available) {
     return { status: { available: false, reason: queryResult.reason }, sync, hits: [] };
   }
@@ -244,11 +288,14 @@ async function loadSemantic(opts: MorningRetrieveOptions): Promise<{
   return { status, sync, hits: queryResult.hits };
 }
 
-export async function retrieveMorningContext(opts: MorningRetrieveOptions): Promise<MorningRetrieveResult> {
+export async function retrieveMorningContext(
+  opts: MorningRetrieveOptions,
+  backend: MorningSemanticBackend = defaultMorningSemanticBackend,
+): Promise<MorningRetrieveResult> {
   const graph = await exploreLocalGraph(opts);
-  const semantic = await loadSemantic(opts);
+  const semantic = await loadSemantic(opts, backend);
   const semanticHits = filteredSemanticHits(opts, graph, semantic.hits);
-  const semanticDocuments = await hydrateSemanticHits(opts, semanticHits);
+  const semanticDocuments = await hydrateSemanticHits(opts, semanticHits, backend);
   const hits = [
     ...graph.seeds.map((node) => graphHit("oms-seed", node)),
     ...graph.neighbors.map((node) => graphHit("oms-neighbor", node)),
