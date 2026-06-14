@@ -23,9 +23,18 @@ export interface GoldenQuery {
   query: string;
   /**
    * Expected top-10-relevant vault-relative note paths.
-   * Paths marked with "# TODO" need real curation against a live vault.
+   * All paths must be verified against a live vault before the query is
+   * marked `curated: true`.
    */
   expectedNotes: string[];
+  /**
+   * Whether the expectedNotes have been verified against a live vault.
+   *
+   * When false (or absent), the runner EXCLUDES this query from scoring and
+   * emits a visible warning — it is NEVER silently scored 0.
+   * Set to true only after every path in expectedNotes is confirmed.
+   */
+  curated?: boolean;
   /** Human-readable annotation for stratification tracking. */
   tags?: string[];
 }
