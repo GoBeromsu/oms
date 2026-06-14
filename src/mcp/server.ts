@@ -4,7 +4,9 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
+  ListResourceTemplatesRequestSchema,
   ListToolsRequestSchema,
+  ReadResourceRequestSchema,
   type CallToolResult,
   type Tool,
 } from "@modelcontextprotocol/sdk/types.js";
@@ -18,19 +20,23 @@ import {
 } from "../capture/safe.js";
 import {
   buildGraphCache,
-  graphCachePath,
   graphCacheStatus,
+  graphCachePath,
   lazyLoadNoteBody,
-  retrieveByAxis,
 } from "../graph/cache.js";
 import { loadOntology } from "../ontology/loader.js";
 import { resolveConcept } from "../ontology/resolver.js";
-import {
-  retrieveMorningContext,
-  type MorningRetrieveOptions,
-} from "../retrieve/morning.js";
+import { retrieveMorningContext } from "../retrieve/morning.js";
 import { resolveBundledAssetPaths } from "../runtime/assets.js";
 import type { Concept, Ontology } from "../ontology/types.js";
+import {
+  handleSemanticTool,
+  semanticMcpTools,
+  semanticOptionsFromArgs,
+  retrieveContextSemanticInputProperties,
+} from "./semantic-retrieve.js";
+import { getSemanticDocument } from "../search/semantic.js";
+import { assembleGraphOnlyEngine } from "../engine/assemble.js";
 
 const SERVER_VERSION = "0.0.0";
 const bundledAssets = resolveBundledAssetPaths();
@@ -202,7 +208,7 @@ export const omsMcpTools: Tool[] = [
     name: "oms_retrieve_context",
     title: "Oh My Second Brain retrieve context",
     description:
-      "Live local graph retrieval with axis seeds, frontmatter/wikilink neighbors, optional qmd lexical/vector candidates, and no warm-cache requirement.",
+      "Live local graph retrieval with axis seeds, frontmatter/wikilink neighbors, optional OMS semantic candidates, and no warm-cache requirement.",
     inputSchema: {
       type: "object",
       properties: {
@@ -215,19 +221,17 @@ export const omsMcpTools: Tool[] = [
         limit: { type: "number" },
         maxNeighbors: { type: "number" },
         useCache: { type: "boolean" },
-        qmdEnabled: { type: "boolean" },
-        qmdCollection: { type: "string" },
-        qmdLimit: { type: "number" },
-        qmdScope: { type: "string", enum: ["global", "graph"] },
+        ...retrieveContextSemanticInputProperties,
       },
     },
     annotations: {
-      readOnlyHint: true,
+      readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: true,
       openWorldHint: false,
     },
   },
+  ...semanticMcpTools,
   {
     name: "oms_lazy_load_note",
     title: "Oh My Second Brain lazy-load note body",
@@ -323,23 +327,72 @@ export interface OMSMcpServerOptions {
 
 export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
   const vault = path.resolve(opts.vault);
+
+  // Native engine (graph-only swap): the engine owns axis-first retrieval and
+  // exposes its derived graph cache status. It is assembled model-free via
+  // deferred (throw-on-use) embedding primitives — graph ops scan the vault off
+  // the filesystem and need no model, while semantic retrieval deliberately
+  // stays on the proven src/search layer until the engine reaches output parity.
+  // No model load, no SQLite store, no watcher: side-effect-free per boot (R2).
+  const engine = assembleGraphOnlyEngine({ vault });
+
   const server = new Server(
     { name: "oms", version: SERVER_VERSION },
     {
-      capabilities: { tools: {} },
+      capabilities: { tools: {}, resources: {} },
       instructions:
         "Oh My Second Brain exposes ontology/status/cache/retrieval tools and safe capture tools. Capture commit is gated by vault confinement and contract validation.",
     },
   );
 
+  server.onclose = () => {
+    void engine.dispose().catch(() => undefined);
+  };
+
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: omsMcpTools,
   }));
+
+  server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({
+    resourceTemplates: [
+      {
+        uriTemplate: "qmd://{path}",
+        name: "QMD-compatible OMS semantic document",
+        description: "Read a native OMS semantic-index document by qmd:// vault-relative path.",
+        mimeType: "text/markdown",
+      },
+    ],
+  }));
+
+  server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    const uri = request.params.uri;
+    const result = await getSemanticDocument({ vault, target: uri });
+    if (!result.available || !result.documents[0]) {
+      throw new Error(result.available ? "OMS semantic resource not found." : result.reason);
+    }
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "text/markdown",
+          text: result.documents[0].content,
+        },
+      ],
+    };
+  });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const args = isRecord(request.params.arguments) ? request.params.arguments : undefined;
 
     if (request.params.name === "oms_graph_status") {
+      // The src/graph derived-cache ledger (M3 5-state staleness) is the source
+      // of truth for retrieve_context's optional warm cache and stays intact.
+      // engineGraph is additive: it surfaces the native engine's axis cache that
+      // backs oms_retrieve_by_axis, so the graph-only swap is observable here.
+      // Defensive .catch: graphStatus reads the cache-meta ledger before the
+      // try below; a future tightening of its error contract must not let a
+      // throw escape ALL inner catch branches and break the MCP handler.
+      const engineGraph = await engine.adapter.graphStatus(vault).catch(() => null);
       try {
         const { ontology, source } = await activeOntology(vault);
         const cacheStatus = await graphCacheStatus(vault, ontology);
@@ -352,6 +405,7 @@ export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
             folders: Object.keys(ontology.taxonomy.folders).length,
           },
           derivedState: cacheStatus,
+          engineGraph,
           writeTools: "capture-commit-gated-by-vault-confinement-and-contract-validation",
           readTools: omsMcpTools.map((tool) => tool.name),
         });
@@ -373,6 +427,7 @@ export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
               reasons: ["local .oms exists but could not be loaded"],
             },
           },
+          engineGraph,
           writeTools: "disabled-invalid-ontology",
           readTools: ["oms_graph_status"],
         });
@@ -406,11 +461,10 @@ export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
     }
 
     if (request.params.name === "oms_retrieve_by_axis") {
-      const { ontology, source } = await activeOntology(vault);
+      // Engine-owned (graph-only swap): axis-first retrieval over the native
+      // node index, built lazily off the filesystem — no embedding model needed.
       const limitValue = args?.["limit"];
-      const hits = await retrieveByAxis({
-        vault,
-        ontology,
+      const result = await engine.adapter.retrieveByAxis({
         concept: stringArg(args, "concept"),
         folder: stringArg(args, "folder"),
         property: stringArg(args, "property"),
@@ -419,31 +473,26 @@ export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
         query: stringArg(args, "query"),
         limit: typeof limitValue === "number" ? limitValue : undefined,
       });
+      // Axis metadata (concept/folder/axes/wikilinks) is carried inside each
+      // hit's `context` field as a JSON string — callers must parse it (RISK-6).
       return jsonText({
         vault,
-        ontologySource: source,
         mode: "axis-first-search-second",
         bodyPolicy: "lazy-load",
-        hits,
+        ...result,
       });
     }
 
     if (request.params.name === "oms_retrieve_context") {
+      // Graph + semantic fusion stays on the mature src/search path (morning):
+      // it owns rich semantic hits (real snippets, line-addressable docids that
+      // feed get/multi_get) plus the src/graph warm cache. The engine semantic
+      // layer is intentionally thinner (M2+), so routing here would regress
+      // output richness — it migrates only once the engine reaches parity.
       const { ontology, source } = await activeOntology(vault);
       const limitValue = args?.["limit"];
       const maxNeighborsValue = args?.["maxNeighbors"];
       const useCacheValue = args?.["useCache"];
-      const qmdEnabledValue = args?.["qmdEnabled"];
-      const qmdLimitValue = args?.["qmdLimit"];
-      const qmdCollection = stringArg(args, "qmdCollection");
-      const qmdScope = stringArg(args, "qmdScope");
-      const qmd: NonNullable<MorningRetrieveOptions["qmd"]> = {
-        ...(typeof qmdEnabledValue === "boolean" ? { enabled: qmdEnabledValue } : {}),
-        ...(qmdCollection ? { collection: qmdCollection } : {}),
-        ...(typeof qmdLimitValue === "number" ? { limit: qmdLimitValue } : {}),
-        ...(qmdScope === "global" || qmdScope === "graph" ? { scope: qmdScope } : {}),
-      };
-
       const result = await retrieveMorningContext({
         vault,
         ontology,
@@ -456,13 +505,20 @@ export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
         limit: typeof limitValue === "number" ? limitValue : undefined,
         maxNeighbors: typeof maxNeighborsValue === "number" ? maxNeighborsValue : undefined,
         useCache: typeof useCacheValue === "boolean" ? useCacheValue : undefined,
-        qmd,
+        semantic: semanticOptionsFromArgs(args),
       });
       return jsonText({
         vault,
         ontologySource: source,
         ...result,
       });
+    }
+
+    // Semantic / sync / document ops route to the src/search layer (no adapter):
+    // the engine's semantic output is thinner (M2+) and would regress richness.
+    const semanticToolResult = await handleSemanticTool(request.params.name, args, vault);
+    if (semanticToolResult) {
+      return semanticToolResult.ok ? jsonText(semanticToolResult.value) : errorText(semanticToolResult.message);
     }
 
     if (request.params.name === "oms_lazy_load_note") {
