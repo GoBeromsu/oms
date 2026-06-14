@@ -23,6 +23,36 @@ export { semanticMcpTools, retrieveContextSemanticInputProperties } from "./sema
 export { semanticOptionsFromArgs };
 
 /**
+ * The op-name set the native engine adapter owns: sync / query / status /
+ * collections / contexts / cleanup, plus the bare CLI aliases. This MIRRORS the
+ * adapter-routed branches in handleSemanticTool below — keep the two in lockstep.
+ *
+ * oms_get_document / oms_multi_get_documents are deliberately EXCLUDED (GAP-9):
+ * they always route to src/search, so a doc read on a model-less host stays on
+ * the legacy path instead of forcing engine assembly (which would throw under
+ * ADR-007 when no embedding model is configured).
+ */
+const ENGINE_SEMANTIC_OPS: ReadonlySet<string> = new Set([
+  "oms_sync_embeddings",
+  "oms_semantic_query",
+  "query",
+  "oms_semantic_status",
+  "status",
+  "oms_semantic_collections",
+  "oms_semantic_contexts",
+  "oms_semantic_cleanup",
+]);
+
+/**
+ * True when `name` is a semantic op the native engine adapter owns. The main
+ * stdio server uses this to lazily assemble the engine ONLY for these ops,
+ * keeping get/multi_get (GAP-9) and every non-semantic tool off the model path.
+ */
+export function isEngineSemanticOp(name: string): boolean {
+  return ENGINE_SEMANTIC_OPS.has(name);
+}
+
+/**
  * Dispatch a semantic / sync / cleanup / document MCP op.
  *
  * When `adapter` is supplied (the main stdio MCP server, post-swap), the

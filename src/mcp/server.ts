@@ -31,12 +31,13 @@ import { resolveBundledAssetPaths } from "../runtime/assets.js";
 import type { Concept, Ontology } from "../ontology/types.js";
 import {
   handleSemanticTool,
+  isEngineSemanticOp,
   semanticMcpTools,
   semanticOptionsFromArgs,
   retrieveContextSemanticInputProperties,
 } from "./semantic-retrieve.js";
 import { getSemanticDocument } from "../search/semantic.js";
-import { assembleGraphOnlyEngine } from "../engine/assemble.js";
+import { assembleEngine, assembleGraphOnlyEngine, type AssembledEngine } from "../engine/assemble.js";
 
 const SERVER_VERSION = "0.0.0";
 const bundledAssets = resolveBundledAssetPaths();
@@ -328,13 +329,28 @@ export interface OMSMcpServerOptions {
 export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
   const vault = path.resolve(opts.vault);
 
-  // Native engine (graph-only swap): the engine owns axis-first retrieval and
-  // exposes its derived graph cache status. It is assembled model-free via
-  // deferred (throw-on-use) embedding primitives — graph ops scan the vault off
-  // the filesystem and need no model, while semantic retrieval deliberately
-  // stays on the proven src/search layer until the engine reaches output parity.
+  // Native engine — graph layer (boot): assembled model-free via deferred
+  // (throw-on-use) embedding primitives. Axis-first retrieval and the derived
+  // graph cache status scan the vault off the filesystem and need no model.
   // No model load, no SQLite store, no watcher: side-effect-free per boot (R2).
   const engine = assembleGraphOnlyEngine({ vault });
+
+  // Native engine — semantic layer (lazy): assembled on the FIRST semantic op,
+  // not at boot, so boot stays stateless (R2). assembleEngine opens the engine
+  // SQLite store on construction and loads the embedding model on first embed().
+  // Golden-set parity is verified (engine >= 1.7x the src/search baseline recall@10
+  // on every query type), so the engine now owns semantic query/status/sync/
+  // collections/contexts/cleanup. Requires a real model: OMS_MODEL_PATH (GGUF) or
+  // UPSTAGE_API_KEY — absent both, assembleEngine throws a loud, actionable error
+  // (ADR-007: no hash/fake fallback) that surfaces via the dispatch catch below.
+  let semanticEngine: AssembledEngine | null = null;
+  const getSemanticEngine = (): AssembledEngine => {
+    if (semanticEngine === null) {
+      const modelPath = process.env["OMS_MODEL_PATH"];
+      semanticEngine = assembleEngine({ vault, ...(modelPath ? { modelPath } : {}) });
+    }
+    return semanticEngine;
+  };
 
   const server = new Server(
     { name: "oms", version: SERVER_VERSION },
@@ -347,6 +363,9 @@ export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
 
   server.onclose = () => {
     void engine.dispose().catch(() => undefined);
+    if (semanticEngine !== null) {
+      void semanticEngine.dispose().catch(() => undefined);
+    }
   };
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
@@ -514,9 +533,15 @@ export function createOMSMcpServer(opts: OMSMcpServerOptions): Server {
       });
     }
 
-    // Semantic / sync / document ops route to the src/search layer (no adapter):
-    // the engine's semantic output is thinner (M2+) and would regress richness.
-    const semanticToolResult = await handleSemanticTool(request.params.name, args, vault);
+    // Semantic / sync / cleanup ops route to the native engine adapter, lazily
+    // assembled (parity verified vs the src/search baseline — golden-set gate).
+    // get/multi_get document reads stay on src/search (GAP-9): isEngineSemanticOp
+    // keeps them — and every non-semantic tool — off the model path, so a doc
+    // read never forces engine assembly (and never throws) on a model-less host.
+    const semanticAdapter = isEngineSemanticOp(request.params.name)
+      ? getSemanticEngine().adapter
+      : null;
+    const semanticToolResult = await handleSemanticTool(request.params.name, args, vault, semanticAdapter);
     if (semanticToolResult) {
       return semanticToolResult.ok ? jsonText(semanticToolResult.value) : errorText(semanticToolResult.message);
     }
